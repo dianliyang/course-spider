@@ -57,16 +57,51 @@ class Uni:
 
     def save(self):
         """
-        Retrieves data and saves it to data/{name}.json
+        Retrieves data and saves it to the SQLite database.
         """
+        from database import SessionLocal, Course
+        
         print(f"[{self.name}] Starting retrieval...")
         data = self.retrieve()
         
-        filename = f"data/{self.name}.json"
-        
+        db = SessionLocal()
         try:
-            with open(filename, "w") as f:
-                json.dump(data, f, indent=2)
-            print(f"[{self.name}] Successfully saved {len(data)} courses to {filename}")
+            # Clear existing data for this university
+            db.query(Course).filter(Course.university == self.name).delete()
+            
+            courses_to_add = []
+            for item in data:
+                # Map fields based on the scraper output structure
+                course_code = item.get('id') or item.get('code')
+                title = item.get('title')
+                units = item.get('units')
+                description = item.get('description')
+                
+                # Store the rest of the data in details
+                # Create a copy to avoid modifying the original item while popping known fields
+                details = item.copy()
+                details.pop('id', None)
+                details.pop('code', None)
+                details.pop('title', None)
+                details.pop('units', None)
+                details.pop('description', None)
+                
+                course = Course(
+                    university=self.name,
+                    course_code=course_code,
+                    title=title,
+                    units=units,
+                    description=description,
+                    details=details
+                )
+                courses_to_add.append(course)
+            
+            db.add_all(courses_to_add)
+            db.commit()
+            print(f"[{self.name}] Successfully saved {len(courses_to_add)} courses to database.")
+            
         except Exception as e:
-            print(f"[{self.name}] Error saving file: {e}")
+            print(f"[{self.name}] Error saving to database: {e}")
+            db.rollback()
+        finally:
+            db.close()
