@@ -10,6 +10,8 @@ CREATE TABLE courses (
   details TEXT, -- JSON string
   department TEXT,
   corequisites TEXT,
+  level TEXT, -- undergraduate, graduate, or both
+  difficulty REAL, -- numeric difficulty rating
   popularity INTEGER DEFAULT 0,
   field TEXT,
   time_commitment TEXT,

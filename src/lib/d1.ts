@@ -109,6 +109,8 @@ export function mapCourseFromRow(row: Record<string, unknown>): Course & { id: n
     description: row.description as string || "",
     department: row.department as string || "",
     corequisites: row.corequisites as string || "",
+    level: row.level as string || "",
+    difficulty: (row.difficulty as number) || 0,
     details: typeof row.details === 'string' ? JSON.parse(row.details) : (row.details || {}),
     popularity: (row.popularity as number) || 0,
     field: (row.field as string) || "",
