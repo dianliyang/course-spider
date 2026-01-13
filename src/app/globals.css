@@ -1,0 +1,71 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@layer utilities {
+  .text-brand-dark {
+    color: #0f172a;
+  }
+  .bg-brand-dark {
+    background-color: #0f172a;
+  }
+  .text-brand-blue {
+    color: #3b82f6;
+  }
+  .bg-brand-blue {
+    background-color: #3b82f6;
+  }
+  .text-brand-green {
+    color: #10b981;
+  }
+  .bg-brand-green {
+    background-color: #10b981;
+  }
+  
+  .cursor-blink {
+    animation: blink 1s step-end infinite;
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+  }
+
+  .custom-scroll::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .custom-scroll::-webkit-scrollbar-track {
+    background: #f1f1f1; 
+  }
+  
+  .custom-scroll::-webkit-scrollbar-thumb {
+    background: #ccc; 
+    border-radius: 3px;
+  }
+  
+  .custom-scroll::-webkit-scrollbar-thumb:hover {
+    background: #aaa; 
+  }
+}
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+}
