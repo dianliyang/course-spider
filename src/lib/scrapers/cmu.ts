@@ -95,7 +95,7 @@ export class CMU extends BaseScraper {
                 
                 currentCourse = {
                     university: this.name,
-                    course_code: courseIdText,
+                    courseCode: courseIdText,
                     title: titleText,
                     units: unitsText,
                     description: "", 

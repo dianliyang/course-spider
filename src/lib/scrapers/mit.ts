@@ -132,7 +132,7 @@ export class MIT extends BaseScraper {
 
       courses.push({
         university: this.name,
-        course_code: courseId,
+        courseCode: courseId,
         title: courseTitle,
         units: details.units as string | undefined,
         description: descriptionParts.join(" ").trim(),

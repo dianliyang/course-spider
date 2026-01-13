@@ -1,6 +1,6 @@
 export interface Course {
   university: string;
-  course_code: string;
+  courseCode: string;
   title: string;
   units?: string;
   description?: string;

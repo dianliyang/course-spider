@@ -51,7 +51,7 @@ export class D1Database {
     
     for (const course of courses) {
       const university = this.escapeSQL(course.university);
-      const courseCode = this.escapeSQL(course.course_code);
+      const courseCode = this.escapeSQL(course.courseCode);
       const title = this.escapeSQL(course.title);
       const units = course.units ? this.escapeSQL(course.units) : "NULL";
       const description = course.description ? this.escapeSQL(course.description) : "NULL";

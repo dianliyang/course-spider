@@ -103,7 +103,7 @@ export function mapCourseFromRow(row: Record<string, unknown>): Course & { id: n
   return {
     id: row.id as number,
     university: university,
-    course_code: courseCode,
+    courseCode: courseCode,
     title: row.title as string || "",
     units: row.units as string || "",
     description: row.description as string || "",

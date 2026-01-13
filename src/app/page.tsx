@@ -6,7 +6,7 @@ import Image from "next/image";
 interface Course {
   id: number;
   title: string;
-  course_code: string;
+  courseCode: string;
   university: string;
   url: string;
   description: string;
@@ -319,7 +319,7 @@ export default function Home() {
                                                       {course.university}
                                                     </h4>
                                                     <span className="text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded font-mono font-bold whitespace-nowrap">
-                                                      {course.course_code}
+                                                      {course.courseCode}
                                                     </span>
                                                   </div>
                                                   <h2 className="text-xl font-bold text-gray-900 mt-1 group-hover:text-brand-blue transition-colors line-clamp-2">
