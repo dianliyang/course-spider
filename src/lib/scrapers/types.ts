@@ -5,4 +5,8 @@ export interface Course {
   units?: string;
   description?: string;
   details?: Record<string, unknown>;
+  popularity?: number;
+  field?: string;
+  timeCommitment?: string;
+  isHidden?: boolean;
 }

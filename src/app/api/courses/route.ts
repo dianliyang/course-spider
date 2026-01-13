@@ -11,12 +11,12 @@ export async function GET(request: Request) {
   const universities = universitiesParam ? universitiesParam.split(',').filter(Boolean) : [];
 
   try {
-    let whereClause = '';
+    let whereClause = 'WHERE is_hidden = 0';
     const queryParams: (string | number)[] = [];
 
     if (universities.length > 0) {
       const placeholders = universities.map(() => '?').join(',');
-      whereClause = `WHERE university IN (${placeholders})`;
+      whereClause += ` AND university IN (${placeholders})`;
       queryParams.push(...universities);
     }
 

@@ -77,11 +77,15 @@ export async function queryD1<T = unknown>(sql: string, params: unknown[] = []):
   }
 }
 
-// Helper to parse the JSON 'details' column
+// Helper to parse the JSON 'details' column and map other fields
 export function mapCourseFromRow(row: Record<string, unknown>): Course & { url: string } {
   const course = {
     ...row,
-    details: typeof row.details === 'string' ? JSON.parse(row.details) : undefined
+    details: typeof row.details === 'string' ? JSON.parse(row.details) : undefined,
+    popularity: row.popularity as number,
+    field: row.field as string,
+    timeCommitment: row.time_commitment as string,
+    isHidden: Boolean(row.is_hidden)
   } as unknown as Course;
 
   let url = "#";

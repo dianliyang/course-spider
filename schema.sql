@@ -8,6 +8,10 @@ CREATE TABLE courses (
   units TEXT,
   description TEXT,
   details TEXT, -- JSON string
+  popularity INTEGER DEFAULT 0,
+  field TEXT,
+  time_commitment TEXT,
+  is_hidden INTEGER DEFAULT 0,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

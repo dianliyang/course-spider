@@ -10,6 +10,10 @@ interface Course {
   university: string;
   url: string;
   description: string;
+  popularity: number;
+  field: string;
+  timeCommitment: string;
+  isHidden: boolean;
 }
 
 interface University {
