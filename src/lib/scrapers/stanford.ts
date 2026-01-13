@@ -51,7 +51,7 @@ export class Stanford extends BaseScraper {
       const result = $(element);
       const course: Course = {
         university: this.name,
-        course_code: '',
+        courseCode: '',
         title: '',
         description: '',
         details: {
@@ -64,7 +64,7 @@ export class Stanford extends BaseScraper {
       if (courseInfo.length > 0) {
         const numberSpan = courseInfo.find('.courseNumber');
         if (numberSpan.length > 0) {
-          course.course_code = numberSpan.text().trim().replace(/:$/, '');
+          course.courseCode = numberSpan.text().trim().replace(/:$/, '');
         }
 
         const titleSpan = courseInfo.find('.courseTitle');

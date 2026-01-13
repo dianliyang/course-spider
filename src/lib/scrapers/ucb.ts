@@ -81,7 +81,7 @@ export class UCB extends BaseScraper {
 
       courses.push({
         university: this.name,
-        course_code: courseCode,
+        courseCode: courseCode,
         title: title,
         units: units,
         description: description,
