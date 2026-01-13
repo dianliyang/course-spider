@@ -37,15 +37,12 @@ async function main() {
   try {
     const courses = await scraper.retrieve();
     console.log(`Retrieved ${courses.length} courses.`);
-    
-    if (courses.length > 0) {
-      console.log("First course sample:");
-      console.log(JSON.stringify(courses[0], null, 2));
+    console.log("First 5 course samples:");
+    console.log(JSON.stringify(courses.slice(0, 5), null, 2));
 
-      if (shouldSave) {
-        const db = new D1Database();
-        await db.saveCourses(courses);
-      }
+    if (shouldSave) {
+      const db = new D1Database();
+      await db.saveCourses(courses);
     }
   } catch (error) {
     console.error("Error running scraper:", error);

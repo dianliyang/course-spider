@@ -31,6 +31,7 @@ export default function Home() {
   );
   const [availableFields, setAvailableFields] = useState<{name: string, count: number}[]>([]);
   const [selectedFields, setSelectedFields] = useState<string[]>([]);
+  const [selectedLevels, setSelectedLevels] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -47,6 +48,9 @@ export default function Home() {
     if (selectedFields.length > 0) {
       params.append("fields", selectedFields.join(","));
     }
+    if (selectedLevels.length > 0) {
+      params.append("levels", selectedLevels.join(","));
+    }
 
     fetch(`/api/courses?${params.toString()}`)
       .then((res) => res.json())
@@ -60,7 +64,7 @@ export default function Home() {
         console.error("Error fetching courses:", err);
         setLoading(false);
       });
-  }, [page, selectedUniversities, selectedFields]);
+  }, [page, selectedUniversities, selectedFields, selectedLevels]);
 
   useEffect(() => {
     fetch("/api/universities")
@@ -101,6 +105,18 @@ export default function Home() {
         return prev.filter((f) => f !== fieldName);
       } else {
         return [...prev, fieldName];
+      }
+    });
+    setPage(1);
+  };
+
+  const handleLevelChange = (level: string) => {
+    setLoading(true);
+    setSelectedLevels((prev) => {
+      if (prev.includes(level)) {
+        return prev.filter((l) => l !== level);
+      } else {
+        return [...prev, level];
       }
     });
     setPage(1);
@@ -250,6 +266,29 @@ export default function Home() {
                     Loading fields...
                   </span>
                 )}
+              </div>
+            </div>
+
+            {/* Level Filter */}
+            <div>
+              <h3 className="font-bold text-gray-900 mb-3 text-sm uppercase tracking-wider">
+                Level
+              </h3>
+              <div className="space-y-1">
+                {["undergraduate", "graduate"].map((level) => (
+                  <label
+                    key={level}
+                    className="flex items-center text-sm text-gray-600 hover:text-brand-blue cursor-pointer group py-0.5"
+                  >
+                    <input
+                      type="checkbox"
+                      className="mr-2 rounded text-brand-blue focus:ring-brand-blue"
+                      checked={selectedLevels.includes(level)}
+                      onChange={() => handleLevelChange(level)}
+                    />
+                    <span className="capitalize">{level}</span>
+                  </label>
+                ))}
               </div>
             </div>
 

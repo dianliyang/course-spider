@@ -13,6 +13,9 @@ export async function GET(request: Request) {
   const fieldsParam = searchParams.get('fields');
   const fields = fieldsParam ? fieldsParam.split(',').filter(Boolean) : [];
 
+  const levelsParam = searchParams.get('levels');
+  const levels = levelsParam ? levelsParam.split(',').filter(Boolean) : [];
+
   try {
     let whereClause = 'WHERE is_hidden = 0';
     const queryParams: (string | number)[] = [];
@@ -32,6 +35,12 @@ export async function GET(request: Request) {
         WHERE f.name IN (${placeholders})
       )`;
       queryParams.push(...fields);
+    }
+
+    if (levels.length > 0) {
+      const placeholders = levels.map(() => '?').join(',');
+      whereClause += ` AND level IN (${placeholders})`;
+      queryParams.push(...levels);
     }
 
     // Get total count
