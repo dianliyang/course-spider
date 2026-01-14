@@ -2,6 +2,8 @@ import { signIn } from "@/auth";
 import Globe from "@/components/ui/Globe";
 import Image from "next/image";
 import Link from "next/link";
+import { AuthError } from "next-auth";
+import { redirect } from "next/navigation";
 
 interface PageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -10,6 +12,28 @@ interface PageProps {
 export default async function LoginPage({ searchParams }: PageProps) {
   const params = await searchParams;
   const callbackUrl = (params.callbackUrl as string) || "/courses";
+
+  async function handleLogin(formData: FormData) {
+    "use server";
+    try {
+      await signIn("credentials", { ...Object.fromEntries(formData), redirectTo: callbackUrl });
+    } catch (error) {
+      if ((error as Error).message === "NEXT_REDIRECT") {
+        throw error;
+      }
+      if (error instanceof AuthError) {
+        return redirect(`/login?error=${error.type}`);
+      }
+      
+      // Check for Next.js redirect error by property (safer than message check for some versions)
+      if (typeof error === "object" && error !== null && "digest" in error && (error as { digest: string }).digest?.startsWith("NEXT_REDIRECT")) {
+        throw error;
+      }
+
+      console.error("Login error:", error);
+      return redirect("/login?error=Default");
+    }
+  }
 
   return (
     <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2 bg-white overflow-hidden">
@@ -90,10 +114,7 @@ export default async function LoginPage({ searchParams }: PageProps) {
           */}
 
           <form
-            action={async (formData) => {
-              "use server";
-              await signIn("credentials", { ...Object.fromEntries(formData), redirectTo: callbackUrl });
-            }}
+            action={handleLogin}
             className="space-y-6"
           >
             <div className="space-y-4">
