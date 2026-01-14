@@ -43,7 +43,6 @@ export default async function StudyPlanPage({ searchParams }: PageProps) {
             enrolledCount={enrolledCourses.length} 
             completedCount={completed.length}
             averageProgress={enrolledCourses.length > 0 ? Math.round(enrolledCourses.reduce((acc, curr) => acc + curr.progress, 0) / enrolledCourses.length) : 0}
-            profileId={1}
           />
           <Link 
             href="/import" 
@@ -139,14 +138,13 @@ export default async function StudyPlanPage({ searchParams }: PageProps) {
                 <i className="fa-solid fa-ghost text-gray-200 text-xl"></i>
               </div>
               <h2 className="text-sm font-black text-gray-900 uppercase tracking-[0.5em] mb-4">Null Path Detected</h2>
-              <p className="text-xs text-gray-400 font-bold uppercase tracking-[0.2em] max-w-[320px] leading-relaxed mb-12">
-                Your educational roadmap is currently inactive. Synchronize with the global network to initialize your first study sequence.
-              </p>
-              <a href="/" className="px-10 py-4 bg-brand-dark text-white rounded-xl text-[10px] font-black uppercase tracking-[0.3em] hover:bg-brand-blue transition-all shadow-xl shadow-brand-dark/10">
-                Begin Initialization
-              </a>
-            </div>
-          </div>
+                          <p className="text-xs text-gray-400 font-bold uppercase tracking-[0.2em] max-w-[320px] leading-relaxed mb-12">
+                            Your educational roadmap is currently inactive. Synchronize with the global network to initialize your first study sequence.
+                          </p>
+                          <Link href="/" className="px-10 py-4 bg-brand-dark text-white rounded-xl text-[10px] font-black uppercase tracking-[0.3em] hover:bg-brand-blue transition-all shadow-xl shadow-brand-dark/10">
+                            Begin Initialization
+                          </Link>
+                        </div>          </div>
         )}
       </main>
     </div>

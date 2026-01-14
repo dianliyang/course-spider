@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { runD1, queryD1 } from '@/lib/d1';
 
-export async function POST(request: Request) {
+export async function POST() {
   try {
     // Mock user for now
     const mockUserEmail = "test@example.com";

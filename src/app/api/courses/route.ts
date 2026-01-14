@@ -98,7 +98,7 @@ export async function GET(request: Request) {
     const items = rows.map(row => {
       const course = mapCourseFromRow(row);
       // Remove details and isHidden to keep response light
-      const { details, isHidden, ...lightCourse } = course;
+      const { ...lightCourse } = course;
       const fields = row.field_names ? (row.field_names as string).split(',') : [];
       const semesters = row.semester_names ? (row.semester_names as string).split(',') : [];
       return { 

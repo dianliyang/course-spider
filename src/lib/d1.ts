@@ -28,16 +28,18 @@ export async function queryD1<T = unknown>(sql: string, params: unknown[] = []):
     if (!ACCOUNT_ID || !DATABASE_ID || !API_TOKEN) {
       // Fallback to wrangler CLI if credentials aren't in env
       // This is slower but works in this environment
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const { exec } = require('child_process');
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const { promisify } = require('util');
       const execAsync = promisify(exec);
       
       const tmpFileName = path.join(process.cwd(), `.tmp_query_${Date.now()}.sql`);
       try {
-        // Simple parameter replacement for CLI (since wrangler doesn't support params in --command easily)
+        // Simple parameter replacement for CLI
         let processedSql = sql;
         params.forEach(param => {
-          const escaped = typeof param === 'string' ? `'${param.replace(/'/g, "''")}'` : param;
+          const escaped = typeof param === 'string' ? `'${param.replace(/'/g, "''")}'` : (param ?? 'NULL');
           processedSql = processedSql.replace('?', String(escaped));
         });
 
@@ -45,7 +47,10 @@ export async function queryD1<T = unknown>(sql: string, params: unknown[] = []):
         const { stdout } = await execAsync(`npx wrangler d1 execute course-spider-db --remote --file="${tmpFileName}" --json`);
         
         if (processedSql.trim().toLowerCase().startsWith('select')) {
-          const result = JSON.parse(stdout);
+          // Extract only the JSON part from wrangler output
+          const jsonMatch = stdout.match(/\[[\s\S]*\]/);
+          if (!jsonMatch) throw new Error("No JSON array found in wrangler output");
+          const result = JSON.parse(jsonMatch[0]);
           return (result[result.length - 1]?.results || []) as T[];
         }
         return [] as T[];

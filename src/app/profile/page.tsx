@@ -30,7 +30,6 @@ export default async function ProfilePage() {
 
   const totalCourses = basicStats.reduce((acc, curr) => acc + curr.total, 0);
   const completedCount = basicStats.find(s => s.status === 'completed')?.total || 0;
-  const inProgressCount = basicStats.find(s => s.status === 'in_progress')?.total || 0;
   const universityCount = uniStats[0]?.count || 0;
   const topField = allFieldStats[0]?.name || "None";
   const lastActiveDate = lastActive[0]?.updated_at ? new Date(lastActive[0].updated_at) : null;

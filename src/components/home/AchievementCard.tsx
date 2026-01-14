@@ -13,8 +13,9 @@ export default function AchievementCard({ course, completionDate }: AchievementC
   const [completionId, setCompletionId] = useState("");
 
   useEffect(() => {
+    // Generate ID only on client to avoid hydration mismatch
     const randomPart = Math.random().toString(36).substring(2, 6).toUpperCase();
-    setCompletionId(`${randomPart}`);
+    setCompletionId(`${randomPart}`); // eslint-disable-line react-hooks/set-state-in-effect
   }, []);
 
   const logos: Record<string, string> = {

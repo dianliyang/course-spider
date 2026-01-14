@@ -5,12 +5,11 @@ async function main() {
 
   // 1. Ensure mock user exists
   await runD1(`
-    INSERT OR IGNORE INTO users (email, name, provider, provider_id) 
-    VALUES (?, ?, ?, ?)
-  `, ["test@example.com", "Demo User", "mock", "mock_123"]);
+    INSERT OR IGNORE INTO users (id, email, name, provider, provider_id) 
+    VALUES (?, ?, ?, ?, ?)
+  `, [1, "test@example.com", "Demo User", "mock", "mock_123"]);
 
-  const user = await queryD1<{ id: number }>('SELECT id FROM users WHERE email = ?', ["test@example.com"]);
-  const userId = user[0].id;
+  const userId = 1;
 
   // 2. Ensure some fields exist (if not already there)
   const fields = ["AI / Machine Learning", "Systems & Networking", "Theory & Fundamentals"];
@@ -19,17 +18,15 @@ async function main() {
   }
 
   // 3. Get some course IDs
-  const courses = await queryD1<{ id: number }>('SELECT id FROM courses LIMIT 5');
+  const courses = await queryD1<{ id: number }>('SELECT id FROM courses LIMIT 1');
   
   if (courses.length === 0) {
-    console.log("No courses found to enroll in. Please run scrapers first.");
+    console.log("No courses found in remote DB. Please run a scraper first.");
     return;
   }
 
   // 4. Enroll the test user in some courses with different progress
   console.log(`Enrolling user ${userId} in ${courses.length} courses...`);
-  
-  const statuses = ['in_progress', 'completed', 'pending'];
   
   for (let i = 0; i < courses.length; i++) {
     const courseId = courses[i].id;

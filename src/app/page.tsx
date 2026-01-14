@@ -138,7 +138,7 @@ async function fetchCourses(
 
   const items = rows.map(row => {
     const course = mapCourseFromRow(row);
-    const { details, isHidden, ...lightCourse } = course;
+    const { ...lightCourse } = course;
     const fields = row.field_names ? (row.field_names as string).split(',') : [];
     const semesters = row.semester_names ? (row.semester_names as string).split(',') : [];
     return { ...lightCourse, fields, semesters } as Course;

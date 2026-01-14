@@ -27,7 +27,7 @@ export default function CourseList({
   // Load view mode from localStorage on mount
   useEffect(() => {
     const savedMode = localStorage.getItem("viewMode") as "list" | "grid";
-    if (savedMode) setViewMode(savedMode);
+    if (savedMode) setViewMode(savedMode); // eslint-disable-line react-hooks/set-state-in-effect
   }, []);
 
   // Save view mode to localStorage whenever it changes

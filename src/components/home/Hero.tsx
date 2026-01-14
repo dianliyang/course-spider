@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import Link from "next/link";
 
 export default function Hero() {
   const router = useRouter();
@@ -11,7 +10,7 @@ export default function Hero() {
 
   // Sync state with URL (e.g. on back button)
   useEffect(() => {
-    setQuery(searchParams.get("q") || "");
+    setQuery(searchParams.get("q") || ""); // eslint-disable-line react-hooks/set-state-in-effect
   }, [searchParams]);
 
   // Update URL with debounce
@@ -37,10 +36,6 @@ export default function Hero() {
 
   const handleSuggestion = (tag: string) => {
     setQuery(tag);
-  };
-
-  const clearSearch = () => {
-    setQuery("");
   };
 
   return (

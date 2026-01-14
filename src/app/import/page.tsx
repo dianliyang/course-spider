@@ -27,8 +27,12 @@ export default function ImportPage() {
       if (res.ok) {
         setMessage({ type: "success", text: data.message });
         setTimeout(() => router.push("/"), 2000);
-      } else setMessage({ type: "error", text: data.error });
-    } catch (e) { setMessage({ type: "error", text: "Network sync failure" }); }
+      } else {
+        setMessage({ type: "error", text: data.error });
+      }
+    } catch { 
+      setMessage({ type: "error", text: "Network sync failure" }); 
+    }
     finally { setLoading(false); }
   };
 
@@ -51,7 +55,7 @@ export default function ImportPage() {
           const headers = lines[0].split(',').map(h => h.trim());
           courses = lines.slice(1).filter(l => l.trim()).map(line => {
             const values = line.split(',').map(v => v.trim());
-            return headers.reduce((obj: any, header, index) => {
+            return headers.reduce((obj: Record<string, string>, header, index) => {
               obj[header] = values[index];
               return obj;
             }, {});

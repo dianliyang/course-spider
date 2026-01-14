@@ -4,10 +4,9 @@ interface StudyPlanHeaderProps {
   enrolledCount: number;
   completedCount: number;
   averageProgress: number;
-  profileId: number;
 }
 
-export default function StudyPlanHeader({ enrolledCount, completedCount, averageProgress, profileId }: StudyPlanHeaderProps) {
+export default function StudyPlanHeader({ enrolledCount, completedCount, averageProgress }: StudyPlanHeaderProps) {
   return (
     <div className="relative mb-32">
       <div className="absolute -left-12 top-0 bottom-0 w-px bg-gray-100 hidden lg:block"></div>
