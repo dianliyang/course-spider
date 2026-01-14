@@ -46,7 +46,7 @@ export default function CourseCard({ course, isInitialEnrolled, onEnrollToggle, 
       <button 
         onClick={handleEnroll}
         disabled={loading}
-        className={`absolute top-0 right-6 px-3 py-1.5 rounded-b-lg text-[10px] font-bold uppercase tracking-widest transition-all ${
+        className={`absolute top-0 right-6 px-3 py-1.5 rounded-b-lg text-[10px] font-black uppercase tracking-widest transition-all ${
           isEnrolled 
             ? 'bg-brand-green text-white translate-y-0' 
             : 'bg-gray-100 text-gray-500 hover:bg-blue-700 hover:text-white -translate-y-1 group-hover:translate-y-0'
@@ -85,6 +85,12 @@ export default function CourseCard({ course, isInitialEnrolled, onEnrollToggle, 
 
       <div className="mt-5 pt-5 border-t border-gray-50 flex-grow">
         <p className="text-sm text-gray-600 line-clamp-2 leading-relaxed">{course.description || `View course details and requirements on ${course.university}.`}</p>
+        {course.corequisites && (
+          <p className="text-[9px] font-bold text-brand-blue/60 uppercase tracking-widest mt-4 flex items-center gap-2">
+            <i className="fa-solid fa-link text-[8px]"></i>
+            Coreq: {course.corequisites}
+          </p>
+        )}
       </div>
 
       {isEnrolled && displayProgress > 0 && (
@@ -111,7 +117,7 @@ export default function CourseCard({ course, isInitialEnrolled, onEnrollToggle, 
         </div>
       )}
 
-      <div className="mt-6 flex items-center justify-between">
+      <div className="mt-6 flex items-center justify-between border-t border-gray-50 pt-6">
         <div className="flex items-center gap-4 text-[10px] uppercase tracking-widest">
           <div className="flex flex-col -space-y-1">
             <span className="text-[8px] font-black text-gray-300">IMPACT</span>
@@ -120,15 +126,22 @@ export default function CourseCard({ course, isInitialEnrolled, onEnrollToggle, 
               <span className="text-sm font-black text-gray-900 tracking-tighter italic">{course.popularity}</span>
             </div>
           </div>
-          {course.semesters && course.semesters.length > 0 && (
-            <div className="flex gap-2 border-l border-gray-100 pl-4">
-              {course.semesters.map(s => (
-                <span key={s} className="bg-gray-50 text-gray-500 px-1.5 py-0.5 rounded-sm text-[8px] font-black tracking-tighter border border-gray-100 uppercase">
-                  {s}
-                </span>
-              ))}
-            </div>
-          )}
+          <div className="flex items-center gap-2 border-l border-gray-100 pl-4">
+            {course.level && (
+              <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest bg-gray-50 px-1.5 py-0.5 rounded border border-gray-100">
+                {course.level}
+              </span>
+            )}
+            {course.semesters && course.semesters.length > 0 && (
+              <div className="flex gap-2">
+                {course.semesters.map(s => (
+                  <span key={s} className="bg-gray-50 text-gray-500 px-1.5 py-0.5 rounded-sm text-[8px] font-black tracking-tighter border border-gray-100 uppercase">
+                    {s}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
         <a href={course.url} target="_blank" rel="noopener noreferrer" className="text-brand-blue text-[10px] font-black uppercase tracking-widest hover:underline flex items-center gap-1.5">
           Course Detail <i className="fa-solid fa-arrow-up-right-from-square text-[8px]"></i>

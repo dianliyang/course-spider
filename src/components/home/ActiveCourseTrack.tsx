@@ -51,12 +51,22 @@ export default function ActiveCourseTrack({ course, initialProgress, onUpdate }:
           )}
         </div>
         <div className="flex flex-col min-w-0">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 mb-1">
             <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest leading-none">{course.courseCode}</span>
-            <h3 className="text-xs font-black text-gray-900 uppercase tracking-tight truncate group-hover:text-brand-blue transition-colors">
-              {course.title}
-            </h3>
+            {course.level && (
+              <span className="text-[7px] font-black text-gray-300 uppercase tracking-widest leading-none border border-gray-100 px-1 rounded-sm">
+                {course.level}
+              </span>
+            )}
           </div>
+          <h3 className="text-xs font-black text-gray-900 uppercase tracking-tight truncate group-hover:text-brand-blue transition-colors">
+            {course.title}
+          </h3>
+          {course.corequisites && (
+            <p className="text-[8px] font-medium text-gray-400 uppercase tracking-wider mt-1 truncate" title={course.corequisites}>
+              Coreq: {course.corequisites}
+            </p>
+          )}
         </div>
       </div>
 

@@ -78,7 +78,7 @@ export async function GET(request: Request) {
 
     // Get paginated items
     const selectSql = `
-      SELECT c.*, 
+      SELECT c.id, c.university, c.course_code, c.title, c.units, c.description, c.url, c.department, c.corequisites, c.level, c.difficulty, c.popularity, c.workload, c.created_at,
              GROUP_CONCAT(DISTINCT f.name) as field_names,
              GROUP_CONCAT(DISTINCT s.term || ' ' || s.year) as semester_names
       FROM courses c
@@ -104,7 +104,9 @@ export async function GET(request: Request) {
       return { 
         ...lightCourse, 
         fields,
-        semesters
+        semesters,
+        level: row.level as string,
+        corequisites: row.corequisites as string
       };
     });
 

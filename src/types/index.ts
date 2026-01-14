@@ -9,9 +9,12 @@ export interface Course {
   workload: string;
   isHidden: boolean;
   fields: string[];
-  semesters?: string[];
+  semesters: string[];
   level?: string;
   corequisites?: string;
+  enrolled?: boolean;
+  status?: string;
+  progress?: number;
 }
 
 export interface University {

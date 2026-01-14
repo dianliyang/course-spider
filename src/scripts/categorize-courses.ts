@@ -50,28 +50,34 @@ async function main() {
 
   // 2. Fetch courses
   const courses = await queryD1<{ id: number, title: string, description: string }>('SELECT id, title, description FROM courses');
-  console.log(`Analyzing ${courses.length} courses...`);
+  console.log(`Analyzing ${courses.length} courses for categorization...`);
 
-  let count = 0;
+  const mappings: { courseId: number, fieldId: number }[] = [];
+
   for (const course of courses) {
     const text = (course.title + " " + (course.description || "")).toLowerCase();
-    const assignedFields: number[] = [];
 
     for (const [fieldName, keywords] of Object.entries(FIELDS)) {
       if (keywords.some(kw => text.includes(kw))) {
-        assignedFields.push(fieldMap[fieldName]);
+        mappings.push({ courseId: course.id, fieldId: fieldMap[fieldName] });
       }
-    }
-
-    if (assignedFields.length > 0) {
-      for (const fieldId of assignedFields) {
-        await runD1('INSERT OR IGNORE INTO course_fields (course_id, field_id) VALUES (?, ?)', [course.id, fieldId]);
-      }
-      count++;
     }
   }
 
-  console.log(`Successfully categorized ${count} courses.`);
+  console.log(`Generating ${mappings.length} mappings...`);
+
+  let count = 0;
+  for (const mapping of mappings) {
+    try {
+      await runD1('INSERT OR IGNORE INTO course_fields (course_id, field_id) VALUES (?, ?)', [mapping.courseId, mapping.fieldId]);
+      count++;
+      if (count % 50 === 0) console.log(`Processed ${count}/${mappings.length} mappings...`);
+    } catch (e) {
+      console.error(`Error mapping course ${mapping.courseId}:`, e);
+    }
+  }
+
+  console.log(`Successfully synchronized ${count} categorization records.`);
 }
 
 main().catch(console.error);

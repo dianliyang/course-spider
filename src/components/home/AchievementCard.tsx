@@ -9,7 +9,10 @@ interface AchievementCardProps {
   completionDate?: string;
 }
 
-export default function AchievementCard({ course, completionDate }: AchievementCardProps) {
+export default function AchievementCard({
+  course,
+  completionDate,
+}: AchievementCardProps) {
   const [completionId, setCompletionId] = useState("");
 
   useEffect(() => {
@@ -19,7 +22,10 @@ export default function AchievementCard({ course, completionDate }: AchievementC
   }, []);
 
   const logos: Record<string, string> = {
-    mit: "/mit.svg", stanford: "/stanford.jpg", cmu: "/cmu.jpg", ucb: "/ucb.png",
+    mit: "/mit.svg",
+    stanford: "/stanford.jpg",
+    cmu: "/cmu.jpg",
+    ucb: "/ucb.png",
   };
 
   return (
@@ -30,12 +36,21 @@ export default function AchievementCard({ course, completionDate }: AchievementC
       <div className="flex items-center gap-3">
         {logos[course.university] ? (
           <div className="w-8 h-8 relative">
-            <Image src={logos[course.university]} alt={course.university} fill className="object-contain" />
+            <Image
+              src={logos[course.university]}
+              alt={course.university}
+              fill
+              className="object-contain"
+            />
           </div>
         ) : (
-          <div className="w-8 h-8 bg-gray-50 text-[10px] flex items-center justify-center font-black text-gray-300 uppercase">{course.university.substring(0, 1)}</div>
+          <div className="w-8 h-8 bg-gray-50 text-[10px] flex items-center justify-center font-black text-gray-300 uppercase">
+            {course.university.substring(0, 1)}
+          </div>
         )}
-        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{course.university}</span>
+        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+          {course.university}
+        </span>
       </div>
 
       <div className="flex-grow">
@@ -45,8 +60,12 @@ export default function AchievementCard({ course, completionDate }: AchievementC
       </div>
 
       <div className="flex items-center justify-between pt-4 border-t border-gray-50">
-        <span className="text-[9px] font-bold text-gray-300 uppercase tracking-widest">#{completionId}</span>
-        <span className="text-[9px] font-black text-brand-green uppercase tracking-widest">Mastered</span>
+        <span className="text-[9px] font-bold text-gray-300 uppercase tracking-widest">
+          #{completionId}
+        </span>
+        <span className="text-[9px] font-black text-brand-green uppercase tracking-widest">
+          Mastered
+        </span>
       </div>
     </div>
   );

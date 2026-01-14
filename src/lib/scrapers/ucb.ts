@@ -60,6 +60,21 @@ export class UCB extends BaseScraper {
       const descDiv = article.find("div.st--description");
       const description = descDiv.length > 0 ? descDiv.text().trim() : "";
 
+      // Determine level: UC Berkeley undergraduate is 1-199, graduate is 200+
+      let level = "undergraduate";
+      const codeNumMatch = courseCode.match(/\d+/);
+      if (codeNumMatch) {
+        const num = parseInt(codeNumMatch[0]);
+        if (num >= 200) level = "graduate";
+      }
+
+      // Extract corequisites from description if possible
+      let corequisites = "";
+      const coreqMatch = description.match(/(?:Corequisites?|Prerequisites?|Prereq):\s*(.*?)(?=\.|$)/i);
+      if (coreqMatch) {
+        corequisites = coreqMatch[1].trim();
+      }
+
       const meetingsDiv = article.find("div.st--meetings");
       let days = "";
       let time = "";
@@ -102,6 +117,8 @@ export class UCB extends BaseScraper {
         description: description,
         url: courseUrl,
         department: department,
+        level: level,
+        corequisites: corequisites,
         details: {
           section: fullSection,
           days: days,

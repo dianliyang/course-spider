@@ -43,15 +43,26 @@ export async function queryD1<T = unknown>(sql: string, params: unknown[] = []):
           processedSql = processedSql.replace('?', String(escaped));
         });
 
-        fs.writeFileSync(tmpFileName, processedSql);
-        const { stdout } = await execAsync(`npx wrangler d1 execute course-spider-db --remote --file="${tmpFileName}" --json`);
+        console.log(`[D1 Remote] Executing: ${processedSql.substring(0, 100)}...`);
+        const { stdout } = await execAsync(`npx wrangler d1 execute course-spider-db --remote --command="${processedSql.replace(/"/g, '\\"')}" --json`);
         
         if (processedSql.trim().toLowerCase().startsWith('select')) {
           // Extract only the JSON part from wrangler output
-          const jsonMatch = stdout.match(/\[[\s\S]*\]/);
-          if (!jsonMatch) throw new Error("No JSON array found in wrangler output");
-          const result = JSON.parse(jsonMatch[0]);
-          return (result[result.length - 1]?.results || []) as T[];
+                    const jsonMatch = stdout.match(/\[[\s\S]*\]/);
+                              if (!jsonMatch) {
+                                console.error("Full Wrangler STDOUT:", stdout);
+                                throw new Error("No JSON array found in wrangler output");
+                              }
+                              
+                              // console.log("[D1 Debug] Raw JSON:", jsonMatch[0]);
+                                        const result = JSON.parse(jsonMatch[0]);
+                                        console.log("[D1 Debug] Full result:", JSON.stringify(result, null, 2));
+                                        // Find the result that has results property (wrangler returns multiple objects for setup + execution)          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const dataResult = result.find((r: any) => r.results && Array.isArray(r.results) && r.results.length > 0);
+          // If we found a result with data, return it. If not but the array has items, it might be the last one.
+          const finalResults = (dataResult?.results || result[result.length - 1]?.results || []) as T[];
+          console.log(`[D1 Debug] Found ${finalResults.length} rows.`);
+          return finalResults;
         }
         return [] as T[];
       } catch (e) {

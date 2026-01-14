@@ -1,34 +1,44 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 export default function Hero() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [query, setQuery] = useState(searchParams.get("q") || "");
+  
+  // Initialize from URL
+  const initialQuery = searchParams.get("q") || "";
+  const [query, setQuery] = useState(initialQuery);
+  
+  // Track the last pushed query to avoid redundant navigations
+  const lastPushedQuery = useRef(initialQuery);
 
-  // Sync state with URL (e.g. on back button)
+  // 1. Sync local state with URL (e.g. browser back button)
   useEffect(() => {
-    setQuery(searchParams.get("q") || ""); // eslint-disable-line react-hooks/set-state-in-effect
+    const urlQuery = searchParams.get("q") || "";
+    if (urlQuery !== query) {
+      setQuery(urlQuery);
+      lastPushedQuery.current = urlQuery;
+    }
   }, [searchParams]);
 
-  // Update URL with debounce
+  // 2. Debounced URL update
   useEffect(() => {
+    // If the local state already matches the last thing we pushed (or the URL), skip
+    if (query === lastPushedQuery.current) return;
+
     const timer = setTimeout(() => {
       const params = new URLSearchParams(searchParams.toString());
-      const currentQuery = searchParams.get("q") || "";
-      const currentPage = searchParams.get("page") || "1";
-
-      if (query === currentQuery && currentPage === "1") return;
-
-      if (query) {
-        params.set("q", query);
-      } else {
-        params.delete("q");
-      }
+      
+      if (query) params.set("q", query);
+      else params.delete("q");
+      
       params.set("page", "1");
-      router.push(`?${params.toString()}`, { scroll: false });
+      
+      const newUrl = `?${params.toString()}`;
+      lastPushedQuery.current = query;
+      router.push(newUrl, { scroll: false });
     }, 500);
 
     return () => clearTimeout(timer);
@@ -77,4 +87,3 @@ export default function Hero() {
     </div>
   );
 }
-

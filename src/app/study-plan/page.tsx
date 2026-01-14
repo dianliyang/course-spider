@@ -1,4 +1,4 @@
-import { queryD1 } from "@/lib/d1";
+import { queryD1, mapCourseFromRow } from "@/lib/d1";
 import Navbar from "@/components/layout/Navbar";
 import { Course } from "@/types";
 import CourseCard from "@/components/home/CourseCard";
@@ -22,13 +22,37 @@ export default async function StudyPlanPage({ searchParams }: PageProps) {
   const focusView = (params.focusView as string) || "track";
   const mockEmail = "test@example.com";
   
-  const enrolledCourses = await queryD1<EnrolledCourse>(`
-    SELECT c.*, uc.status, uc.progress, uc.updated_at 
+  const enrolledRows = await queryD1<any>(`
+    SELECT c.*, uc.status, uc.progress, uc.updated_at,
+           GROUP_CONCAT(DISTINCT f.name) as field_names,
+           GROUP_CONCAT(DISTINCT s.term || ' ' || s.year) as semester_names
     FROM courses c 
     JOIN user_courses uc ON c.id = uc.course_id 
+    LEFT JOIN course_fields cf ON c.id = cf.course_id
+    LEFT JOIN fields f ON cf.field_id = f.id
+    LEFT JOIN course_semesters cs ON c.id = cs.course_id
+    LEFT JOIN semesters s ON cs.semester_id = s.id
     WHERE uc.user_id = (SELECT id FROM users WHERE email = ? LIMIT 1)
+    GROUP BY c.id, uc.status, uc.progress, uc.updated_at
     ORDER BY uc.updated_at DESC
   `, [mockEmail]);
+
+  const enrolledCourses: EnrolledCourse[] = enrolledRows.map(row => {
+    const course = mapCourseFromRow(row);
+    const { ...lightCourse } = course;
+    const fields = row.field_names ? (row.field_names as string).split(',') : [];
+    const semesters = row.semester_names ? (row.semester_names as string).split(',') : [];
+    return { 
+      ...lightCourse, 
+      fields, 
+      semesters,
+      status: row.status,
+      progress: row.progress,
+      updated_at: row.updated_at,
+      level: row.level as string,
+      corequisites: row.corequisites as string
+    } as EnrolledCourse;
+  });
 
   const inProgress = enrolledCourses.filter(c => c.status === 'in_progress');
   const completed = enrolledCourses.filter(c => c.status === 'completed');
