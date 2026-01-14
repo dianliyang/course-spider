@@ -55,19 +55,20 @@ export class D1Database {
       const title = this.escapeSQL(course.title);
       const units = course.units ? this.escapeSQL(course.units) : "NULL";
       const description = course.description ? this.escapeSQL(course.description) : "NULL";
+      const url = course.url ? this.escapeSQL(course.url) : "NULL";
       const details = course.details ? this.escapeSQL(JSON.stringify(course.details)) : "NULL";
       const department = course.department ? this.escapeSQL(course.department) : "NULL";
       const corequisites = course.corequisites ? this.escapeSQL(course.corequisites) : "NULL";
       const level = course.level ? this.escapeSQL(course.level) : "NULL";
       const difficulty = course.difficulty !== undefined ? course.difficulty : "NULL";
       const popularity = course.popularity !== undefined ? course.popularity : 0;
-      const timeCommitment = course.timeCommitment ? this.escapeSQL(course.timeCommitment) : "NULL";
+      const workload = course.workload ? this.escapeSQL(course.workload) : "NULL";
       const isHidden = course.isHidden ? 1 : 0;
       
-      values.push(`(${university}, ${courseCode}, ${title}, ${units}, ${description}, ${details}, ${department}, ${corequisites}, ${level}, ${difficulty}, ${popularity}, ${timeCommitment}, ${isHidden})`);
+      values.push(`(${university}, ${courseCode}, ${title}, ${units}, ${description}, ${url}, ${details}, ${department}, ${corequisites}, ${level}, ${difficulty}, ${popularity}, ${workload}, ${isHidden})`);
     }
 
-    const sql = `INSERT INTO courses (university, course_code, title, units, description, details, department, corequisites, level, difficulty, popularity, time_commitment, is_hidden) VALUES ${values.join(", ")};`;
+    const sql = `INSERT INTO courses (university, course_code, title, units, description, url, details, department, corequisites, level, difficulty, popularity, workload, is_hidden) VALUES ${values.join(", ")};`;
 
     // Write SQL to a temporary file to avoid command line argument limits
     const tmpFileName = path.join(process.cwd(), `.tmp_insert_${Date.now()}.sql`);

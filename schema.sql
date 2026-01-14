@@ -7,26 +7,27 @@ CREATE TABLE courses (
   title TEXT NOT NULL,
   units TEXT,
   description TEXT,
+  url TEXT,
   details TEXT, -- JSON string
   department TEXT,
   corequisites TEXT,
   level TEXT, -- undergraduate, graduate, or both
   difficulty REAL, -- numeric difficulty rating
   popularity INTEGER DEFAULT 0,
-  time_commitment TEXT,
+  workload TEXT,
   is_hidden INTEGER DEFAULT 0,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX idx_university ON courses(university);
-CREATE INDEX idx_course_code ON courses(course_code);
+CREATE INDEX IF NOT EXISTS idx_university ON courses(university);
+CREATE INDEX IF NOT EXISTS idx_course_code ON courses(course_code);
 
-CREATE TABLE fields (
+CREATE TABLE IF NOT EXISTS fields (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   name TEXT NOT NULL UNIQUE
 );
 
-CREATE TABLE course_fields (
+CREATE TABLE IF NOT EXISTS course_fields (
   course_id INTEGER NOT NULL,
   field_id INTEGER NOT NULL,
   PRIMARY KEY (course_id, field_id),
@@ -34,4 +35,4 @@ CREATE TABLE course_fields (
   FOREIGN KEY (field_id) REFERENCES fields(id) ON DELETE CASCADE
 );
 
-CREATE INDEX idx_course_fields_field ON course_fields(field_id);
+CREATE INDEX IF NOT EXISTS idx_course_fields_field ON course_fields(field_id);

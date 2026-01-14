@@ -11,7 +11,7 @@ interface Course {
   url: string;
   description: string;
   popularity: number;
-  timeCommitment: string;
+  workload: string;
   isHidden: boolean;
   fields: string[];
   level?: string;
@@ -437,10 +437,11 @@ export default function Home() {
                       </div>
                     </div>
 
-                    <div className="mt-4 flex items-center justify-between text-xs font-mono text-gray-500">
+                    <div className="mt-4 flex items-center justify-between text-[10px] font-mono text-gray-500 uppercase tracking-widest">
                       <div className="flex gap-4">
-                        <span>
-                          <i className="fa-solid fa-globe mr-1"></i>Remote
+                        <span className="flex items-center gap-1">
+                          <i className="fa-solid fa-fire text-orange-400"></i>
+                          Popularity: <span className="text-gray-700 font-bold">{course.popularity}</span>
                         </span>
                       </div>
                       <a

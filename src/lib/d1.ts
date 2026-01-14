@@ -93,22 +93,23 @@ export async function runD1(sql: string, params: unknown[] = []): Promise<unknow
 export function mapCourseFromRow(row: Record<string, unknown>): Course & { id: number; url: string } {
   const university = (row.university as string || "").toLowerCase();
   const courseCode = row.course_code as string || "";
+  const dbUrl = row.url as string;
   
-  // URL generation
-  let url = "#";
+  // URL generation fallback
+  let fallbackUrl = "#";
   const code = encodeURIComponent(courseCode);
   switch (university) {
     case 'mit':
-      url = `https://student.mit.edu/catalog/search.cgi?search=${code}`;
+      fallbackUrl = `https://student.mit.edu/catalog/search.cgi?search=${code}`;
       break;
     case 'stanford':
-      url = `https://explorecourses.stanford.edu/search?q=${code}`;
+      fallbackUrl = `https://explorecourses.stanford.edu/search?q=${code}`;
       break;
     case 'ucb':
-      url = `https://classes.berkeley.edu/search/class/${code}`;
+      fallbackUrl = `https://classes.berkeley.edu/search/class/${code}`;
       break;
     case 'cmu':
-      url = "https://enr-apps.as.cmu.edu/open/SOC/SOCServlet/search";
+      fallbackUrl = "https://enr-apps.as.cmu.edu/open/SOC/SOCServlet/search";
       break;
   }
 
@@ -119,14 +120,14 @@ export function mapCourseFromRow(row: Record<string, unknown>): Course & { id: n
     title: row.title as string || "",
     units: row.units as string || "",
     description: row.description as string || "",
+    url: dbUrl || fallbackUrl,
     department: row.department as string || "",
     corequisites: row.corequisites as string || "",
     level: row.level as string || "",
     difficulty: (row.difficulty as number) || 0,
     details: typeof row.details === 'string' ? JSON.parse(row.details) : (row.details || {}),
     popularity: (row.popularity as number) || 0,
-    timeCommitment: (row.time_commitment as string) || "",
-    isHidden: Boolean(row.is_hidden),
-    url
+    workload: (row.workload as string) || "",
+    isHidden: Boolean(row.is_hidden)
   };
 }

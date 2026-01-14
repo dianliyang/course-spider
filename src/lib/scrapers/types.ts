@@ -4,13 +4,14 @@ export interface Course {
   title: string;
   units?: string;
   description?: string;
+  url?: string;
   department?: string;
   corequisites?: string;
   level?: string;
   difficulty?: number;
   details?: Record<string, unknown>;
   popularity?: number;
-  timeCommitment?: string;
+  workload?: string;
   isHidden?: boolean;
   fields?: string[];
 }

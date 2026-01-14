@@ -8,6 +8,10 @@ export class CMU extends BaseScraper {
     super("cmu");
   }
 
+  links(): string[] {
+    return ["https://enr-apps.as.cmu.edu/open/SOC/SOCServlet/search"];
+  }
+
   async retrieve(): Promise<Course[]> {
     const url = "https://enr-apps.as.cmu.edu/open/SOC/SOCServlet/search";
     
@@ -99,11 +103,6 @@ export class CMU extends BaseScraper {
 
     const tables = $("table#search-results-table");
     
-    // LAZY UPDATE: Only fetch details for the first 5 courses by default
-    // Increase this or use env var for full scrape
-    const FETCH_LIMIT = process.env.FULL_SCRAPE ? 9999 : 5;
-    let fetchCount = 0;
-
     for (const tableElement of tables.toArray()) {
       const table = $(tableElement);
       const prevH4 = table.prevAll("h4.department-title").first();
@@ -131,15 +130,18 @@ export class CMU extends BaseScraper {
             courses.push(currentCourse);
           }
 
-          let description = "";
-          let corequisites = "";
-
-          if (fetchCount < FETCH_LIMIT) {
-            const details = await this.fetchDetail(rawId, semester);
-            description = details.description;
-            corequisites = details.corequisites;
-            fetchCount++;
+          // Extract URL from onclick attribute if present
+          // openModal('#course-detail-modal', '...', '/open/SOC/SOCServlet/courseDetails?COURSE=15050&SEMESTER=F25', ...)
+          const onclick = $(cols[0]).find('a').attr('onclick') || '';
+          const urlMatch = onclick.match(/openModal\('[^']+',\s*'[^']+',\s*'([^']+)'/);
+          let courseUrl = "";
+          if (urlMatch) {
+            courseUrl = `https://enr-apps.as.cmu.edu${urlMatch[1]}`.replace(/&amp;/g, "&");
           }
+
+          // const { description, corequisites } = await this.fetchDetail(rawId, semester);
+          const description = "";
+          const corequisites = "";
 
           // Determine Level: CMU levels are like 15-112. 
           // 100-500 are Undergraduate, 600+ are Graduate.
@@ -156,6 +158,7 @@ export class CMU extends BaseScraper {
             title: getText(1),
             units: getText(2),
             description: description,
+            url: courseUrl,
             corequisites: corequisites,
             level: level,
             details: {
