@@ -9,10 +9,7 @@ interface AchievementCardProps {
   completionDate?: string;
 }
 
-export default function AchievementCard({
-  course,
-  completionDate,
-}: AchievementCardProps) {
+export default function AchievementCard({ course }: AchievementCardProps) {
   const [completionId, setCompletionId] = useState("");
 
   useEffect(() => {

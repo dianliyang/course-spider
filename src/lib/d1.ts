@@ -57,10 +57,14 @@ export async function queryD1<T = unknown>(sql: string, params: unknown[] = []):
                               // console.log("[D1 Debug] Raw JSON:", jsonMatch[0]);
                                         const result = JSON.parse(jsonMatch[0]);
                                         console.log("[D1 Debug] Full result:", JSON.stringify(result, null, 2));
-                                        // Find the result that has results property (wrangler returns multiple objects for setup + execution)          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const dataResult = result.find((r: any) => r.results && Array.isArray(r.results) && r.results.length > 0);
+          // Find the result that has results property (wrangler returns multiple objects for setup + execution)
+          const dataResult = result.find((r: unknown) => {
+            const res = r as { results?: unknown[] };
+            return res.results && Array.isArray(res.results) && res.results.length > 0;
+          }) as { results?: T[] } | undefined;
+          
           // If we found a result with data, return it. If not but the array has items, it might be the last one.
-          const finalResults = (dataResult?.results || result[result.length - 1]?.results || []) as T[];
+          const finalResults = (dataResult?.results || (result[result.length - 1] as { results?: T[] })?.results || []) as T[];
           console.log(`[D1 Debug] Found ${finalResults.length} rows.`);
           return finalResults;
         }

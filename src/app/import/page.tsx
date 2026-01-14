@@ -3,7 +3,6 @@
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import Navbar from "@/components/layout/Navbar";
 
 export default function ImportPage() {
   const [formData, setFormData] = useState({
@@ -74,8 +73,8 @@ export default function ImportPage() {
           setTimeout(() => router.push("/"), 3000);
         } else setMessage({ type: "error", text: data.error });
 
-      } catch (err) {
-        setMessage({ type: "error", text: "File parsing error. Ensure format is correct." });
+    } catch {
+      setMessage({ type: "error", text: "Failed to import courses. Please check the file format." });
       } finally {
         setLoading(false);
       }
@@ -85,12 +84,10 @@ export default function ImportPage() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-white">
-      <Navbar />
-      
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 w-full">
         {/* Header */}
         <div className="relative mb-20 flex flex-col md:flex-row md:items-end justify-between gap-8">
+
           <div>
             <span className="text-[10px] font-black text-brand-blue uppercase tracking-[0.5em] mb-4 block">Batch Processing</span>
             <h1 className="text-5xl font-black text-gray-900 tracking-tighter uppercase leading-none">
@@ -293,6 +290,5 @@ export default function ImportPage() {
           </div>
         </div>
       </main>
-    </div>
   );
 }

@@ -94,7 +94,6 @@ export class CMU extends BaseScraper {
   async parser(html: string): Promise<Course[]> {
     const $ = cheerio.load(html);
     const courses: Course[] = [];
-    const semester = "F25";
 
     const ALLOWED_DEPTS = [
       "ELECTRICAL & COMPUTER ENGINEERING",
