@@ -113,19 +113,24 @@ export async function queryD1<T = unknown>(sql: string, params: unknown[] = []):
     }
 
     // Dynamically require better-sqlite3
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const Database = require('better-sqlite3');
-    const db = new Database(dbPath, { readonly: false }); // Changed to false to allow writes
     try {
-      const stmt = db.prepare(sql);
-      if (sql.trim().toLowerCase().startsWith('select')) {
-        return stmt.all(...params) as T[];
-      } else {
-        const info = stmt.run(...params);
-        return [info] as unknown as T[];
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const Database = require('better-sqlite3');
+      const db = new Database(dbPath, { readonly: false }); // Changed to false to allow writes
+      try {
+        const stmt = db.prepare(sql);
+        if (sql.trim().toLowerCase().startsWith('select')) {
+          return stmt.all(...params) as T[];
+        } else {
+          const info = stmt.run(...params);
+          return [info] as unknown as T[];
+        }
+      } finally {
+        db.close();
       }
-    } finally {
-      db.close();
+    } catch (e) {
+      console.error("Local D1 execution failed:", e);
+      return [];
     }
   }
 }
