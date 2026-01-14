@@ -8,7 +8,10 @@
     "start": "next start",
     "lint": "eslint",
     "scrape": "tsx src/scripts/run-all-scrapers.ts",
-    "scrape:remote": "REMOTE_DB=true tsx src/scripts/run-all-scrapers.ts"
+    "scrape:remote": "REMOTE_DB=true tsx src/scripts/run-all-scrapers.ts",
+    "categorize": "tsx src/scripts/categorize-courses.ts",
+    "categorize:remote": "REMOTE_DB=true tsx src/scripts/categorize-courses.ts",
+    "mock": "tsx src/scripts/mock-data.ts"
   },
   "dependencies": {
     "better-sqlite3": "^12.6.0",

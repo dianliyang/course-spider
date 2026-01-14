@@ -1,6 +1,4 @@
-DROP TABLE IF EXISTS courses;
-
-CREATE TABLE courses (
+CREATE TABLE IF NOT EXISTS courses (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   university TEXT NOT NULL,
   course_code TEXT NOT NULL,
@@ -36,3 +34,48 @@ CREATE TABLE IF NOT EXISTS course_fields (
 );
 
 CREATE INDEX IF NOT EXISTS idx_course_fields_field ON course_fields(field_id);
+
+CREATE TABLE IF NOT EXISTS users (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  email TEXT NOT NULL UNIQUE,
+  name TEXT,
+  image TEXT, -- Profile picture from OAuth provider
+  provider TEXT NOT NULL, -- e.g., 'github', 'google'
+  provider_id TEXT NOT NULL, -- Unique ID from the provider
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE(provider, provider_id)
+);
+
+CREATE TABLE IF NOT EXISTS user_courses (
+  user_id INTEGER NOT NULL,
+  course_id INTEGER NOT NULL,
+  progress INTEGER DEFAULT 0, -- 0 to 100 percentage
+  status TEXT DEFAULT 'pending', -- pending, in_progress, completed, dropped
+  priority INTEGER DEFAULT 0,
+  notes TEXT,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (user_id, course_id),
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE,
+  CHECK (progress >= 0 AND progress <= 100)
+);
+
+CREATE INDEX IF NOT EXISTS idx_user_courses_user ON user_courses(user_id);
+CREATE INDEX IF NOT EXISTS idx_user_courses_status ON user_courses(status);
+
+CREATE TABLE IF NOT EXISTS semesters (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  year INTEGER NOT NULL,
+  term TEXT NOT NULL, -- Spring, Summer, Fall, Winter
+  UNIQUE(year, term)
+);
+
+CREATE TABLE IF NOT EXISTS course_semesters (
+  course_id INTEGER NOT NULL,
+  semester_id INTEGER NOT NULL,
+  PRIMARY KEY (course_id, semester_id),
+  FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE,
+  FOREIGN KEY (semester_id) REFERENCES semesters(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_course_semesters_semester ON course_semesters(semester_id);

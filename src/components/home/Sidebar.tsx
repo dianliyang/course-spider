@@ -1,0 +1,115 @@
+"use client";
+
+import { useRouter, useSearchParams } from "next/navigation";
+import { University, Field } from "@/types";
+
+interface SidebarProps {
+  universities: University[];
+  fields: Field[];
+  enrolledCount: number;
+}
+
+export default function Sidebar({ universities, fields, enrolledCount }: SidebarProps) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const selectedUniversities = searchParams.get("universities")?.split(",") || [];
+  const selectedFields = searchParams.get("fields")?.split(",") || [];
+  const showEnrolledOnly = searchParams.get("enrolled") === "true";
+
+  const updateParams = (key: string, value: string | string[] | boolean) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (Array.isArray(value)) {
+      if (value.length > 0) params.set(key, value.join(","));
+      else params.delete(key);
+    } else if (typeof value === "boolean") {
+      if (value) params.set(key, "true");
+      else params.delete(key);
+    } else {
+      params.set(key, value);
+    }
+    params.set("page", "1");
+    router.push(`?${params.toString()}`, { scroll: false });
+  };
+
+  const handleToggle = (list: string[], item: string) => {
+    return list.includes(item) ? list.filter(i => i !== item) : [...list, item];
+  };
+
+  return (
+    <aside className="w-full md:w-64 flex-shrink-0">
+      <div className="sticky top-24 space-y-12">
+        {/* Library Section */}
+        <div>
+          <h3 className="text-xs font-medium text-gray-400 uppercase tracking-[0.3em] mb-6">Personal Library</h3>
+          <label className="flex items-center justify-between group cursor-pointer">
+            <div className="flex items-center gap-3">
+              <input 
+                type="checkbox" 
+                className="w-4 h-4 rounded border-gray-200 text-brand-blue focus:ring-brand-blue/20 cursor-pointer" 
+                checked={showEnrolledOnly} 
+                onChange={(e) => updateParams("enrolled", e.target.checked)} 
+              />
+              <span className={`text-[15px] transition-colors ${showEnrolledOnly ? 'text-brand-blue' : 'text-gray-700 group-hover:text-brand-blue'}`}>
+                Enrolled Only
+              </span>
+            </div>
+            <span className="text-xs font-medium text-gray-400 bg-gray-50 px-2.5 py-1 rounded-lg">
+              {enrolledCount}
+            </span>
+          </label>
+        </div>
+
+        {/* University Section */}
+        <div>
+          <h3 className="text-xs font-medium text-gray-400 uppercase tracking-[0.3em] mb-6">Universities</h3>
+          <div className="space-y-4 max-h-64 overflow-y-auto custom-scroll pr-4">
+            {universities.map((uni) => (
+              <label key={uni.name} className="flex items-center justify-between group cursor-pointer">
+                <div className="flex items-center gap-3">
+                  <input 
+                    type="checkbox" 
+                    className="w-4 h-4 rounded border-gray-200 text-brand-blue focus:ring-brand-blue/20 cursor-pointer" 
+                    checked={selectedUniversities.includes(uni.name)} 
+                    onChange={() => updateParams("universities", handleToggle(selectedUniversities, uni.name))} 
+                  />
+                  <span className={`text-sm uppercase tracking-tight transition-colors ${selectedUniversities.includes(uni.name) ? 'text-brand-blue' : 'text-gray-700 group-hover:text-brand-blue'}`}>
+                    {uni.name}
+                  </span>
+                </div>
+                <span className={`text-[11px] font-medium transition-colors ${selectedUniversities.includes(uni.name) ? 'text-brand-blue' : 'text-gray-400'}`}>
+                  {uni.count}
+                </span>
+              </label>
+            ))}
+          </div>
+        </div>
+
+        {/* Focus Area Section */}
+        <div>
+          <h3 className="text-xs font-medium text-gray-400 uppercase tracking-[0.3em] mb-6">Focus Area</h3>
+          <div className="space-y-4 max-h-80 overflow-y-auto custom-scroll pr-4">
+            {fields.map((field) => (
+              <label key={field.name} className="flex items-center justify-between group cursor-pointer">
+                <div className="flex items-center gap-3">
+                  <input 
+                    type="checkbox" 
+                    className="w-4 h-4 rounded border-gray-200 text-brand-blue focus:ring-brand-blue/20 cursor-pointer" 
+                    checked={selectedFields.includes(field.name)} 
+                    onChange={() => updateParams("fields", handleToggle(selectedFields, field.name))} 
+                  />
+                  <span className={`text-sm tracking-tight transition-colors ${selectedFields.includes(field.name) ? 'text-brand-blue' : 'text-gray-700 group-hover:text-brand-blue'}`}>
+                    {field.name}
+                  </span>
+                </div>
+                <span className={`text-[11px] font-medium transition-colors ${selectedFields.includes(field.name) ? 'text-brand-blue' : 'text-gray-400'}`}>
+                  {field.count}
+                </span>
+              </label>
+            ))}
+          </div>
+        </div>
+      </div>
+    </aside>
+  );
+}

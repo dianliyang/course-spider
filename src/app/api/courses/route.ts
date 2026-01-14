@@ -16,9 +16,26 @@ export async function GET(request: Request) {
   const levelsParam = searchParams.get('levels');
   const levels = levelsParam ? levelsParam.split(',').filter(Boolean) : [];
 
+  const enrolledOnly = searchParams.get('enrolled') === 'true';
+  const sort = searchParams.get('sort') || 'relevance';
+  const query = searchParams.get('q') || '';
+
   try {
     let whereClause = 'WHERE is_hidden = 0';
+    // Deduplication subquery: only keep the row with the minimum ID for each course_code
+    whereClause += ' AND c.id IN (SELECT MIN(id) FROM courses GROUP BY course_code)';
+    
     const queryParams: (string | number)[] = [];
+
+    if (enrolledOnly) {
+      whereClause += ` AND c.id IN (SELECT course_id FROM user_courses WHERE user_id = (SELECT id FROM users WHERE email = 'test@example.com' LIMIT 1))`;
+    }
+
+    if (query) {
+      whereClause += ` AND (c.title LIKE ? OR c.description LIKE ? OR c.course_code LIKE ?)`;
+      const searchPattern = `%${query}%`;
+      queryParams.push(searchPattern, searchPattern, searchPattern);
+    }
 
     if (universities.length > 0) {
       const placeholders = universities.map(() => '?').join(',');
@@ -43,6 +60,16 @@ export async function GET(request: Request) {
       queryParams.push(...levels);
     }
 
+    // Sorting logic
+    let orderBy = 'ORDER BY c.id DESC';
+    if (sort === 'popularity') {
+      orderBy = 'ORDER BY c.popularity DESC, c.id DESC';
+    } else if (sort === 'newest') {
+      orderBy = 'ORDER BY c.created_at DESC';
+    } else if (sort === 'title') {
+      orderBy = 'ORDER BY c.title ASC';
+    }
+
     // Get total count
     const countSql = `SELECT count(*) as count FROM courses c ${whereClause}`;
     const countResult = await queryD1<{ count: number }>(countSql, queryParams);
@@ -51,12 +78,17 @@ export async function GET(request: Request) {
 
     // Get paginated items
     const selectSql = `
-      SELECT c.*, GROUP_CONCAT(f.name) as field_names
+      SELECT c.*, 
+             GROUP_CONCAT(DISTINCT f.name) as field_names,
+             GROUP_CONCAT(DISTINCT s.term || ' ' || s.year) as semester_names
       FROM courses c
       LEFT JOIN course_fields cf ON c.id = cf.course_id
       LEFT JOIN fields f ON cf.field_id = f.id
+      LEFT JOIN course_semesters cs ON c.id = cs.course_id
+      LEFT JOIN semesters s ON cs.semester_id = s.id
       ${whereClause}
       GROUP BY c.id
+      ${orderBy}
       LIMIT ? OFFSET ?
     `;
     const selectParams = [...queryParams, size, offset];
@@ -68,16 +100,26 @@ export async function GET(request: Request) {
       // Remove details and isHidden to keep response light
       const { details, isHidden, ...lightCourse } = course;
       const fields = row.field_names ? (row.field_names as string).split(',') : [];
-      return { ...lightCourse, fields };
+      const semesters = row.semester_names ? (row.semester_names as string).split(',') : [];
+      return { 
+        ...lightCourse, 
+        fields,
+        semesters
+      };
     });
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       items,
       total,
       page,
       size,
       pages
     });
+
+    // Add Cache-Control: s-maxage=60 (Cache on edge for 60s), stale-while-revalidate
+    response.headers.set('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=30');
+    
+    return response;
   } catch (error) {
     console.error("Error fetching courses:", error);
     return NextResponse.json({ error: "Failed to fetch courses" }, { status: 500 });
