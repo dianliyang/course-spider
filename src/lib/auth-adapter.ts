@@ -1,0 +1,156 @@
+import { Adapter, AdapterUser, AdapterAccount, AdapterSession, VerificationToken } from "next-auth/adapters"
+import { queryD1, runD1 } from "./d1"
+
+// Helper to cast DB user to AdapterUser
+function mapUser(user: any): AdapterUser | null {
+  if (!user) return null;
+  return {
+    id: user.id.toString(),
+    email: user.email,
+    emailVerified: user.emailVerified ? new Date(user.emailVerified) : null,
+    name: user.name,
+    image: user.image
+  }
+}
+
+function mapSession(session: any): AdapterSession | null {
+  if (!session) return null;
+  return {
+    sessionToken: session.sessionToken,
+    userId: session.userId.toString(),
+    expires: new Date(session.expires)
+  }
+}
+
+export function CodeCampusAdapter(): Adapter {
+  return {
+    async createUser(user) {
+      const { email, emailVerified, name, image } = user;
+      const res = await runD1(
+        "INSERT INTO users (email, emailVerified, name, image) VALUES (?, ?, ?, ?)",
+        [email, emailVerified?.toISOString(), name, image]
+      );
+      // D1/sqlite doesn't easily return the inserted ID in the same query via runD1 wrapper if it uses exec
+      // But queryD1 returning ID via standard SQL?
+      // SQLite `RETURNING *` works in newer versions. Let's try it.
+      // If not, we query back.
+      
+      const row = await queryD1<any>("SELECT * FROM users WHERE email = ? ORDER BY id DESC LIMIT 1", [email]);
+      return mapUser(row[0])!;
+    },
+    async getUser(id) {
+      const rows = await queryD1<any>("SELECT * FROM users WHERE id = ? LIMIT 1", [parseInt(id)]);
+      return mapUser(rows[0]);
+    },
+    async getUserByEmail(email) {
+      const rows = await queryD1<any>("SELECT * FROM users WHERE email = ? LIMIT 1", [email]);
+      return mapUser(rows[0]);
+    },
+    async getUserByAccount({ provider, providerAccountId }) {
+      const rows = await queryD1<any>(
+        `SELECT u.* FROM users u JOIN accounts a ON u.id = a.userId WHERE a.provider = ? AND a.providerAccountId = ?`,
+        [provider, providerAccountId]
+      );
+      return mapUser(rows[0]);
+    },
+    async updateUser(user) {
+      const id = parseInt(user.id!);
+      await runD1(
+        "UPDATE users SET email = ?, emailVerified = ?, name = ?, image = ? WHERE id = ?",
+        [user.email, user.emailVerified?.toISOString(), user.name, user.image, id]
+      );
+      return user as AdapterUser;
+    },
+    async deleteUser(userId) {
+      await runD1("DELETE FROM users WHERE id = ?", [parseInt(userId)]);
+    },
+    async linkAccount(account) {
+      await runD1(
+        `INSERT INTO accounts (userId, type, provider, providerAccountId, refresh_token, access_token, expires_at, token_type, scope, id_token, session_state) 
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          parseInt(account.userId),
+          account.type,
+          account.provider,
+          account.providerAccountId,
+          account.refresh_token,
+          account.access_token,
+          account.expires_at,
+          account.token_type,
+          account.scope,
+          account.id_token,
+          account.session_state
+        ]
+      );
+      return account;
+    },
+    async unlinkAccount({ provider, providerAccountId }) {
+      await runD1(
+        "DELETE FROM accounts WHERE provider = ? AND providerAccountId = ?",
+        [provider, providerAccountId]
+      );
+    },
+    async createSession(session) {
+      await runD1(
+        "INSERT INTO sessions (sessionToken, userId, expires) VALUES (?, ?, ?)",
+        [session.sessionToken, parseInt(session.userId), session.expires.toISOString()]
+      );
+      return session;
+    },
+    async getSessionAndUser(sessionToken) {
+      const sessionRows = await queryD1<any>(
+        "SELECT * FROM sessions WHERE sessionToken = ? LIMIT 1",
+        [sessionToken]
+      );
+      if (!sessionRows.length) return null;
+      
+      const session = sessionRows[0];
+      const userRows = await queryD1<any>(
+        "SELECT * FROM users WHERE id = ? LIMIT 1",
+        [session.userId]
+      );
+      if (!userRows.length) return null;
+
+      return {
+        session: mapSession(session)!,
+        user: mapUser(userRows[0])!
+      }
+    },
+    async updateSession(session) {
+      await runD1(
+        "UPDATE sessions SET expires = ? WHERE sessionToken = ?",
+        [session.expires?.toISOString(), session.sessionToken]
+      );
+      return session as AdapterSession; // We assume other fields didn't change or we don't have them
+    },
+    async deleteSession(sessionToken) {
+      await runD1("DELETE FROM sessions WHERE sessionToken = ?", [sessionToken]);
+    },
+    async createVerificationToken(verificationToken) {
+      await runD1(
+        "INSERT INTO verification_tokens (identifier, token, expires) VALUES (?, ?, ?)",
+        [verificationToken.identifier, verificationToken.token, verificationToken.expires.toISOString()]
+      );
+      return verificationToken;
+    },
+    async useVerificationToken({ identifier, token }) {
+      const rows = await queryD1<any>(
+        "SELECT * FROM verification_tokens WHERE identifier = ? AND token = ? LIMIT 1",
+        [identifier, token]
+      );
+      if (!rows.length) return null;
+      
+      await runD1(
+        "DELETE FROM verification_tokens WHERE identifier = ? AND token = ?",
+        [identifier, token]
+      );
+      
+      const t = rows[0];
+      return {
+        identifier: t.identifier,
+        token: t.token,
+        expires: new Date(t.expires)
+      };
+    },
+  }
+}

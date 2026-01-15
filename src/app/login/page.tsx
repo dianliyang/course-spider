@@ -14,25 +14,16 @@ export default async function LoginPage({ searchParams }: PageProps) {
   const params = await searchParams;
   const callbackUrl = (params.callbackUrl as string) || "/courses";
 
-  async function handleLogin(formData: FormData) {
+  async function handleMagicLink(formData: FormData) {
     "use server";
     try {
-      await signIn("credentials", { ...Object.fromEntries(formData), redirectTo: callbackUrl });
+      await signIn("resend", { email: formData.get("email"), redirectTo: callbackUrl });
     } catch (error) {
-      if ((error as Error).message === "NEXT_REDIRECT") {
-        throw error;
-      }
-      if (error instanceof AuthError) {
-        return redirect(`/login?error=${error.type}`);
-      }
-      
-      // Check for Next.js redirect error by property (safer than message check for some versions)
-      if (typeof error === "object" && error !== null && "digest" in error && (error as { digest: string }).digest?.startsWith("NEXT_REDIRECT")) {
-        throw error;
-      }
-
-      console.error("Login error:", error);
-      return redirect("/login?error=Default");
+       if ((error as Error).message === "NEXT_REDIRECT") throw error;
+       if (typeof error === "object" && error !== null && "digest" in error && (error as { digest: string }).digest?.startsWith("NEXT_REDIRECT")) throw error;
+       
+       console.error("Magic Link error:", error);
+       return redirect("/login?error=Default");
     }
   }
 
@@ -99,7 +90,7 @@ export default async function LoginPage({ searchParams }: PageProps) {
             />
           </div>
 
-          <LoginForm onLogin={handleLogin} />
+          <LoginForm onMagicLink={handleMagicLink} />
         </div>
       </div>
     </div>
