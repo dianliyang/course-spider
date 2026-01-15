@@ -4,39 +4,37 @@ import { D1Adapter } from "@auth/d1-adapter";
 import { queryD1 } from "@/lib/d1";
 import { authConfig } from "./auth.config";
 
-// Improved shim to handle both direct and bound calls for the D1Adapter
-const createStatement = (sql: string, params: unknown[] = []) => {
-  const execute = async (method: string) => {
-    // console.log(`[D1 Shim] ${method}: ${sql.substring(0, 50)}... | Params: ${params.length}`);
-    try {
-      const results = await queryD1(sql, params);
-      if (method === 'first') return results[0] || null;
-      return { results, success: true, meta: {} };
-    } catch (err) {
-      console.error(`[D1 Shim Error] ${method} failed:`, err);
-      throw err;
-    }
-  };
-
-  return {
-    bind: (...nextParams: unknown[]) => createStatement(sql, nextParams),
-    all: () => execute('all'),
-    run: () => execute('run'),
-    first: () => execute('first'),
-    raw: async () => {
-      const results = await queryD1(sql, params);
-      return results;
-    }
-  };
-};
-
+// A robust shim to allow the D1Adapter to work in local dev by routing queries through our queryD1 utility.
+// In production, we prioritize the real binding.
 const unifiedDb = {
-  prepare: (sql: string) => createStatement(sql)
+  prepare: (sql: string) => {
+    const createStmt = (params: unknown[] = []) => ({
+      bind: (...args: unknown[]) => createStmt(args),
+      all: async () => {
+        const results = await queryD1(sql, params);
+        return { results, success: true, meta: {} };
+      },
+      run: async () => {
+        await queryD1(sql, params);
+        return { success: true, meta: {} };
+      },
+      first: async () => {
+        const results = await queryD1(sql, params);
+        return results[0] || null;
+      },
+      raw: async () => {
+        return await queryD1(sql, params);
+      }
+    });
+    return createStmt();
+  }
 };
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   ...authConfig,
-  adapter: D1Adapter(unifiedDb as any),
+  // Use the real D1 binding in production, or the robust shim in local dev
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  adapter: D1Adapter((process.env.DB || (globalThis as any).DB || unifiedDb) as any),
   secret: process.env.AUTH_SECRET,
   session: {
     strategy: "jwt",
@@ -51,27 +49,22 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       from: process.env.EMAIL_FROM || "CodeCampus <no-reply@codecampus.example.com>",
       maxAge: 10 * 60, // 10 minutes
       async sendVerificationRequest({ identifier: email, url }) {
-        console.log(`[Auth] Attempting Magic Link for ${email}`);
+        console.log(`[Auth] Magic Link Request for ${email}`);
         
-        const envs = {
-          hasResendKey: !!process.env.AUTH_RESEND_KEY,
-          hasEmailFrom: !!process.env.EMAIL_FROM,
-          hasAuthSecret: !!process.env.AUTH_SECRET,
-          nodeEnv: process.env.NODE_ENV
-        };
-        console.log("[Auth] Debug Context:", JSON.stringify(envs));
-
         const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://course.oili.dev";
         
         try {
-          // Use btoa for standard Web API compatibility in Edge
-          const tokenParam = btoa(url);
+          // Edge-safe Base64URL encoding for the token deterrent
+          const tokenParam = btoa(url)
+            .replace(/\+/g, '-')
+            .replace(/\//g, '_')
+            .replace(/=+$/, '');
+            
           const confirmUrl = new URL("/auth/confirm", baseUrl);
           confirmUrl.searchParams.set("t", tokenParam);
           const displayUrl = confirmUrl.toString();
 
           if (process.env.AUTH_RESEND_KEY && process.env.AUTH_RESEND_KEY !== "re_123456789") {
-            console.log("[Auth] Dispatching Resend API request...");
             const res = await fetch("https://api.resend.com/emails", {
               method: "POST",
               headers: {
@@ -127,15 +120,15 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             if (!res.ok) {
               const errorBody = await res.text();
               console.error("[Resend API Error]", res.status, errorBody);
-              throw new Error(`Resend API failed: ${res.status}`);
+              throw new Error("Failed to deliver verification email.");
             }
-            console.log("[Auth] Resend email sent successfully");
+            console.log("[Auth] Verification email dispatched successfully.");
           } else {
-            console.log(`\n\n[Auth] 🪄 MAGIC LINK (Console Fallback): ${displayUrl}\n\n`);
+            console.log(`\n\n[Auth] 🪄 MAGIC LINK (Dev): ${displayUrl}\n\n`);
           }
         } catch (err: unknown) {
           const message = err instanceof Error ? err.message : String(err);
-          console.error("[Auth Action Error]", message);
+          console.error("[Auth System Error]", message);
           throw err;
         }
       },
@@ -143,21 +136,21 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   ],
   callbacks: {
     async signIn({ account }) {
-      if (account?.provider === "resend" || account?.provider === "email") return true;
-      return true;
+      return !!(account?.provider === "resend" || account?.provider === "email");
     },
     async session({ session }) {
-      if (session.user && session.user.email) {
+      if (session.user?.email) {
         try {
-          const dbUser = await queryD1<{ id: string }>(
+          const results = await queryD1(
             "SELECT id FROM users WHERE email = ? LIMIT 1",
             [session.user.email]
           );
-          if (dbUser.length > 0) {
-            (session.user as { id: string }).id = dbUser[0].id;
+          if (results && results.length > 0) {
+            const u = results[0] as { id: string };
+            (session.user as { id: string }).id = u.id;
           }
         } catch (e) {
-          console.error("Session lookup error:", e);
+          console.error("[Session Callback Error]", e);
         }
       }
       return session;
