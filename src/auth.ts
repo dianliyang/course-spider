@@ -112,7 +112,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           );
           if (results && results.length > 0) {
             const u = results[0] as { id: string };
-            (session.user as { id: string }).id = u.id;
+            return {
+              ...session,
+              user: {
+                ...session.user,
+                id: u.id,
+              },
+            };
           }
         } catch (e) {
           console.error("[Session Callback Error]", e);
