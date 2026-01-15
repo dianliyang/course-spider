@@ -35,18 +35,18 @@ CREATE TABLE IF NOT EXISTS course_fields (
 
 CREATE INDEX IF NOT EXISTS idx_course_fields_field ON course_fields(field_id);
 
+-- Standard Auth.js D1 Schema
 CREATE TABLE IF NOT EXISTS users (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  email TEXT NOT NULL UNIQUE,
-  emailVerified TIMESTAMP,
+  id TEXT PRIMARY KEY,
   name TEXT,
-  image TEXT,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  email TEXT UNIQUE,
+  emailVerified INTEGER,
+  image TEXT
 );
 
 CREATE TABLE IF NOT EXISTS accounts (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  userId INTEGER NOT NULL,
+  id TEXT PRIMARY KEY,
+  userId TEXT NOT NULL,
   type TEXT NOT NULL,
   provider TEXT NOT NULL,
   providerAccountId TEXT NOT NULL,
@@ -57,27 +57,26 @@ CREATE TABLE IF NOT EXISTS accounts (
   scope TEXT,
   id_token TEXT,
   session_state TEXT,
-  FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE,
-  UNIQUE(provider, providerAccountId)
+  FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS sessions (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  sessionToken TEXT NOT NULL UNIQUE,
-  userId INTEGER NOT NULL,
-  expires TIMESTAMP NOT NULL,
+  id TEXT PRIMARY KEY,
+  sessionToken TEXT UNIQUE NOT NULL,
+  userId TEXT NOT NULL,
+  expires INTEGER NOT NULL,
   FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS verification_tokens (
   identifier TEXT NOT NULL,
   token TEXT NOT NULL,
-  expires TIMESTAMP NOT NULL,
+  expires INTEGER NOT NULL,
   PRIMARY KEY (identifier, token)
 );
 
 CREATE TABLE IF NOT EXISTS user_courses (
-  user_id INTEGER NOT NULL,
+  user_id TEXT NOT NULL,
   course_id INTEGER NOT NULL,
   progress INTEGER DEFAULT 0, -- 0 to 100 percentage
   status TEXT DEFAULT 'pending', -- pending, in_progress, completed, dropped

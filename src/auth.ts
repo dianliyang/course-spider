@@ -1,12 +1,13 @@
 import NextAuth from "next-auth";
 import Resend from "next-auth/providers/resend";
+import { D1Adapter } from "@auth/d1-adapter";
 import { queryD1 } from "@/lib/d1";
-import { CodeCampusAdapter } from "@/lib/auth-adapter";
 import { authConfig } from "./auth.config";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   ...authConfig,
-  adapter: CodeCampusAdapter(),
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  adapter: D1Adapter((process.env.DB || (globalThis as any).DB)),
   secret: process.env.AUTH_SECRET,
   session: {
     strategy: "jwt",
@@ -21,7 +22,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       from: process.env.EMAIL_FROM || "CodeCampus <no-reply@codecampus.example.com>",
       maxAge: 10 * 60, // 10 minutes
       async sendVerificationRequest({ identifier: email, url }) {
-        // Base64 encode the URL to hide it from automated scanners
         const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://course.oili.dev";
         const tokenParam = Buffer.from(url).toString("base64");
         const confirmUrl = new URL("/auth/confirm", baseUrl);
@@ -108,12 +108,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     async session({ session }) {
       if (session.user && session.user.email) {
         try {
-          const dbUser = await queryD1<{ id: number }>(
+          const dbUser = await queryD1<{ id: string }>(
             "SELECT id FROM users WHERE email = ? LIMIT 1",
             [session.user.email]
           );
           if (dbUser.length > 0) {
-            (session.user as { id: string }).id = dbUser[0].id.toString();
+            (session.user as { id: string }).id = dbUser[0].id;
           }
         } catch (e) {
           console.error("Session lookup error:", e);
