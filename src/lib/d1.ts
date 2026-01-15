@@ -5,68 +5,21 @@ const ACCOUNT_ID = process.env.CLOUDFLARE_ACCOUNT_ID;
 const DATABASE_ID = process.env.CLOUDFLARE_DATABASE_ID;
 const API_TOKEN = process.env.CLOUDFLARE_API_TOKEN;
 
-// Interface for the D1 Binding (Cloudflare Workers type)
-interface D1DatabaseBinding {
-  prepare: (query: string) => D1PreparedStatement;
-  dump: () => Promise<ArrayBuffer>;
-  batch: (statements: D1PreparedStatement[]) => Promise<D1Result[]>;
-  exec: (query: string) => Promise<D1ExecResult>;
-}
-
-interface D1PreparedStatement {
-  bind: (...values: unknown[]) => D1PreparedStatement;
-  first: <T = unknown>(colName?: string) => Promise<T | null>;
-  run: <T = unknown>() => Promise<D1Result<T>>;
-  all: <T = unknown>() => Promise<D1Result<T>>;
-  raw: <T = unknown>() => Promise<T[]>;
-}
-
-interface D1Result<T = unknown> {
-  success: boolean;
-  meta: any;
-  results: T[];
-}
-
-interface D1ExecResult {
-  count: number;
-  duration: number;
-}
-
-// Helper to get local DB path using dynamic imports to avoid Edge crashes
-function getLocalDbPath(): string | null {
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const path = require('path');
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const fs = require('fs');
-
-    const baseDir = path.join(process.cwd(), '.wrangler/state/v3/d1/miniflare-D1DatabaseObject');
-    if (!fs.existsSync(baseDir)) return null;
-    
-    const files = fs.readdirSync(baseDir);
-    const sqliteFile = files.find((f: string) => f.endsWith('.sqlite'));
-    return sqliteFile ? path.join(baseDir, sqliteFile) : null;
-  } catch {
-    return null;
-  }
-}
-
 export async function queryD1<T = unknown>(sql: string, params: unknown[] = []): Promise<T[]> {
-  // console.log(`[D1] Executing Query: ${sql.substring(0, 100)}...`);
-
   // 1. Try D1 Binding (Cloudflare Pages/Workers)
-  // Check process.env.DB and globalThis.DB (some environments use global)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const bindingDB = (process.env.DB || (globalThis as any).DB) as unknown as D1DatabaseBinding;
+  const bindingDB = (process.env.DB || (globalThis as any).DB);
   
   if (bindingDB && typeof bindingDB.prepare === 'function') {
     try {
       const stmt = bindingDB.prepare(sql).bind(...params);
       if (sql.trim().toLowerCase().startsWith('select')) {
-        const result = await stmt.all<T>();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const result = await (stmt as any).all();
         return result.results || [];
       } else {
-        const result = await stmt.run<T>();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const result = await (stmt as any).run();
         return [result] as unknown as T[];
       }
     } catch (e) {
@@ -75,22 +28,92 @@ export async function queryD1<T = unknown>(sql: string, params: unknown[] = []):
     }
   }
 
-  // 2. Remote HTTP API (Fallback for local dev or non-edge environments if configured)
-  if (REMOTE_DB) {
-    // console.log("[D1] Using Remote HTTP API");
-    if (!ACCOUNT_ID || !DATABASE_ID || !API_TOKEN) {
-      // Fallback to wrangler CLI if credentials aren't in env
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const { exec } = require('child_process');
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const { promisify } = require('util');
-      const execAsync = promisify(exec);
-      
-      try {
-        let processedSql = sql;
-        params.forEach(param => {
-          const escaped = typeof param === 'string' ? `'${param.replace(/'/g, "''")}'` : (param ?? 'NULL');
-          processedSql = processedSql.replace('?', String(escaped));
-        });
+  // 2. Remote HTTP API Fallback
+  if (REMOTE_DB && ACCOUNT_ID && DATABASE_ID && API_TOKEN) {
+    const url = `https://api.cloudflare.com/client/v4/accounts/${ACCOUNT_ID}/d1/database/${DATABASE_ID}/query`;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${API_TOKEN}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sql, params })
+    });
 
-        const { stdout } = await execAsync(`npx wrangler d1 execute code-campus-db --remote --command="${processedSql.replace(/
+    if (response.ok) {
+      const json = await response.json();
+      if (json.success) return json.result[0].results as T[];
+    }
+  } 
+
+  // 3. Local Mode (better-sqlite3)
+  // We only try this if NOT in a binding environment and process exists (Node)
+  if (typeof process !== 'undefined' && process.versions && process.versions.node) {
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const Database = require('better-sqlite3');
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const path = require('path');
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const fs = require('fs');
+
+      const cwd = process.cwd();
+      const baseDir = path.join(cwd, '.wrangler/state/v3/d1/miniflare-D1DatabaseObject');
+      if (fs.existsSync(baseDir)) {
+        const files = fs.readdirSync(baseDir);
+        const sqliteFile = files.find((f: string) => f.endsWith('.sqlite'));
+        if (sqliteFile) {
+          const dbPath = path.join(baseDir, sqliteFile);
+          const db = new Database(dbPath, { readonly: false });
+          try {
+            const stmt = db.prepare(sql);
+            if (sql.trim().toLowerCase().startsWith('select')) {
+              return stmt.all(...params) as T[];
+            } else {
+              const info = stmt.run(...params);
+              return [info] as unknown as T[];
+            }
+          } finally {
+            db.close();
+          }
+        }
+      }
+    } catch (e) {
+      // Silent fail for local mode
+    }
+  }
+
+  return [];
+}
+
+export async function runD1(sql: string, params: unknown[] = []): Promise<unknown> {
+  return queryD1(sql, params);
+}
+
+export function mapCourseFromRow(row: Record<string, unknown>): Course & { id: number; url: string } {
+  const university = (row.university as string || "").toLowerCase();
+  const courseCode = row.course_code as string || "";
+  const dbUrl = row.url as string;
+  let fallbackUrl = "#";
+  const code = encodeURIComponent(courseCode);
+  switch (university) {
+    case 'mit': fallbackUrl = `https://student.mit.edu/catalog/search.cgi?search=${code}`; break;
+    case 'stanford': fallbackUrl = `https://explorecourses.stanford.edu/search?q=${code}`; break;
+    case 'ucb': fallbackUrl = `https://classes.berkeley.edu/search/class/${code}`; break;
+    case 'cmu': fallbackUrl = "https://enr-apps.as.cmu.edu/open/SOC/SOCServlet/search"; break;
+  }
+  return {
+    id: row.id as number,
+    university: university,
+    courseCode: courseCode,
+    title: row.title as string || "",
+    units: row.units as string || "",
+    description: row.description as string || "",
+    url: dbUrl || fallbackUrl,
+    department: row.department as string || "",
+    corequisites: row.corequisites as string || "",
+    level: row.level as string || "",
+    difficulty: (row.difficulty as number) || 0,
+    details: typeof row.details === 'string' ? JSON.parse(row.details) : (row.details || {}),
+    popularity: (row.popularity as number) || 0,
+    workload: (row.workload as string) || "",
+    isHidden: Boolean(row.is_hidden)
+  };
+}
