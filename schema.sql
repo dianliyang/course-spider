@@ -35,23 +35,12 @@ CREATE TABLE IF NOT EXISTS course_fields (
 
 CREATE INDEX IF NOT EXISTS idx_course_fields_field ON course_fields(field_id);
 
-CREATE TABLE IF NOT EXISTS users (
+CREATE TABLE IF NOT EXISTS accounts (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   email TEXT NOT NULL UNIQUE,
   emailVerified TIMESTAMP,
-  password TEXT, -- Hashed password for credentials provider
   name TEXT,
-  image TEXT, -- Profile picture from OAuth provider
-  provider TEXT, -- Legacy: e.g., 'github', 'google'
-  provider_id TEXT, -- Legacy: Unique ID from the provider
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-  -- Removed UNIQUE(provider, provider_id) constraint to allow multiple providers via accounts table
-);
-
-CREATE TABLE IF NOT EXISTS accounts (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  userId INTEGER NOT NULL,
-  type TEXT NOT NULL,
+  image TEXT,
   provider TEXT NOT NULL,
   providerAccountId TEXT NOT NULL,
   refresh_token TEXT,
@@ -61,7 +50,7 @@ CREATE TABLE IF NOT EXISTS accounts (
   scope TEXT,
   id_token TEXT,
   session_state TEXT,
-  FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   UNIQUE(provider, providerAccountId)
 );
 
@@ -70,7 +59,7 @@ CREATE TABLE IF NOT EXISTS sessions (
   sessionToken TEXT NOT NULL UNIQUE,
   userId INTEGER NOT NULL,
   expires TIMESTAMP NOT NULL,
-  FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE
+  FOREIGN KEY (userId) REFERENCES accounts(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS verification_tokens (
@@ -89,7 +78,7 @@ CREATE TABLE IF NOT EXISTS user_courses (
   notes TEXT,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (user_id, course_id),
-  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (user_id) REFERENCES accounts(id) ON DELETE CASCADE,
   FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE,
   CHECK (progress >= 0 AND progress <= 100)
 );

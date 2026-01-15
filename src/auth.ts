@@ -50,13 +50,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (account?.provider === "resend" || account?.provider === "email") return true;
       return true;
     },
-    async session({ session, token }) {
-      // console.log("[Auth] Session Callback - Token Sub:", token?.sub);
+    async session({ session }) {
+      // console.log("[Auth] Session Callback");
       if (session.user && session.user.email) {
         // ... (existing logic) ...
          try {
            const dbUser = await queryD1<{ id: number }>(
-             "SELECT id FROM users WHERE email = ? LIMIT 1",
+             "SELECT id FROM accounts WHERE email = ? LIMIT 1",
              [session.user.email]
            );
            if (dbUser.length > 0) {

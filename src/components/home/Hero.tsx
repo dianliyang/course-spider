@@ -19,7 +19,6 @@ export default function Hero() {
   useEffect(() => {
     const urlQuery = searchParams.get("q") || "";
     if (urlQuery !== query) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setQuery(urlQuery);
       lastPushedQuery.current = urlQuery;
     }

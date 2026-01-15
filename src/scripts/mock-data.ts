@@ -3,11 +3,11 @@ import { runD1, queryD1 } from '../lib/d1';
 async function main() {
   console.log("Mocking data...");
 
-  // 1. Ensure mock user exists
+  // 1. Ensure mock user exists (now in accounts table)
   await runD1(`
-    INSERT OR IGNORE INTO users (id, email, name, provider, provider_id) 
-    VALUES (?, ?, ?, ?, ?)
-  `, [1, "test@example.com", "Demo User", "mock", "mock_123"]);
+    INSERT OR IGNORE INTO accounts (id, email, name, provider, providerAccountId, type) 
+    VALUES (?, ?, ?, 'mock', 'mock_123', 'oauth')
+  `, [1, "test@example.com", "Demo User"]);
 
   const userId = 1;
 
