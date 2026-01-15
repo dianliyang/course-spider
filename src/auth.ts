@@ -1,40 +1,12 @@
 import NextAuth from "next-auth";
 import Resend from "next-auth/providers/resend";
-import { D1Adapter } from "@auth/d1-adapter";
 import { queryD1 } from "@/lib/d1";
+import { CodeCampusAdapter } from "@/lib/auth-adapter";
 import { authConfig } from "./auth.config";
-
-// A robust shim to allow the D1Adapter to work in local dev by routing queries through our queryD1 utility.
-// In production, we prioritize the real binding.
-const unifiedDb = {
-  prepare: (sql: string) => {
-    const createStmt = (params: unknown[] = []) => ({
-      bind: (...args: unknown[]) => createStmt(args),
-      all: async () => {
-        const results = await queryD1(sql, params);
-        return { results, success: true, meta: {} };
-      },
-      run: async () => {
-        await queryD1(sql, params);
-        return { success: true, meta: {} };
-      },
-      first: async () => {
-        const results = await queryD1(sql, params);
-        return results[0] || null;
-      },
-      raw: async () => {
-        return await queryD1(sql, params);
-      }
-    });
-    return createStmt();
-  }
-};
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   ...authConfig,
-  // Use the real D1 binding in production, or the robust shim in local dev
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  adapter: D1Adapter((process.env.DB || (globalThis as any).DB || unifiedDb) as any),
+  adapter: CodeCampusAdapter(),
   secret: process.env.AUTH_SECRET,
   session: {
     strategy: "jwt",
@@ -50,11 +22,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       maxAge: 10 * 60, // 10 minutes
       async sendVerificationRequest({ identifier: email, url }) {
         console.log(`[Auth] Magic Link Request for ${email}`);
-        
         const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://course.oili.dev";
         
         try {
-          // Edge-safe Base64URL encoding for the token deterrent
           const tokenParam = btoa(url)
             .replace(/\+/g, '-')
             .replace(/\//g, '_')
