@@ -45,16 +45,28 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       from: process.env.EMAIL_FROM || "CodeCampus <no-reply@codecampus.example.com>",
       maxAge: 10 * 60, // 10 minutes
       async sendVerificationRequest({ identifier: email, url }) {
-        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://course.oili.dev";
-        const tokenParam = Buffer.from(url).toString("base64");
-        const confirmUrl = new URL("/auth/confirm", baseUrl);
-        confirmUrl.searchParams.set("t", tokenParam);
-        const displayUrl = confirmUrl.toString();
-
-        console.log(`[Auth] Magic Link generated for ${email}`);
+        console.log(`[Auth] Attempting Magic Link for ${email}`);
         
-        if (process.env.AUTH_RESEND_KEY && process.env.AUTH_RESEND_KEY !== "re_123456789") {
-          try {
+        // Detailed Logging for debugging 500 errors
+        const envs = {
+          hasResendKey: !!process.env.AUTH_RESEND_KEY,
+          hasEmailFrom: !!process.env.EMAIL_FROM,
+          nextPublicUrl: process.env.NEXT_PUBLIC_APP_URL,
+          nextAuthUrl: process.env.NEXTAUTH_URL
+        };
+        console.log("[Auth] Debug Env:", JSON.stringify(envs));
+
+        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://course.oili.dev";
+        console.log(`[Auth] Using baseUrl: ${baseUrl}`);
+
+        try {
+          const tokenParam = Buffer.from(url).toString("base64");
+          const confirmUrl = new URL("/auth/confirm", baseUrl);
+          confirmUrl.searchParams.set("t", tokenParam);
+          const displayUrl = confirmUrl.toString();
+
+          if (process.env.AUTH_RESEND_KEY && process.env.AUTH_RESEND_KEY !== "re_123456789") {
+            console.log("[Auth] Calling Resend API...");
             const res = await fetch("https://api.resend.com/emails", {
               method: "POST",
               headers: {
@@ -108,17 +120,17 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             });
 
             if (!res.ok) {
-              const error = await res.json();
-              console.error("[Resend Error]", error);
-              throw new Error("Failed to send verification email via Resend");
+              const errorBody = await res.text();
+              console.error("[Resend Error Response]", errorBody);
+              throw new Error(`Resend API failed: ${res.status} ${errorBody}`);
             }
-            console.log("[Auth] Verification email sent successfully");
-          } catch (fetchErr) {
-            console.error("[Auth] Fetch error during email sending:", fetchErr);
-            throw fetchErr;
+            console.log("[Auth] Resend email sent successfully");
+          } else {
+            console.log(`\n\n[Auth] 🪄 MAGIC LINK (Console Fallback): ${displayUrl}\n\n`);
           }
-        } else {
-          console.log(`\n\n[Auth] 🪄 MAGIC LINK (Console Fallback): ${displayUrl}\n\n`);
+        } catch (err: any) {
+          console.error("[Auth System Error]", err.message);
+          throw err;
         }
       },
     }),
