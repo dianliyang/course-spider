@@ -79,7 +79,7 @@ export async function queryD1<T = unknown>(sql: string, params: unknown[] = []):
           }
         }
       }
-    } catch (e) {
+    } catch {
       // Silent fail
     }
   }

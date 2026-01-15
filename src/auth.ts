@@ -4,32 +4,38 @@ import { D1Adapter } from "@auth/d1-adapter";
 import { queryD1 } from "@/lib/d1";
 import { authConfig } from "./auth.config";
 
-// A shim to allow the D1Adapter to work in local dev by routing queries through our queryD1 utility
+// Improved shim to handle both direct and bound calls for the D1Adapter
+const createStatement = (sql: string, params: unknown[] = []) => {
+  const execute = async (method: string) => {
+    // console.log(`[D1 Shim] ${method}: ${sql.substring(0, 50)}... | Params: ${params.length}`);
+    try {
+      const results = await queryD1(sql, params);
+      if (method === 'first') return results[0] || null;
+      return { results, success: true, meta: {} };
+    } catch (err) {
+      console.error(`[D1 Shim Error] ${method} failed:`, err);
+      throw err;
+    }
+  };
+
+  return {
+    bind: (...nextParams: unknown[]) => createStatement(sql, nextParams),
+    all: () => execute('all'),
+    run: () => execute('run'),
+    first: () => execute('first'),
+    raw: async () => {
+      const results = await queryD1(sql, params);
+      return results;
+    }
+  };
+};
+
 const unifiedDb = {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  prepare: (sql: string) => {
-    return {
-      bind: (...params: any[]) => ({
-        all: async () => {
-          const results = await queryD1(sql, params);
-          return { results, success: true, meta: {} };
-        },
-        run: async () => {
-          const results = await queryD1(sql, params);
-          return { results, success: true, meta: {} };
-        },
-        first: async () => {
-          const results = await queryD1(sql, params);
-          return results[0] || null;
-        }
-      })
-    };
-  }
+  prepare: (sql: string) => createStatement(sql)
 };
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   ...authConfig,
-  // We use our unifiedDb shim which handles Binding vs Local automatically
   adapter: D1Adapter(unifiedDb as any),
   secret: process.env.AUTH_SECRET,
   session: {
@@ -47,26 +53,25 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       async sendVerificationRequest({ identifier: email, url }) {
         console.log(`[Auth] Attempting Magic Link for ${email}`);
         
-        // Detailed Logging for debugging 500 errors
         const envs = {
           hasResendKey: !!process.env.AUTH_RESEND_KEY,
           hasEmailFrom: !!process.env.EMAIL_FROM,
-          nextPublicUrl: process.env.NEXT_PUBLIC_APP_URL,
-          nextAuthUrl: process.env.NEXTAUTH_URL
+          hasAuthSecret: !!process.env.AUTH_SECRET,
+          nodeEnv: process.env.NODE_ENV
         };
-        console.log("[Auth] Debug Env:", JSON.stringify(envs));
+        console.log("[Auth] Debug Context:", JSON.stringify(envs));
 
         const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://course.oili.dev";
-        console.log(`[Auth] Using baseUrl: ${baseUrl}`);
-
+        
         try {
-          const tokenParam = Buffer.from(url).toString("base64");
+          // Use btoa for standard Web API compatibility in Edge
+          const tokenParam = btoa(url);
           const confirmUrl = new URL("/auth/confirm", baseUrl);
           confirmUrl.searchParams.set("t", tokenParam);
           const displayUrl = confirmUrl.toString();
 
           if (process.env.AUTH_RESEND_KEY && process.env.AUTH_RESEND_KEY !== "re_123456789") {
-            console.log("[Auth] Calling Resend API...");
+            console.log("[Auth] Dispatching Resend API request...");
             const res = await fetch("https://api.resend.com/emails", {
               method: "POST",
               headers: {
@@ -121,15 +126,16 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
             if (!res.ok) {
               const errorBody = await res.text();
-              console.error("[Resend Error Response]", errorBody);
-              throw new Error(`Resend API failed: ${res.status} ${errorBody}`);
+              console.error("[Resend API Error]", res.status, errorBody);
+              throw new Error(`Resend API failed: ${res.status}`);
             }
             console.log("[Auth] Resend email sent successfully");
           } else {
             console.log(`\n\n[Auth] 🪄 MAGIC LINK (Console Fallback): ${displayUrl}\n\n`);
           }
-        } catch (err: any) {
-          console.error("[Auth System Error]", err.message);
+        } catch (err: unknown) {
+          const message = err instanceof Error ? err.message : String(err);
+          console.error("[Auth Action Error]", message);
           throw err;
         }
       },

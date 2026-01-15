@@ -76,7 +76,7 @@ export default function VerifyRequestPage() {
             <div className="p-6 bg-brand-blue/5 border border-brand-blue/10 rounded-xl">
               <p className="text-xs font-bold text-brand-blue uppercase tracking-widest mb-2">Security Protocol</p>
               <p className="text-sm text-gray-600 leading-relaxed italic">
-                "If you don't see the email, please check your spam folder or request a new link."
+                &quot;If you don&apos;t see the email, please check your spam folder or request a new link.&quot;
               </p>
             </div>
 

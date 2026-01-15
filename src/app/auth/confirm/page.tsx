@@ -4,28 +4,26 @@ import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import Globe from "@/components/ui/Globe";
-import { Suspense, useState, useEffect } from "react";
+import { Suspense } from "react";
 
 function ConfirmContent() {
   const searchParams = useSearchParams();
-  const [targetUrl, setTargetUrl] = useState<string | null>(null);
-  const [error, setError] = useState(false);
+  const t = searchParams.get("t");
+  
+  // Logic derived from props/state should happen during render or via useMemo
+  let targetUrl: string | null = null;
+  let error = false;
 
-  useEffect(() => {
-    const t = searchParams.get("t");
-    if (t) {
-      try {
-        // Decode the base64 URL
-        const decoded = atob(t);
-        setTargetUrl(decoded);
-      } catch (e) {
-        console.error("Failed to decode token", e);
-        setError(true);
-      }
-    } else {
-      setError(true);
+  if (t) {
+    try {
+      targetUrl = atob(t);
+    } catch (e) {
+      console.error("Failed to decode token", e);
+      error = true;
     }
-  }, [searchParams]);
+  } else {
+    error = true;
+  }
 
   if (error) {
     return (
