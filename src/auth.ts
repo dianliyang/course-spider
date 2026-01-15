@@ -12,13 +12,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     strategy: "jwt",
   },
   providers: [
-    Resend({
-      apiKey: process.env.AUTH_RESEND_KEY || "re_123456789",
-      from:
-        process.env.EMAIL_FROM ||
-        "CodeCampus <no-reply@codecampus.example.com>",
-      maxAge: 24 * 60 * 60, // 24 hours
-      async sendVerificationRequest({ identifier: email, url }) {
+        Resend({
+          apiKey: process.env.AUTH_RESEND_KEY || "re_123456789",
+          from: process.env.EMAIL_FROM || "CodeCampus <no-reply@codecampus.example.com>",
+          maxAge: 10 * 60, // 10 minutes
+          async sendVerificationRequest({ identifier: email, url }) {
         // More robust URL construction
         let baseUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL;
         if (!baseUrl && typeof window === 'undefined') {
@@ -70,11 +68,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                         <h1>System Authentication</h1>
                         <p>A secure access request was initiated for your identity. Click the button below to authorize the session and enter the network.</p>
                         <a href="${displayUrl}" class="button">Authenticate Session</a>
-                        <div class="divider"></div>
-                        <div class="security">
-                          <strong>Security Protocol:</strong> This link is valid for 24 hours and can only be used once. If you did not initiate this request, no action is required.
-                        </div>
-                      </div>
+                                              <div class="divider"></div>
+                                              <div class="security">
+                                                <strong>Security Protocol:</strong> This link is valid for 10 minutes and can only be used once. If you did not initiate this request, no action is required.
+                                              </div>                      </div>
                       <div class="footer">
                         <p class="footer-text">© 2026 CodeCampus Global Network // 0xFC</p>
                       </div>
