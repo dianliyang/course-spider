@@ -19,8 +19,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         "CodeCampus <no-reply@codecampus.example.com>",
       maxAge: 24 * 60 * 60, // 24 hours
       async sendVerificationRequest({ identifier: email, url }) {
-        console.log(`[Auth] 🪄 Magic Link for ${email}: ${url}`);
+        // Use the confirmation page to prevent email client pre-fetching
+        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || "";
+        const confirmUrl = new URL("/auth/confirm", baseUrl || url);
+        confirmUrl.searchParams.set("url", url);
+        const displayUrl = confirmUrl.toString();
 
+        console.log(`[Auth] 🪄 Magic Link for ${displayUrl}`);
+        
         if (
           process.env.AUTH_RESEND_KEY &&
           process.env.AUTH_RESEND_KEY !== "re_123456789"
@@ -45,7 +51,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                     .logo { color: #000000; font-size: 24px; font-weight: 900; text-transform: uppercase; letter-spacing: -0.05em; margin-bottom: 40px; }
                     .dot { color: #3b82f6; }
                     .content { background-color: #fcfcfc; border: 1px solid #f0f0f0; padding: 48px; border-radius: 24px; }
-                    h1 { font-size: 22px; font-weight: 900; color: #111827; margin-top: 0; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.02em; }
+                    h1 { font-size: 22px; font-weight: 900; color: #111827; margin-top: 0; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.02em; };
                     p { color: #6b7280; font-size: 15px; line-height: 1.6; margin-bottom: 32px; }
                     .button { display: inline-block; background-color: #000000; color: #ffffff !important; font-weight: 800; font-size: 12px; text-transform: uppercase; letter-spacing: 0.2em; padding: 20px 40px; border-radius: 12px; text-decoration: none; text-align: center; }
                     .divider { height: 1px; background-color: #eeeeee; margin: 40px 0; }
@@ -60,7 +66,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                     <div class="content">
                       <h1>System Authentication</h1>
                       <p>A secure access request was initiated for your identity. Click the button below to authorize the session and enter the network.</p>
-                      <a href="${url}" class="button">Authenticate Session</a>
+                      <a href="${displayUrl}" class="button">Authenticate Session</a>
                       <div class="divider"></div>
                       <div class="security">
                         <strong>Security Protocol:</strong> This link is valid for 24 hours and can only be used once. If you did not initiate this request, no action is required.
@@ -73,7 +79,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 </body>
                 </html>
               `,
-              text: `Authenticate your CodeCampus Session: ${url}`,
+              text: `Authenticate your CodeCampus Session: ${displayUrl}`,
             }),
           });
 
