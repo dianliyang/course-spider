@@ -1,42 +1,91 @@
 import { Course } from './scrapers/types';
-import fs from 'fs';
-import path from 'path';
 
 const REMOTE_DB = process.env.REMOTE_DB === 'true';
 const ACCOUNT_ID = process.env.CLOUDFLARE_ACCOUNT_ID;
 const DATABASE_ID = process.env.CLOUDFLARE_DATABASE_ID;
 const API_TOKEN = process.env.CLOUDFLARE_API_TOKEN;
 
-// Local DB path finding
-function getLocalDbPath(): string | null {
-  const baseDir = path.join(process.cwd(), '.wrangler/state/v3/d1/miniflare-D1DatabaseObject');
-  if (!fs.existsSync(baseDir)) return null;
-  
-  const files = fs.readdirSync(baseDir);
-  const sqliteFile = files.find(f => f.endsWith('.sqlite'));
-  return sqliteFile ? path.join(baseDir, sqliteFile) : null;
+// Interface for the D1 Binding (Cloudflare Workers type)
+interface D1DatabaseBinding {
+  prepare: (query: string) => D1PreparedStatement;
+  dump: () => Promise<ArrayBuffer>;
+  batch: (statements: D1PreparedStatement[]) => Promise<D1Result[]>;
+  exec: (query: string) => Promise<D1ExecResult>;
 }
 
-export interface D1Result<T = unknown> {
+interface D1PreparedStatement {
+  bind: (...values: unknown[]) => D1PreparedStatement;
+  first: <T = unknown>(colName?: string) => Promise<T | null>;
+  run: <T = unknown>() => Promise<D1Result<T>>;
+  all: <T = unknown>() => Promise<D1Result<T>>;
+  raw: <T = unknown>() => Promise<T[]>;
+}
+
+interface D1Result<T = unknown> {
   success: boolean;
   meta: unknown;
   results: T[];
 }
 
+interface D1ExecResult {
+  count: number;
+  duration: number;
+}
+
+// Helper to get local DB path using dynamic imports to avoid Edge crashes
+function getLocalDbPath(): string | null {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const path = require('path');
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const fs = require('fs');
+
+  const baseDir = path.join(process.cwd(), '.wrangler/state/v3/d1/miniflare-D1DatabaseObject');
+  if (!fs.existsSync(baseDir)) return null;
+  
+  const files = fs.readdirSync(baseDir);
+  const sqliteFile = files.find((f: string) => f.endsWith('.sqlite'));
+  return sqliteFile ? path.join(baseDir, sqliteFile) : null;
+}
+
 export async function queryD1<T = unknown>(sql: string, params: unknown[] = []): Promise<T[]> {
+  // 1. Try D1 Binding (Cloudflare Pages/Workers)
+  // 'DB' is the binding name defined in wrangler.toml
+  const bindingDB = (process.env.DB as unknown as D1DatabaseBinding);
+  
+  if (bindingDB && typeof bindingDB.prepare === 'function') {
+    try {
+      const stmt = bindingDB.prepare(sql).bind(...params);
+      if (sql.trim().toLowerCase().startsWith('select')) {
+        const result = await stmt.all<T>();
+        return result.results || [];
+      } else {
+        const result = await stmt.run<T>();
+        // Normalize run result to array for consistency if needed, or return generic
+        return [result] as unknown as T[];
+      }
+    } catch (e) {
+      console.error("[D1 Binding] Query failed:", e);
+      throw e;
+    }
+  }
+
+  // 2. Remote HTTP API
   if (REMOTE_DB) {
     if (!ACCOUNT_ID || !DATABASE_ID || !API_TOKEN) {
-      // Fallback to wrangler CLI if credentials aren't in env
-      // This is slower but works in this environment
+      // Fallback to wrangler CLI if credentials aren't in env (Local Dev interacting with Remote)
       // eslint-disable-next-line @typescript-eslint/no-require-imports
       const { exec } = require('child_process');
       // eslint-disable-next-line @typescript-eslint/no-require-imports
       const { promisify } = require('util');
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const path = require('path');
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const fs = require('fs');
+      
       const execAsync = promisify(exec);
       
       const tmpFileName = path.join(process.cwd(), `.tmp_query_${Date.now()}.sql`);
       try {
-        // Simple parameter replacement for CLI
         let processedSql = sql;
         params.forEach(param => {
           const escaped = typeof param === 'string' ? `'${param.replace(/'/g, "''")}'` : (param ?? 'NULL');
@@ -47,26 +96,16 @@ export async function queryD1<T = unknown>(sql: string, params: unknown[] = []):
         const { stdout } = await execAsync(`npx wrangler d1 execute code-campus-db --remote --command="${processedSql.replace(/"/g, '\\"')}" --json`);
         
         if (processedSql.trim().toLowerCase().startsWith('select')) {
-          // Extract only the JSON part from wrangler output
-                    const jsonMatch = stdout.match(/\[[\s\S]*\]/);
-                              if (!jsonMatch) {
-                                console.error("Full Wrangler STDOUT:", stdout);
-                                throw new Error("No JSON array found in wrangler output");
-                              }
-                              
-                              // console.log("[D1 Debug] Raw JSON:", jsonMatch[0]);
-                                        const result = JSON.parse(jsonMatch[0]);
-                                        console.log("[D1 Debug] Full result:", JSON.stringify(result, null, 2));
-          // Find the result that has results property (wrangler returns multiple objects for setup + execution)
+          const jsonMatch = stdout.match(/\[[\s\S]*\]/);
+          if (!jsonMatch) throw new Error("No JSON array found in wrangler output");
+          
+          const result = JSON.parse(jsonMatch[0]);
           const dataResult = result.find((r: unknown) => {
             const res = r as { results?: unknown[] };
             return res.results && Array.isArray(res.results) && res.results.length > 0;
           }) as { results?: T[] } | undefined;
           
-          // If we found a result with data, return it. If not but the array has items, it might be the last one.
-          const finalResults = (dataResult?.results || (result[result.length - 1] as { results?: T[] })?.results || []) as T[];
-          console.log(`[D1 Debug] Found ${finalResults.length} rows.`);
-          return finalResults;
+          return (dataResult?.results || (result[result.length - 1] as { results?: T[] })?.results || []) as T[];
         }
         return [] as T[];
       } catch (e) {
@@ -77,18 +116,15 @@ export async function queryD1<T = unknown>(sql: string, params: unknown[] = []):
       }
     }
 
+    // HTTP API Call
     const url = `https://api.cloudflare.com/client/v4/accounts/${ACCOUNT_ID}/d1/database/${DATABASE_ID}/query`;
-    
     const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${API_TOKEN}`,
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({
-        sql,
-        params
-      })
+      body: JSON.stringify({ sql, params })
     });
 
     if (!response.ok) {
@@ -97,26 +133,23 @@ export async function queryD1<T = unknown>(sql: string, params: unknown[] = []):
     }
 
     const json = await response.json();
-    if (!json.success) {
-       throw new Error(`D1 Query Failed: ${JSON.stringify(json.errors)}`);
-    }
-
-    // Cloudflare API returns result in the first element of 'result' array for single query
+    if (!json.success) throw new Error(`D1 Query Failed: ${JSON.stringify(json.errors)}`);
     return json.result[0].results as T[];
+  } 
 
-  } else {
-    // Local Mode
+  // 3. Local Mode (better-sqlite3)
+  else {
     const dbPath = getLocalDbPath();
     if (!dbPath) {
+      // If we are in prod (no REMOTE_DB, no Binding, no Local file), this is fatal.
       console.warn("Local D1 database file not found. Returning empty results.");
       return [];
     }
 
-    // Dynamically require better-sqlite3
     try {
       // eslint-disable-next-line @typescript-eslint/no-require-imports
       const Database = require('better-sqlite3');
-      const db = new Database(dbPath, { readonly: false }); // Changed to false to allow writes
+      const db = new Database(dbPath, { readonly: false });
       try {
         const stmt = db.prepare(sql);
         if (sql.trim().toLowerCase().startsWith('select')) {
