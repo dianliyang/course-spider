@@ -146,42 +146,55 @@ export function CodeCampusAdapter(): Adapter {
     },
     async createVerificationToken(verificationToken) {
       const { identifier, token, expires } = verificationToken;
-      console.log(`[Adapter] Creating verification token for ${identifier}`);
-      await runD1(
-        "INSERT INTO verification_tokens (identifier, token, expires) VALUES (?, ?, ?)",
-        [identifier.toLowerCase(), token, expires.toISOString()]
-      );
-      return verificationToken;
+      const id = identifier.toLowerCase();
+      console.log(`[Adapter] createVerificationToken for ${id}`);
+      try {
+        await runD1(
+          "INSERT OR REPLACE INTO verification_tokens (identifier, token, expires) VALUES (?, ?, ?)",
+          [id, token, expires.toISOString()]
+        );
+        console.log(`[Adapter] Token created successfully`);
+        return verificationToken;
+      } catch (err) {
+        console.error(`[Adapter] Failed to create token:`, err);
+        throw err;
+      }
     },
     async useVerificationToken({ identifier, token }) {
       const id = identifier.toLowerCase();
       console.log(`[Adapter] useVerificationToken check for ${id}`);
       
-      const rows = await queryD1<DbVerificationToken>(
-        "SELECT * FROM verification_tokens WHERE identifier = ? AND token = ? LIMIT 1",
-        [id, token]
-      );
-      
-      if (rows.length === 0) {
-        console.warn(`[Adapter] No token found for ${id}`);
-        // Diagnostic query: see if token exists for this identifier regardless of exact token match
-        const countRows = await queryD1<{count: number}>("SELECT count(*) as count FROM verification_tokens WHERE identifier = ?", [id]);
-        console.log(`[Adapter] Tokens currently in DB for this email: ${countRows[0]?.count || 0}`);
+      try {
+        const rows = await queryD1<DbVerificationToken>(
+          "SELECT * FROM verification_tokens WHERE identifier = ? AND token = ? LIMIT 1",
+          [id, token]
+        );
+        
+        if (rows.length === 0) {
+          console.warn(`[Adapter] Token NOT found for ${id}. Token start: ${token.substring(0, 5)}...`);
+          // Diagnostic: Check if ANY token exists for this email
+          const anyTokens = await queryD1<{count: number}>("SELECT count(*) as count FROM verification_tokens WHERE identifier = ?", [id]);
+          console.log(`[Adapter] Diagnostic: ${anyTokens[0]?.count || 0} tokens exist for this email.`);
+          return null;
+        }
+        
+        const t = rows[0];
+        console.log(`[Adapter] Token found (expires: ${t.expires}), consuming...`);
+        
+        await runD1(
+          "DELETE FROM verification_tokens WHERE identifier = ? AND token = ?",
+          [id, token]
+        );
+        
+        return {
+          identifier: t.identifier,
+          token: t.token,
+          expires: new Date(t.expires)
+        };
+      } catch (err) {
+        console.error(`[Adapter] useVerificationToken error:`, err);
         return null;
       }
-      
-      console.log(`[Adapter] Token found, consuming...`);
-      await runD1(
-        "DELETE FROM verification_tokens WHERE identifier = ? AND token = ?",
-        [id, token]
-      );
-      
-      const t = rows[0];
-      return {
-        identifier: t.identifier,
-        token: t.token,
-        expires: new Date(t.expires)
-      };
     },
   }
 }
