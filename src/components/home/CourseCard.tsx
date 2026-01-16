@@ -20,7 +20,7 @@ export default function CourseCard({ course, isInitialEnrolled, onEnrollToggle, 
   const [loading, setLoading] = useState(false);
 
   const logos: Record<string, string> = {
-    mit: "/mit.svg", stanford: "/stanford.jpg", cmu: "/cmu.jpg", ucb: "/ucb.png",
+    mit: "/mit.svg", stanford: "/stanford.jpg", cmu: "/cmu.jpg", ucb: "/ucb.png", cau: "/cau.svg",
   };
 
   const handleEnroll = async () => {

@@ -5,6 +5,7 @@ const universities = [
   { name: "Stanford", logo: "/stanford.jpg", width: 50, height: 50 },
   { name: "UC Berkeley", logo: "/ucb.png", width: 50, height: 50 },
   { name: "Carnegie Mellon", logo: "/cmu.jpg", width: 50, height: 50 },
+  { name: "CAU Kiel", logo: "/cau.svg", width: 50, height: 50 },
 ];
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -83,7 +83,7 @@ async function CourseDetailData({ id, dict }: { id: string; dict: any }) {
   }
 
   const logos: Record<string, string> = {
-    mit: "/mit.svg", stanford: "/stanford.jpg", cmu: "/cmu.jpg", ucb: "/ucb.png",
+    mit: "/mit.svg", stanford: "/stanford.jpg", cmu: "/cmu.jpg", ucb: "/ucb.png", cau: "/cau.svg",
   };
 
   return (
