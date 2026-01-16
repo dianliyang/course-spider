@@ -16,7 +16,8 @@ export default function NavLinks({
   const navLinks = [
     { name: dict?.mission || "Mission", href: "#mission", icon: "fa-solid fa-shuttle-space" },
     { name: dict?.universities || "Nodes", href: "#universities", icon: "fa-solid fa-building-columns" },
-    { name: dict?.curriculum || "Protocol", href: "#features", icon: "fa-solid fa-layer-group" }
+    { name: dict?.curriculum || "Protocol", href: "#features", icon: "fa-solid fa-layer-group" },
+    { name: dict?.pricing || "Pricing", href: "#pricing", icon: "fa-solid fa-credit-card" }
   ];
 
   const isDark = variant === "dark";
