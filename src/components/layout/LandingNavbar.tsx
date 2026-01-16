@@ -33,7 +33,7 @@ export default function LandingNavbar() {
             {/* Navigation Links */}
             <div className={`hidden md:flex items-center transition-all duration-500 ${
               scrolled 
-                ? 'gap-2 bg-transparent' 
+                ? 'gap-4 bg-transparent' 
                 : 'gap-8 bg-white/80 backdrop-blur-md px-8 py-3 rounded-full border border-gray-100 shadow-sm'
             }`}>
               {[
@@ -47,19 +47,17 @@ export default function LandingNavbar() {
                   className={`group relative flex items-center justify-center transition-all duration-300 ${
                     scrolled 
                       ? 'w-10 h-10 rounded-full hover:bg-gray-100 text-gray-500 hover:text-brand-blue' 
-                      : 'px-4 py-2'
+                      : 'px-4 py-2 gap-3'
                   }`}
                   title={scrolled ? item.name : undefined}
                 >
-                  {scrolled ? (
-                     <i className={`${item.icon} text-sm transition-transform group-hover:scale-110`}></i>
-                  ) : (
+                  <i className={`${item.icon} text-sm transition-transform group-hover:scale-110 ${!scrolled && 'text-gray-400 group-hover:text-brand-blue'}`}></i>
+                  
+                  {!scrolled && (
                     <>
-                      <span className="absolute left-0 opacity-0 -translate-x-2 group-hover:translate-x-0 group-hover:opacity-100 transition-all duration-300 text-brand-blue font-mono font-bold text-xs">&lt;</span>
-                      <span className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] group-hover:text-gray-900 transition-colors mx-2">
+                      <span className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] group-hover:text-gray-900 transition-colors">
                         {item.name}
                       </span>
-                      <span className="absolute right-0 opacity-0 translate-x-2 group-hover:translate-x-0 group-hover:opacity-100 transition-all duration-300 text-brand-blue font-mono font-bold text-xs">&gt;</span>
                     </>
                   )}
                 </Link>
