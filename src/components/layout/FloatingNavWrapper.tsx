@@ -25,7 +25,7 @@ export default function FloatingNavWrapper({
     }`}>
       <div className={`transition-all duration-700 ease-[cubic-bezier(0.25,0.1,0.25,1.0)] pointer-events-auto w-fit ${
         scrolled 
-          ? 'min-w-[380px] rounded-full shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-white/10 bg-gray-950/80 backdrop-blur-2xl translate-y-0 px-6' 
+          ? 'min-w-[380px] rounded-full shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-white/60 bg-white/80 backdrop-blur-xl translate-y-0 px-6 ring-1 ring-slate-900/5' 
           : `${initialClassName} min-w-full rounded-none px-0`
       }`}>
         {children(scrolled)}
