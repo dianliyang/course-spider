@@ -20,16 +20,38 @@
   },
   "features": {
     "universal_index": {
-      "title": "一站式搜索",
-      "desc": "在一个界面里搜索多家名校的课程，无需在不同的学校官网上反复跳转。"
+      "title": "全网索引",
+      "desc": "通过单一的低延迟控制平面，无缝检索 MIT、Stanford、Berkeley 和 CMU 的标准化课程注册表。"
     },
     "progress_analytics": {
-      "title": "修读进度",
-      "desc": "简单记录你已经学过的课程，直观地看到自己在不同领域的学术积累。"
+      "title": "学业遥测",
+      "desc": "追踪你的智力加速度。记录修读课程，实时生成学分分布和领域专长的可视化数据。",
+      "note": "Telemetry translated as 遥测 conveys a high-tech/space feel."
     },
     "gap_analysis": {
-      "title": "规划建议",
-      "desc": "将你的学习情况与顶尖学位的要求进行对比，看看还有哪些核心技能需要补充。"
+      "title": "技能审计",
+      "desc": "算法化比对你的成绩单与顶尖学位要求。精准探测先修课黑洞，优化你的学习矢量。"
+    }
+  },
+  "pricing": {
+    "label": "会员计划",
+    "title_prefix": "为每位同学设计的",
+    "title_highlight": "简单方案",
+    "desc": "CodeCampus 主要是一个开放项目。我们为需要深度洞察的同学提供高级版.",
+    "free": {
+      "name": "学者 (Scholar)",
+      "price": "¥0",
+      "desc": "包含查找和追踪课程所需的一切功能。",
+      "features": ["无限课程搜索", "基础进度追踪", "公开目录访问", "社区支持"],
+      "cta": "免费开始"
+    },
+    "pro": {
+      "name": "研究员 (Fellow)",
+      "price": "¥68",
+      "period": "/月",
+      "desc": "为严谨的学术规划提供的高级工具。",
+      "features": ["高级分析报表", "学位审计工具", "导出成绩单", "优先支持"],
+      "cta": "升级到研究员"
     }
   },
   "universities": {

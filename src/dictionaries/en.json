@@ -20,16 +20,37 @@
   },
   "features": {
     "universal_index": {
-      "title": "All in One Place",
-      "desc": "Search through a combined list of courses from top universities without jumping between different websites."
+      "title": "Universal Index",
+      "desc": "Access a normalized, query-optimized registry of courses from MIT, Stanford, Berkeley, and CMU via a single, latency-free control plane."
     },
     "progress_analytics": {
-      "title": "Track Your Learning",
-      "desc": "Keep a simple log of the classes you've finished and see how your skills are growing over time."
+      "title": "Progress Telemetry",
+      "desc": "Track your intellectual velocity. Log coursework to generate real-time visualizations of your credit distribution and domain expertise."
     },
     "gap_analysis": {
-      "title": "Plan Your Path",
-      "desc": "Compare what you've learned against real degree requirements to see what classes you should take next."
+      "title": "Skill Audit",
+      "desc": "Algorithmic comparison of your transcript against top-tier degree requirements. Detect prerequisite voids and optimize your learning vector."
+    }
+  },
+  "pricing": {
+    "label": "Membership",
+    "title_prefix": "Simple Plans for",
+    "title_highlight": "Every Student",
+    "desc": "CodeCampus is primarily an open project. We offer a pro tier for those who want deeper insights.",
+    "free": {
+      "name": "Scholar",
+      "price": "$0",
+      "desc": "Everything you need to find and track courses.",
+      "features": ["Unlimited Course Search", "Basic Progress Tracking", "Public Catalog Access", "Community Support"],
+      "cta": "Start for Free"
+    },
+    "pro": {
+      "name": "Fellow",
+      "price": "$9",
+      "period": "/mo",
+      "desc": "Advanced tools for serious academic planning.",
+      "features": ["Advanced Analytics", "Degree Audit Tools", "Export Transcripts", "Priority Support"],
+      "cta": "Upgrade to Fellow"
     }
   },
   "universities": {
