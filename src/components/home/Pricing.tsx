@@ -23,61 +23,73 @@ export default function Pricing({ dict }: { dict: any }) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
           
           {/* Free Tier */}
-          <div className="bg-white rounded-2xl p-8 border border-slate-200 shadow-sm flex flex-col relative group hover:border-brand-blue/30 transition-all duration-300">
-            <div className="mb-6">
-              <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight mb-2">{dict.free.name}</h3>
-              <div className="flex items-baseline gap-1">
-                <span className="text-4xl font-black text-slate-900">{dict.free.price}</span>
+          <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm flex flex-col relative group hover:shadow-lg hover:-translate-y-1 transition-all duration-500">
+            <div className="mb-8">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-50 border border-slate-100 mb-4">
+                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Open Source</span>
               </div>
-              <p className="text-sm text-slate-500 mt-4 leading-relaxed">{dict.free.desc}</p>
+              <h3 className="text-2xl font-bold text-slate-900 tracking-tight mb-2">{dict.free.name}</h3>
+              <div className="flex items-baseline gap-1">
+                <span className="text-5xl font-bold text-slate-900 tracking-tighter">{dict.free.price}</span>
+              </div>
+              <p className="text-sm text-slate-500 mt-4 leading-relaxed font-medium">{dict.free.desc}</p>
             </div>
             
-            <ul className="space-y-4 mb-8 flex-grow">
-              {dict.free.features.map((feat: string, i: number) => (
-                <li key={i} className="flex items-center gap-3 text-sm text-slate-600 font-medium">
-                  <i className="fa-solid fa-check text-brand-blue/50 text-xs"></i>
-                  {feat}
-                </li>
-              ))}
-            </ul>
+            <div className="flex-grow border-t border-slate-50 pt-8 mb-8">
+              <ul className="space-y-5">
+                {dict.free.features.map((feat: string, i: number) => (
+                  <li key={i} className="flex items-start gap-3 text-sm text-slate-600">
+                    <div className="w-5 h-5 rounded-full bg-slate-50 flex items-center justify-center shrink-0 mt-0.5">
+                      <i className="fa-solid fa-check text-slate-400 text-[10px]"></i>
+                    </div>
+                    {feat}
+                  </li>
+                ))}
+              </ul>
+            </div>
 
             <Link 
               href="/courses" 
-              className="w-full btn-secondary text-center justify-center flex"
+              className="w-full btn-secondary text-center justify-center flex py-4 rounded-xl border-slate-200 hover:border-slate-900 hover:bg-slate-50"
             >
               {dict.free.cta}
             </Link>
           </div>
 
           {/* Pro Tier */}
-          <div className="bg-slate-900 rounded-2xl p-8 border border-slate-800 shadow-xl flex flex-col relative overflow-hidden group">
+          <div className="bg-slate-900 rounded-3xl p-8 border border-slate-800 shadow-2xl flex flex-col relative overflow-hidden group hover:-translate-y-1 transition-transform duration-500">
             {/* Gloss Effect */}
-            <div className="absolute top-0 right-0 w-64 h-64 bg-brand-blue/10 blur-[80px] rounded-full pointer-events-none group-hover:bg-brand-blue/20 transition-all duration-500"></div>
+            <div className="absolute top-0 right-0 w-full h-full bg-gradient-to-br from-slate-800/50 via-slate-900/0 to-slate-900/0 pointer-events-none"></div>
+            <div className="absolute -top-24 -right-24 w-64 h-64 bg-brand-blue/20 blur-[80px] rounded-full pointer-events-none"></div>
 
-            <div className="mb-6 relative z-10">
-              <div className="flex justify-between items-start">
-                <h3 className="text-lg font-black text-white uppercase tracking-tight mb-2">{dict.pro.name}</h3>
-                <span className="bg-brand-blue text-white text-[9px] font-bold uppercase tracking-widest px-2 py-1 rounded">Popular</span>
+            <div className="mb-8 relative z-10">
+              <div className="flex justify-between items-center mb-4">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-blue/10 border border-brand-blue/20">
+                  <span className="text-[10px] font-bold text-brand-blue uppercase tracking-widest">Recommended</span>
+                </div>
               </div>
+              <h3 className="text-2xl font-bold text-white tracking-tight mb-2">{dict.pro.name}</h3>
               <div className="flex items-baseline gap-1">
-                <span className="text-4xl font-black text-white">{dict.pro.price}</span>
-                <span className="text-slate-400 font-medium text-sm">{dict.pro.period}</span>
+                <span className="text-5xl font-bold text-white tracking-tighter">{dict.pro.price}</span>
+                <span className="text-slate-400 font-medium text-sm ml-1">{dict.pro.period}</span>
               </div>
-              <p className="text-sm text-slate-400 mt-4 leading-relaxed">{dict.pro.desc}</p>
+              <p className="text-sm text-slate-400 mt-4 leading-relaxed font-medium">{dict.pro.desc}</p>
             </div>
             
-            <ul className="space-y-4 mb-8 flex-grow relative z-10">
-              {dict.pro.features.map((feat: string, i: number) => (
-                <li key={i} className="flex items-center gap-3 text-sm text-slate-300 font-medium">
-                  <div className="w-4 h-4 rounded-full bg-brand-blue flex items-center justify-center">
-                    <i className="fa-solid fa-check text-white text-[8px]"></i>
-                  </div>
-                  {feat}
-                </li>
-              ))}
-            </ul>
+            <div className="flex-grow border-t border-white/5 pt-8 mb-8 relative z-10">
+              <ul className="space-y-5">
+                {dict.pro.features.map((feat: string, i: number) => (
+                  <li key={i} className="flex items-start gap-3 text-sm text-slate-300">
+                    <div className="w-5 h-5 rounded-full bg-brand-blue/20 flex items-center justify-center shrink-0 mt-0.5">
+                      <i className="fa-solid fa-check text-brand-blue text-[10px]"></i>
+                    </div>
+                    {feat}
+                  </li>
+                ))}
+              </ul>
+            </div>
 
-            <button className="w-full btn-primary bg-white text-slate-900 hover:bg-slate-100 border-none relative z-10 text-center justify-center flex">
+            <button className="w-full btn-primary bg-white text-slate-900 hover:bg-brand-blue hover:text-white border-none relative z-10 text-center justify-center flex py-4 rounded-xl shadow-lg shadow-slate-900/20">
               {dict.pro.cta}
             </button>
           </div>
