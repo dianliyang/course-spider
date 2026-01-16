@@ -4,7 +4,7 @@ import Link from "next/link";
 import LoginForm from "@/components/auth/LoginForm";
 import { getLanguage } from "@/actions/language";
 import { getDictionary } from "@/lib/dictionary";
-import { createClient, getBaseUrl } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 
 export const runtime = "edge";
 
@@ -24,13 +24,12 @@ export default async function LoginPage({ searchParams }: PageProps) {
     try {
       const email = formData.get("email") as string;
       console.log(`[Login] Attempting Supabase Magic Link for ${email}`);
-      
-      const baseUrl = await getBaseUrl();
+
       const supabase = await createClient();
       const { error } = await supabase.auth.signInWithOtp({
         email,
         options: {
-          emailRedirectTo: `${baseUrl}/auth/callback?next=${callbackUrl}`,
+          emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback?next=${callbackUrl}`,
         },
       });
       if (error) throw error;

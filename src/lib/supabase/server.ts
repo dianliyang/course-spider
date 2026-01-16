@@ -4,10 +4,10 @@ import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { Course } from "../scrapers/types";
 
 export async function getBaseUrl() {
-  const envUrl = process.env.NEXT_PUBLIC_VERCEL_URL;
+  const envUrl = process.env.NEXT_PUBLIC_APP_URL;
   if (envUrl) return envUrl;
   else {
-    throw new Error("Missing NEXT_PUBLIC_VERCEL_URL environment variable");
+    throw new Error("Missing NEXT_PUBLIC_APP_URL environment variable");
   }
 }
 
