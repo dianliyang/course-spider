@@ -6,17 +6,17 @@ export default function LandingNavbar() {
   return (
     <FloatingNavWrapper initialClassName="w-full bg-transparent translate-y-0 border-b border-transparent">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-24">
+        <div className="flex justify-between items-center h-full min-h-[4rem] transition-all duration-500 py-3 md:py-4">
             
             {/* Logo Section */}
             <div className="flex items-center">
-              <Link href="/" className="group flex items-center gap-4">
+              <Link href="/" className="group flex items-center gap-3">
                 <Image 
                   src="/code-campus-logo.svg" 
                   alt="CodeCampus" 
-                  width={40} 
-                  height={40} 
-                  className="w-10 h-10 transition-transform group-hover:-rotate-6"
+                  width={36} 
+                  height={36} 
+                  className="w-9 h-9 transition-transform group-hover:-rotate-6"
                 />
                 <div className="flex flex-col">
                   <span className="text-2xl font-black tracking-tighter text-gray-900 uppercase leading-none">CodeCampus</span>
@@ -61,7 +61,6 @@ export default function LandingNavbar() {
 
           </div>
         </div>
-      </div>
     </FloatingNavWrapper>
   );
 }
