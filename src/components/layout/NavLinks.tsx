@@ -19,7 +19,7 @@ export default function NavLinks() {
           <Link 
             key={item.name} 
             href={item.href} 
-            className={`relative px-5 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-300 flex items-center justify-center ${
+            className={`relative px-5 py-2 rounded-full text-xs font-black uppercase tracking-[0.2em] transition-all duration-300 flex items-center justify-center ${
               isActive 
                 ? 'bg-white text-gray-900 shadow-[0_2px_8px_rgba(0,0,0,0.08)]' 
                 : 'text-gray-500 hover:text-gray-900 hover:bg-white/50'

@@ -45,22 +45,20 @@ export default function LandingNavbar({ dict }: { dict: any }) {
                 <Link 
                   key={item.name} 
                   href={item.href} 
-                  className={`group relative flex items-center justify-center transition-all duration-300 ${
+                  className={`group relative flex items-center justify-center transition-all duration-500 ${
                     scrolled 
                       ? 'w-10 h-10 rounded-full hover:bg-gray-100 text-gray-500 hover:text-brand-blue' 
-                      : 'px-4 py-2 gap-3'
+                      : 'px-4 py-2 gap-2'
                   }`}
                   title={scrolled ? item.name : undefined}
                 >
-                  <i className={`${item.icon} text-sm transition-transform group-hover:scale-110 ${!scrolled && 'text-gray-400 group-hover:text-brand-blue'}`}></i>
+                  <i className={`${item.icon} text-sm transition-all duration-500 group-hover:scale-110 ${!scrolled && 'text-gray-400 group-hover:text-brand-blue'}`}></i>
                   
-                  {!scrolled && (
-                    <>
-                      <span className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] group-hover:text-gray-900 transition-colors">
-                        {item.name}
-                      </span>
-                    </>
-                  )}
+                  <span className={`text-xs font-black text-gray-500 uppercase tracking-[0.2em] group-hover:text-gray-900 transition-all duration-500 overflow-hidden whitespace-nowrap ${
+                    scrolled ? 'max-w-0 opacity-0' : 'max-w-[150px] opacity-100'
+                  }`}>
+                    {item.name}
+                  </span>
                 </Link>
               ))}
             </div>
@@ -69,18 +67,19 @@ export default function LandingNavbar({ dict }: { dict: any }) {
             <div className="flex items-center gap-6">
               <Link 
                 href="/courses" 
-                className={`flex items-center justify-center btn-primary group transition-all duration-500 ${
+                className={`flex items-center justify-center btn-primary group transition-all duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1.0)] ${
                    scrolled ? 'w-10 h-10 rounded-full !px-0 !py-0' : 'gap-4 px-6 py-3'
                 }`}
               >
-                {scrolled ? (
-                  <i className="fa-solid fa-arrow-right text-sm"></i>
-                ) : (
-                  <>
-                    {dict?.enter || "Enter"}
-                    <i className="fa-solid fa-arrow-right-long transition-transform group-hover:translate-x-1"></i>
-                  </>
-                )}
+                <span className={`transition-all duration-500 overflow-hidden whitespace-nowrap ${
+                  scrolled ? 'max-w-0 opacity-0' : 'max-w-[100px] opacity-100'
+                }`}>
+                  {dict?.enter || "Enter"}
+                </span>
+                
+                <i className={`fa-solid transition-all duration-500 ${
+                  scrolled ? 'fa-arrow-right text-sm' : 'fa-arrow-right-long group-hover:translate-x-1'
+                }`}></i>
               </Link>
             </div>
 
