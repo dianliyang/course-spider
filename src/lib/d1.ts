@@ -41,6 +41,8 @@ export async function queryD1<T = unknown>(
   sql: string,
   params: unknown[] = []
 ): Promise<T[]> {
+  console.log(`[D1 Query] SQL: ${sql.substring(0, 100)}... Params: ${JSON.stringify(params)}`);
+  
   // Utility to clone results and avoid "immutable" errors in Edge runtime
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const clone = (obj: any) => {
@@ -157,30 +159,40 @@ export async function queryD1<T = unknown>(
   }
 
   if (process.env.NODE_ENV === "development") {
-    // Mock Verification Tokens
-    if (sql.includes("INSERT INTO verification_token")) {
+    const normalizedSql = sql.toLowerCase();
+    
+    // Mock Verification Tokens - Handle both singular and plural for flexibility
+    if (normalizedSql.includes("insert into verification_token")) {
       const [identifier, token, expires] = params as [string, string, string];
       const tokens = getMockTokens();
-      tokens.push({ identifier, token, expires });
-      saveMockTokens(tokens);
-      console.log(`[D1 Mock] Token saved for ${identifier}, total: ${tokens.length}`);
+      // Remove any existing for same identifier/token to prevent duplicates
+      const filtered = tokens.filter(t => !(t.identifier === identifier && t.token === token));
+      filtered.push({ identifier, token, expires });
+      saveMockTokens(filtered);
+      console.log(`[D1 Mock] Token saved for ${identifier}, token: ${token.substring(0, 8)}... Total: ${filtered.length}`);
       return [{ success: true }] as unknown as T[];
     }
 
-    if (sql.includes("SELECT * FROM verification_token WHERE identifier = ? AND token = ?")) {
-      const [identifier, token] = params as [string, string];
+    if (normalizedSql.includes("select") && normalizedSql.includes("from verification_token")) {
+      const identifier = params[0] as string;
+      const token = params[1] as string;
       const tokens = getMockTokens();
       const found = tokens.find(t => t.identifier === identifier && t.token === token);
-      console.log(`[D1 Mock] Token lookup for ${identifier}: ${found ? "Found" : "Not Found"}`);
+      console.log(`[D1 Mock] Token lookup for ${identifier}, token: ${token?.substring(0, 8)}... Result: ${found ? "Found" : "Not Found"}`);
+      if (!found) {
+        console.log(`[D1 Mock] Current tokens in store:`, tokens.map(t => `${t.identifier}:${t.token.substring(0, 8)}...`).join(', '));
+      }
       return (found ? [clone(found)] : []) as unknown as T[];
     }
 
-    if (sql.includes("DELETE FROM verification_token WHERE identifier = ? AND token = ?")) {
-      const [identifier, token] = params as [string, string];
+    if (normalizedSql.includes("delete") && normalizedSql.includes("from verification_token")) {
+      const identifier = params[0] as string;
+      const token = params[1] as string;
       let tokens = getMockTokens();
+      const initialLen = tokens.length;
       tokens = tokens.filter(t => !(t.identifier === identifier && t.token === token));
       saveMockTokens(tokens);
-      console.log(`[D1 Mock] Token deleted for ${identifier}, token: ${token.substring(0, 8)}... Remaining: ${tokens.length}`);
+      console.log(`[D1 Mock] Token deleted for ${identifier}. Initial: ${initialLen}, Remaining: ${tokens.length}`);
       return [{ success: true }] as unknown as T[];
     }
 

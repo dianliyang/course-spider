@@ -24,8 +24,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         process.env.EMAIL_FROM ||
         "CodeCampus <no-reply@codecampus.example.com>",
       maxAge: 60 * 60, // Increased to 60 minutes
+      generateVerificationToken() {
+        const token = crypto.randomUUID();
+        console.log(`[Auth] Generated Verification Token: ${token.substring(0, 8)}...`);
+        return token;
+      },
       async sendVerificationRequest({ identifier: email, url }) {
-        console.log(`[Auth] Dispatching Link for ${email}`);
+        console.log(`[Auth] Dispatching Link for ${email}. URL: ${url}`);
 
         const link = url;
 
@@ -104,29 +109,52 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   ],
   callbacks: {
     async signIn({ user, account, email }) {
-      console.log("[Auth] signIn callback", account?.provider, user?.email);
+      console.log("[Auth] signIn callback start", { 
+        provider: account?.provider, 
+        email: user?.email,
+        hasUser: !!user
+      });
 
       // Allow sign in for resend/email providers
       if (account?.provider === "resend" || account?.provider === "email") {
+        console.log("[Auth] signIn approved for resend/email");
         return true;
       }
 
+      console.log("[Auth] signIn denied");
       return false;
     },
 
-    async session({ session, token }) {
-      console.log("[Auth] session callback");
+    async session({ session, token, user }) {
+      console.log("[Auth] session callback start", { 
+        hasToken: !!token, 
+        tokenId: token?.id,
+        hasUser: !!user,
+        userId: user?.id
+      });
 
-      // Add user id from token to session
-      if (token?.id && session.user) {
-        session.user.id = token.id as string;
+      // Add user id from token or user object to session
+      const userId = (token?.id || user?.id) as string;
+      
+      if (userId) {
+        console.log(`[Auth] Returning enriched session for user: ${userId}`);
+        return {
+          ...session,
+          user: {
+            ...session.user,
+            id: userId
+          }
+        };
       }
 
       return session;
     },
 
-    async authorized({ auth }) {
-      return !!auth;
+    async authorized({ auth, request }) {
+      const isLoggedIn = !!auth?.user;
+      const path = request.nextUrl.pathname;
+      console.log(`[Auth] authorized check for ${path}. LoggedIn: ${isLoggedIn}, User: ${auth?.user?.email || 'none'}`);
+      return isLoggedIn;
     },
   },
 });
