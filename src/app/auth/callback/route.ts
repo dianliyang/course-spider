@@ -12,10 +12,11 @@ export async function GET(request: Request) {
     const supabase = await createClient()
     const { error } = await supabase.auth.exchangeCodeForSession(code)
     if (!error) {
-      return NextResponse.redirect(`${baseUrl}${next}`)
+      // Use a relative URL for the final redirect to stay on the same domain
+      return NextResponse.redirect(new URL(next, request.url))
     }
   }
 
   // return the user to an error page with instructions
-  return NextResponse.redirect(`${baseUrl}/login?error=Verification`)
+  return NextResponse.redirect(new URL(`/login?error=Verification`, request.url))
 }
