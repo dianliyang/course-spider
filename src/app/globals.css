@@ -53,9 +53,9 @@ body {
 }
 
 @utility btn-primary {
-  @apply btn-base bg-brand-dark text-white rounded-xl px-8 py-3.5 hover:bg-brand-blue hover:-translate-y-0.5 active:scale-95;
+  @apply btn-base bg-brand-dark text-white rounded-md px-8 py-3.5 hover:bg-gray-800 active:scale-95;
 }
 
 @utility btn-secondary {
-  @apply btn-base border border-gray-200 text-gray-500 rounded-xl px-8 py-3 hover:border-brand-blue hover:text-brand-blue active:scale-95;
+  @apply btn-base border border-gray-200 text-gray-500 rounded-md px-8 py-3 hover:border-gray-900 hover:text-gray-900 active:scale-95;
 }

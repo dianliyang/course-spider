@@ -51,7 +51,7 @@ export default function LandingNavbar() {
           <div className="flex items-center gap-6">
             <Link 
               href="/courses" 
-              className="hidden sm:inline-flex items-center gap-4 btn-primary group shadow-xl shadow-brand-dark/10 ring-1 ring-gray-900/5 hover:ring-brand-blue/30"
+              className="hidden sm:inline-flex items-center gap-4 btn-primary group"
             >
               Enter Network
               <i className="fa-solid fa-arrow-right-long transition-transform group-hover:translate-x-1"></i>
