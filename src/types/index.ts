@@ -8,6 +8,7 @@ export interface Course {
   popularity: number;
   workload: string;
   isHidden: boolean;
+  isInternal: boolean;
   fields: string[];
   semesters: string[];
   level?: string;

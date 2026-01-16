@@ -116,6 +116,11 @@ async function CourseDetailData({ id, dict }: { id: string; dict: any }) {
               <span className="text-xs font-black text-brand-blue tracking-widest bg-brand-blue/5 px-2 py-1 rounded">
                 {fullCourse.university}
               </span>
+              {fullCourse.isInternal && (
+                <span className="text-[10px] font-black bg-brand-blue text-white px-2 py-0.5 rounded uppercase tracking-widest">
+                  Internal
+                </span>
+              )}
               <span className="text-xs font-mono font-bold text-gray-400">
                 {fullCourse.courseCode}
               </span>

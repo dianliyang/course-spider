@@ -74,11 +74,8 @@ export class SupabaseDatabase {
 
     const supabase = createAdminClient();
 
-    // Clear existing
-    await this.clearUniversity(university);
-
-    // Bulk insert
-    const toInsert = courses.map((c) => ({
+    // Bulk upsert based on university and course_code
+    const toUpsert = courses.map((c) => ({
       university: c.university,
       course_code: c.courseCode,
       title: c.title,
@@ -93,9 +90,14 @@ export class SupabaseDatabase {
       popularity: c.popularity || 0,
       workload: c.workload,
       is_hidden: c.isHidden || false,
+      is_internal: c.isInternal || false,
     }));
 
-    const { error } = await supabase.from("courses").insert(toInsert);
+    const { error } = await supabase
+      .from("courses")
+      .upsert(toUpsert, { onConflict: 'university,course_code' });
+      
+    if (error) {
     if (error) {
       console.error(
         `[Supabase] Error saving courses for ${university}:`,
@@ -181,5 +183,6 @@ export function mapCourseFromRow(
     popularity: Number(row.popularity || 0),
     workload: String(row.workload || ""),
     isHidden: Boolean(row.is_hidden),
+    isInternal: Boolean(row.is_internal),
   };
 }

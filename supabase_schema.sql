@@ -20,7 +20,9 @@ CREATE TABLE IF NOT EXISTS courses (
   popularity INTEGER DEFAULT 0,
   workload TEXT,
   is_hidden BOOLEAN DEFAULT FALSE,
-  created_at TIMESTAMPTZ DEFAULT now()
+  is_internal BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  UNIQUE(university, course_code)
 );
 
 CREATE INDEX IF NOT EXISTS idx_courses_university ON courses(university);

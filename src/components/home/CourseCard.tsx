@@ -102,6 +102,11 @@ export default function CourseCard({
             <h4 className="text-xs text-gray-400 font-bold truncate tracking-widest">
               {course.university}
             </h4>
+            {course.isInternal && (
+              <span className="text-[8px] font-black bg-brand-blue/10 text-brand-blue px-1.5 py-0.5 rounded uppercase tracking-tighter">
+                Internal
+              </span>
+            )}
             <span className="text-[10px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded font-mono font-black">
               {course.courseCode}
             </span>
