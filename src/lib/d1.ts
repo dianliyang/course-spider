@@ -60,7 +60,24 @@ export async function queryD1<T = unknown>(
   // For local development, rely on 'wrangler dev' or Remote D1 fallback.
 
   if (process.env.NODE_ENV === "development") {
-    console.warn("[D1] No database binding found and remote fallback inactive. Query returning empty.");
+    console.warn("[D1] No database binding found. Using Mock Data for dev.");
+    
+    // Mock Guest User Fetch
+    if (sql.includes("SELECT * FROM users WHERE email = ?") && params[0] === "guest@codecampus.example.com") {
+        return [{
+            id: "guest-user-id",
+            name: "Guest Scholar",
+            email: "guest@codecampus.example.com",
+            image: null,
+            provider: "credentials",
+            created_at: new Date().toISOString()
+        }] as unknown as T[];
+    }
+
+    // Mock User Courses (Empty but valid)
+    if (sql.includes("FROM user_courses")) {
+        return [] as T[];
+    }
   }
 
   return [];
