@@ -3,9 +3,9 @@ import Globe from "@/components/ui/Globe";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function Mission({ dict }: { dict: any }) {
   return (
-    <section id="mission" className="min-h-screen flex items-center py-20 bg-gray-950 relative overflow-hidden">
+    <section id="mission" className="min-h-screen flex items-center py-20 bg-[#0B1120] relative overflow-hidden border-t border-white/10">
       {/* Background Ambience */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_left,_var(--tw-gradient-stops))] from-brand-blue/5 via-gray-950 to-gray-950 pointer-events-none"></div>
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-indigo-900/20 via-[#0B1120] to-[#0B1120] pointer-events-none"></div>
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-20 items-center">
