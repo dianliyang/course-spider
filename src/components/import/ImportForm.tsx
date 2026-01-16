@@ -22,12 +22,37 @@ interface ImportFormProps {
     internal_public: string;
     internal_private: string;
     form_desc: string;
+    form_dept: string;
+    form_units: string;
+    form_uni_placeholder: string;
+    form_code_placeholder: string;
+    form_title_placeholder: string;
+    form_dept_placeholder: string;
+    form_units_placeholder: string;
+    form_desc_placeholder: string;
     submit_btn: string;
     submit_loading: string;
     bulk_title: string;
     bulk_desc: string;
     bulk_drop: string;
     bulk_or: string;
+    msg_success: string;
+    msg_error_network: string;
+    msg_bulk_success: string;
+    protocol_title: string;
+    protocol_requirements: string;
+    protocol_json_blueprint: string;
+    protocol_csv_headers: string;
+    req_required: string;
+    req_optional: string;
+    note_uni: string;
+    note_code: string;
+    note_title: string;
+    note_internal: string;
+    note_desc: string;
+    note_url: string;
+    note_dept: string;
+    note_units: string;
   };
 }
 
@@ -59,7 +84,7 @@ export default function ImportForm({ dict }: ImportFormProps) {
       });
       const data = await res.json() as ApiResponse;
       if (res.ok) {
-        setMessage({ type: "success", text: data.message || "Success" });
+        setMessage({ type: "success", text: dict.msg_success });
         setFormData({
           university: "", 
           courseCode: "", 
@@ -77,7 +102,7 @@ export default function ImportForm({ dict }: ImportFormProps) {
       }
     } catch (err: unknown) {
       console.error("Submission error:", err);
-      setMessage({ type: "error", text: "Network sync failure" });
+      setMessage({ type: "error", text: dict.msg_error_network });
     }
     finally { setLoading(false); }
   };
@@ -116,7 +141,7 @@ export default function ImportForm({ dict }: ImportFormProps) {
         const data = await res.json() as ApiResponse;
         
         if (res.ok) {
-          setMessage({ type: "success", text: data.message || "Bulk Success" });
+          setMessage({ type: "success", text: dict.msg_bulk_success });
           if (fileInputRef.current) fileInputRef.current.value = "";
           setTimeout(() => router.push("/study-plan"), 3000);
         } else {
@@ -125,7 +150,7 @@ export default function ImportForm({ dict }: ImportFormProps) {
 
     } catch (err: unknown) {
       console.error("Bulk upload error:", err);
-      setMessage({ type: "error", text: "Failed to import courses. Please check the file format." });
+      setMessage({ type: "error", text: dict.msg_error_network });
       } finally {
         setLoading(false);
       }
@@ -165,7 +190,7 @@ export default function ImportForm({ dict }: ImportFormProps) {
                     </label>
                     <input 
                       required 
-                      placeholder="e.g. Stanford"
+                      placeholder={dict.form_uni_placeholder}
                       className="bg-transparent border-b-2 border-gray-100 focus:border-brand-blue outline-none py-3 text-xl font-black transition-all placeholder:text-gray-100 uppercase tracking-tighter"
                       value={formData.university} 
                       onChange={(e) => setFormData({...formData, university: e.target.value})} 
@@ -177,7 +202,7 @@ export default function ImportForm({ dict }: ImportFormProps) {
                     </label>
                     <input 
                       required 
-                      placeholder="e.g. CS106A"
+                      placeholder={dict.form_code_placeholder}
                       className="bg-transparent border-b-2 border-gray-100 focus:border-brand-blue outline-none py-3 text-xl font-black transition-all placeholder:text-gray-100 uppercase tracking-tighter"
                       value={formData.courseCode} 
                       onChange={(e) => setFormData({...formData, courseCode: e.target.value})} 
@@ -191,7 +216,7 @@ export default function ImportForm({ dict }: ImportFormProps) {
                   </label>
                   <input 
                     required 
-                    placeholder="e.g. Programming Methodology"
+                    placeholder={dict.form_title_placeholder}
                     className="bg-transparent border-b-2 border-gray-100 focus:border-brand-blue outline-none py-3 text-xl font-black transition-all placeholder:text-gray-100 uppercase tracking-tighter"
                     value={formData.title} 
                     onChange={(e) => setFormData({...formData, title: e.target.value})} 
@@ -201,10 +226,10 @@ export default function ImportForm({ dict }: ImportFormProps) {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-12 pt-4">
                   <div className="flex flex-col gap-3">
                     <label className="text-xs font-black text-gray-400 uppercase tracking-[0.2em]">
-                      Department
+                      {dict.form_dept}
                     </label>
                     <input 
-                      placeholder="e.g. Computer Science"
+                      placeholder={dict.form_dept_placeholder}
                       className="bg-transparent border-b-2 border-gray-100 focus:border-brand-blue outline-none py-3 text-sm font-bold transition-all placeholder:text-gray-100"
                       value={formData.department} 
                       onChange={(e) => setFormData({...formData, department: e.target.value})} 
@@ -212,10 +237,10 @@ export default function ImportForm({ dict }: ImportFormProps) {
                   </div>
                   <div className="flex flex-col gap-3">
                     <label className="text-xs font-black text-gray-400 uppercase tracking-[0.2em]">
-                      Units / Credits
+                      {dict.form_units}
                     </label>
                     <input 
-                      placeholder="e.g. 3.0"
+                      placeholder={dict.form_units_placeholder}
                       className="bg-transparent border-b-2 border-gray-100 focus:border-brand-blue outline-none py-3 text-sm font-bold transition-all placeholder:text-gray-100"
                       value={formData.units} 
                       onChange={(e) => setFormData({...formData, units: e.target.value})} 
@@ -279,7 +304,7 @@ export default function ImportForm({ dict }: ImportFormProps) {
                   </label>
                   <textarea 
                     rows={4} 
-                    placeholder="Enter detailed curriculum overview and learning objectives..."
+                    placeholder={dict.form_desc_placeholder}
                     className="bg-gray-50 border border-gray-100 rounded-3xl p-8 outline-none text-sm font-medium transition-all focus:ring-4 focus:ring-brand-blue/5 focus:bg-white focus:border-brand-blue/20"
                     value={formData.description} 
                     onChange={(e) => setFormData({...formData, description: e.target.value})} 
@@ -308,22 +333,22 @@ export default function ImportForm({ dict }: ImportFormProps) {
             <div className="mt-32 pt-24 border-t border-gray-100">
               <div className="flex items-center gap-3 mb-16">
                 <div className="w-2 h-2 bg-brand-blue rounded-full"></div>
-                <h4 className="text-sm font-black text-gray-900 uppercase tracking-[0.4em]">Data Structure Protocol</h4>
+                <h4 className="text-sm font-black text-gray-900 uppercase tracking-[0.4em]">{dict.protocol_title}</h4>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-20">
                 <div className="space-y-10">
-                  <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest block">Field Requirements</span>
+                  <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest block">{dict.protocol_requirements}</span>
                   <div className="space-y-6">
                     {[ 
-                      { key: 'university', req: true, note: 'Official school name' },
-                      { key: 'courseCode', req: true, note: 'Unique alphanumeric ID' },
-                      { key: 'title', req: true, note: 'Full name of course' },
-                      { key: 'isInternal', req: false, note: 'Boolean: true/false' },
-                      { key: 'description', req: false, note: 'Optional overview' },
-                      { key: 'url', req: false, note: 'Link to catalog' },
-                      { key: 'department', req: false, note: 'Academic department' },
-                      { key: 'units', req: false, note: 'Credit value' },
+                      { key: 'university', req: true, note: dict.note_uni },
+                      { key: 'courseCode', req: true, note: dict.note_code },
+                      { key: 'title', req: true, note: dict.note_title },
+                      { key: 'isInternal', req: false, note: dict.note_internal },
+                      { key: 'description', req: false, note: dict.note_desc },
+                      { key: 'url', req: false, note: dict.note_url },
+                      { key: 'department', req: false, note: dict.note_dept },
+                      { key: 'units', req: false, note: dict.note_units },
                     ].map(f => (
                       <div key={f.key} className="flex items-center justify-between border-b border-gray-50 pb-4">
                         <div>
@@ -331,9 +356,9 @@ export default function ImportForm({ dict }: ImportFormProps) {
                           <p className="text-[10px] text-gray-400 font-bold uppercase tracking-tight mt-1">{f.note}</p>
                         </div>
                         {f.req ? (
-                          <span className="text-[9px] font-black text-red-500 uppercase tracking-widest">Required *</span>
+                          <span className="text-[9px] font-black text-red-500 uppercase tracking-widest">{dict.req_required}</span>
                         ) : (
-                          <span className="text-[9px] font-black text-gray-300 uppercase tracking-widest">Optional</span>
+                          <span className="text-[9px] font-black text-gray-300 uppercase tracking-widest">{dict.req_optional}</span>
                         )}
                       </div>
                     ))}
@@ -342,7 +367,7 @@ export default function ImportForm({ dict }: ImportFormProps) {
 
                 <div className="space-y-12">
                   <div>
-                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-6">JSON Blueprint</span>
+                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-6">{dict.protocol_json_blueprint}</span>
                     <pre className="bg-gray-900 p-8 rounded-3xl text-[11px] font-mono text-blue-300 overflow-x-auto">
 {`[
   {
@@ -353,7 +378,7 @@ export default function ImportForm({ dict }: ImportFormProps) {
 ]`}                    </pre>
                   </div>
                   <div>
-                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-6">CSV Headers</span>
+                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-6">{dict.protocol_csv_headers}</span>
                     <div className="flex flex-wrap gap-2">
                       {['university', 'courseCode', 'title'].map(h => (
                         <span key={h} className="bg-gray-50 border border-gray-100 px-4 py-2 rounded-xl text-[10px] font-mono font-bold text-gray-600">
