@@ -1,4 +1,4 @@
-import Globe from "@/components/ui/Globe";
+import KnowledgeGraph from "@/components/home/KnowledgeGraph";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function Mission({ dict }: { dict: any }) {
@@ -44,22 +44,17 @@ export default function Mission({ dict }: { dict: any }) {
             </div>
           </div>
           
-          <div className="relative group perspective-1000">
-             {/* Abstract Visual Decor */}
-             <div className="aspect-square bg-white rounded-[2.5rem] border border-slate-100 flex items-center justify-center relative overflow-hidden transition-all duration-700 group-hover:rotate-y-6 group-hover:scale-[1.02] shadow-[0_20px_60px_rgba(0,0,0,0.05)] ring-1 ring-slate-900/5">
-                <Globe className="opacity-90 grayscale-[0.2] contrast-125" />
+          <div className="relative group">
+             {/* Data Visualization Container */}
+             <div className="aspect-square bg-slate-50 rounded-[2rem] border border-slate-200 flex items-center justify-center relative overflow-hidden transition-all duration-700 shadow-xl shadow-slate-200/50">
+                <KnowledgeGraph />
                 
-                {/* Center Glow */}
-                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                   <div className="w-64 h-64 bg-gradient-to-tr from-cyan-100/40 to-purple-100/40 blur-[80px] rounded-full animate-pulse-slow mix-blend-multiply"></div>
-                </div>
-                
-                {/* Inner Depth Shadow */}
-                <div className="absolute inset-0 rounded-[2.5rem] shadow-[inset_0_0_40px_rgba(0,0,0,0.02)] pointer-events-none"></div>
+                {/* Overlay Vignette */}
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_30%,_var(--tw-gradient-stops))] from-transparent to-slate-50/80 pointer-events-none"></div>
              </div>
              
              {/* Floating Code Snippet Card */}
-             <div className="absolute -bottom-8 -left-8 bg-white/90 border border-white/60 p-6 rounded-2xl shadow-[0_20px_40px_rgba(0,0,0,0.08)] hidden lg:block animate-float backdrop-blur-xl ring-1 ring-slate-900/5">
+             <div className="absolute -bottom-8 -left-8 bg-white border border-slate-200 p-6 rounded-xl shadow-2xl hidden lg:block animate-float backdrop-blur-md">
                 <div className="flex justify-between items-center mb-4 border-b border-slate-100 pb-3">
                   <div className="flex gap-2">
                     <div className="w-2.5 h-2.5 rounded-full bg-slate-200"></div>
