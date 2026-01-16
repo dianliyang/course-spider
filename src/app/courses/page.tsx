@@ -15,9 +15,9 @@ interface PageProps {
 export default async function CoursesPage({ searchParams }: PageProps) {
   const session = await auth();
   console.log("CoursesPage Session Check:", session);
-  if (!session) {
-    redirect("/login");
-  }
+  // if (!session) {
+  //   redirect("/login");
+  // }
 
   const params = await searchParams;
 

@@ -22,7 +22,7 @@ interface PageProps {
 export default async function StudyPlanPage({ searchParams }: PageProps) {
   const session = await auth();
   if (!session?.user?.email) {
-    redirect("/login");
+    return <div className="p-10 text-center font-mono">Please log in to view your study plan.</div>;
   }
 
   const params = await searchParams;

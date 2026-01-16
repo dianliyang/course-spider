@@ -7,7 +7,7 @@ import { redirect } from "next/navigation";
 export default async function ProfilePage() {
   const session = await auth();
   if (!session?.user?.email) {
-    redirect("/login");
+    return <div className="p-10 text-center font-mono">Please log in to view your profile.</div>;
   }
   
   const user = await queryD1<{ id: number; name: string; email: string; image: string; provider: string; created_at: string }>(
