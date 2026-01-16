@@ -25,8 +25,8 @@ export default function NavLinks({
   return (
     <div className={`hidden lg:flex items-center transition-all duration-500 ${
       collapsed 
-        ? 'gap-2 bg-transparent border-none' 
-        : `gap-1 p-1.5 rounded-full border ${isDark ? 'bg-black/40 border-white/5 shadow-2xl' : 'bg-gray-100/80 border-gray-200/50'}`
+        ? 'gap-3 bg-transparent border-none' 
+        : `gap-1.5 p-1.5 rounded-full border ${isDark ? 'bg-black/40 border-white/5 shadow-2xl' : 'bg-gray-100/80 border-gray-200/50'}`
     }`}>
       {navLinks.map((item) => {
         const isActive = pathname === item.href;
@@ -37,7 +37,7 @@ export default function NavLinks({
             className={`group relative flex items-center justify-center transition-all duration-500 ${
               collapsed 
                 ? 'w-10 h-10 rounded-full hover:bg-white/10 text-gray-400 hover:text-white' 
-                : `px-5 py-2.5 rounded-full text-xs font-black uppercase tracking-[0.2em] ${
+                : `px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-[0.2em] ${
                     isActive 
                       ? (isDark ? 'bg-white text-gray-950 shadow-[0_0_15px_rgba(255,255,255,0.3)]' : 'bg-white text-gray-900 shadow-[0_2px_8px_rgba(0,0,0,0.08)]') 
                       : (isDark ? 'text-gray-400 hover:text-white hover:bg-white/10' : 'text-slate-400 hover:text-gray-900 hover:bg-white/50')
