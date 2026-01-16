@@ -21,9 +21,7 @@ interface PageProps {
 
 export default async function StudyPlanPage({ searchParams }: PageProps) {
   const session = await auth();
-  if (!session?.user?.email) {
-    return <div className="p-10 text-center font-mono">Please log in to view your study plan.</div>;
-  }
+  const email = session?.user?.email || "guest@codecampus.example.com";
 
   const params = await searchParams;
   const focusView = (params.focusView as string) || "track";
@@ -41,7 +39,7 @@ export default async function StudyPlanPage({ searchParams }: PageProps) {
     WHERE uc.user_id = (SELECT id FROM users WHERE email = ? LIMIT 1)
     GROUP BY c.id, uc.status, uc.progress, uc.updated_at
     ORDER BY uc.updated_at DESC
-  `, [session.user.email]);
+  `, [email]);
 
   const enrolledCourses: EnrolledCourse[] = enrolledRows.map(row => {
     const course = mapCourseFromRow(row);

@@ -6,12 +6,10 @@ import { redirect } from "next/navigation";
 
 export default async function ProfilePage() {
   const session = await auth();
-  if (!session?.user?.email) {
-    return <div className="p-10 text-center font-mono">Please log in to view your profile.</div>;
-  }
+  const email = session?.user?.email || "guest@codecampus.example.com";
   
   const user = await queryD1<{ id: number; name: string; email: string; image: string; provider: string; created_at: string }>(
-    'SELECT * FROM users WHERE email = ? LIMIT 1', [session.user.email]
+    'SELECT * FROM users WHERE email = ? LIMIT 1', [email]
   );
 
   const profile = user[0];

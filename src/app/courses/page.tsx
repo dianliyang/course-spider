@@ -62,15 +62,15 @@ async function CourseListData({ params }: { params: { [key: string]: string | st
   const levels = ((params.levels as string) || "").split(",").filter(Boolean);
 
   let initialEnrolledIds: number[] = [];
-  if (session?.user?.email) {
-     const enrolledRows = await queryD1<{ course_id: number }>(
-       'SELECT course_id FROM user_courses WHERE user_id = (SELECT id FROM users WHERE email = ? LIMIT 1)',
-       [session.user.email]
-     );
-     initialEnrolledIds = enrolledRows.map(r => r.course_id);
-  }
+  const email = session?.user?.email || "guest@codecampus.example.com";
+  const enrolledRows = await queryD1<{ course_id: number }>(
+    'SELECT course_id FROM user_courses WHERE user_id = (SELECT id FROM users WHERE email = ? LIMIT 1)',
+    [email]
+  );
+  initialEnrolledIds = enrolledRows.map(r => r.course_id);
 
-  const dbCourses = await fetchCourses(page, size, offset, query, sort, enrolledOnly, universities, fields, levels, session?.user?.email);
+  const email = session?.user?.email || "guest@codecampus.example.com";
+  const dbCourses = await fetchCourses(page, size, offset, query, sort, enrolledOnly, universities, fields, levels, email);
 
   return (
     <CourseList 

@@ -4,14 +4,12 @@ import { auth } from '@/auth';
 
 export async function GET() {
   const session = await auth();
-  if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const email = session?.user?.email || "guest@codecampus.example.com";
 
   try {
     const rows = await queryD1<{ course_id: number }>(
       'SELECT course_id FROM user_courses WHERE user_id = (SELECT id FROM users WHERE email = ? LIMIT 1)',
-      [session.user?.email || ""]
+      [email]
     );
 
     const enrolledIds = rows.map(r => r.course_id);

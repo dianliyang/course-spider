@@ -42,27 +42,21 @@ export default async function Navbar() {
               })}
             </div>
             
-            {session ? (
+            {session || true ? (
               <div className="flex items-center gap-8 pl-10 border-l border-gray-100">
                 <Link href="/profile" className="flex items-center gap-4 group">
                   <div className="hidden sm:flex flex-col items-end -space-y-1">
-                    <span className="text-[10px] font-black text-gray-900 uppercase tracking-tight">{session.user?.name || "Scholar"}</span>
+                    <span className="text-[10px] font-black text-gray-900 uppercase tracking-tight">{session?.user?.name || "Guest Scholar"}</span>
                     <span className="text-[9px] font-bold text-brand-green uppercase tracking-widest">Online</span>
                   </div>
                   <div className="w-10 h-10 bg-gray-50 rounded-full flex items-center justify-center text-gray-400 border border-gray-200 group-hover:border-brand-blue group-hover:text-brand-blue transition-all">
                     <i className="fa-solid fa-user-shield text-sm"></i>
                   </div>
                 </Link>
-                <LogoutButton />
+                {session && <LogoutButton />}
               </div>
-            ) : (
-              <Link href="/login" className="flex items-center gap-4 pl-10 border-l border-gray-100 group">
-                <div className="w-10 h-10 bg-brand-dark rounded-full flex items-center justify-center text-white border border-gray-900 group-hover:bg-brand-blue group-hover:border-brand-blue transition-all">
-                  <i className="fa-solid fa-right-to-bracket text-xs"></i>
-                </div>
-                <span className="text-[10px] font-black text-gray-900 uppercase tracking-widest group-hover:text-brand-blue transition-colors">Login</span>
-              </Link>
             )}
+          </div>
           </div>
         </div>
       </div>
