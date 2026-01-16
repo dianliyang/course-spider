@@ -46,7 +46,7 @@
     },
     "pro": {
       "name": "Professional",
-      "price": "$9",
+      "price": "$5",
       "period": "/mo",
       "desc": "Advanced analytics for serious learning planning.",
       "features": ["Degree Audit Tools", "Export Transcripts", "Learning Velocity Charts", "Priority Support"],
@@ -54,7 +54,7 @@
     },
     "elite": {
       "name": "Expert",
-      "price": "$29",
+      "price": "$15",
       "period": "/mo",
       "desc": "High-level intelligence and specialized tools.",
       "features": ["Unlimited Roadmap Plans", "Cross-Uni Gap Analysis", "API Access", "Dedicated Support"],
