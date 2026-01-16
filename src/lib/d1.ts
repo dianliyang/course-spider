@@ -55,7 +55,7 @@ export async function queryD1<T = unknown>(sql: string, params: unknown[] = []):
   }
 
   // 4. Guest Mock
-  if (config.isDev && sql.includes("user WHERE email = ?") && params[0] === "guest@codecampus.example.com") {
+  if (config.isDev && sql.includes("users WHERE email = ?") && params[0] === "guest@codecampus.example.com") {
     return [clone({
       id: "guest",
       name: "Guest User",

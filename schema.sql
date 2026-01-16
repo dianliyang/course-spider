@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS course_fields (
 CREATE INDEX IF NOT EXISTS idx_course_fields_field ON course_fields(field_id);
 
 -- Finalized Auth.js D1 Schema with TEXT dates
-CREATE TABLE IF NOT EXISTS user (
+CREATE TABLE IF NOT EXISTS users (
   id TEXT PRIMARY KEY,
   name TEXT,
   email TEXT UNIQUE,
@@ -45,7 +45,7 @@ CREATE TABLE IF NOT EXISTS user (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE IF NOT EXISTS account (
+CREATE TABLE IF NOT EXISTS accounts (
   id TEXT PRIMARY KEY,
   userId TEXT NOT NULL,
   type TEXT NOT NULL,
@@ -58,19 +58,19 @@ CREATE TABLE IF NOT EXISTS account (
   scope TEXT,
   id_token TEXT,
   session_state TEXT,
-  FOREIGN KEY (userId) REFERENCES user(id) ON DELETE CASCADE,
+  FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE,
   UNIQUE(provider, providerAccountId)
 );
 
-CREATE TABLE IF NOT EXISTS session (
+CREATE TABLE IF NOT EXISTS sessions (
   id TEXT PRIMARY KEY,
   sessionToken TEXT UNIQUE NOT NULL,
   userId TEXT NOT NULL,
   expires TEXT NOT NULL,
-  FOREIGN KEY (userId) REFERENCES user(id) ON DELETE CASCADE
+  FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS verification_token (
+CREATE TABLE IF NOT EXISTS verification_tokens (
   identifier TEXT NOT NULL,
   token TEXT NOT NULL,
   expires TEXT NOT NULL,
@@ -86,7 +86,7 @@ CREATE TABLE IF NOT EXISTS user_courses (
   notes TEXT,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (user_id, course_id),
-  FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
   FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE,
   CHECK (progress >= 0 AND progress <= 100)
 );
