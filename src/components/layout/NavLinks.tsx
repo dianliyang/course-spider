@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useMemo, useState, useEffect, useRef } from "react";
 
 export default function NavLinks({ 
   variant = "light", 
@@ -15,42 +16,86 @@ export default function NavLinks({
   mode?: "landing" | "dashboard"
 }) {
   const pathname = usePathname();
+  const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0, opacity: 0 });
+  const navRef = useRef<HTMLDivElement>(null);
+  const linksRef = useRef<(HTMLAnchorElement | null)[]>([]);
   
-  const landingLinks = [
-    { name: dict?.mission || "Mission", href: "#mission", icon: "fa-solid fa-circle-info" },
-    { name: dict?.universities || "Nodes", href: "#universities", icon: "fa-solid fa-diagram-project" },
-    { name: dict?.curriculum || "Protocol", href: "#features", icon: "fa-solid fa-layer-group" },
-    { name: dict?.pricing || "Pricing", href: "#pricing", icon: "fa-solid fa-tag" }
-  ];
+  const navLinks = useMemo(() => {
+    if (mode === "landing") {
+      return [
+        { name: dict?.mission || "Mission", href: "#mission", icon: "fa-solid fa-circle-info" },
+        { name: dict?.universities || "Nodes", href: "#universities", icon: "fa-solid fa-diagram-project" },
+        { name: dict?.curriculum || "Protocol", href: "#features", icon: "fa-solid fa-layer-group" },
+        { name: dict?.pricing || "Pricing", href: "#pricing", icon: "fa-solid fa-tag" }
+      ];
+    }
+    return [
+      { name: "Courses", href: "/courses", icon: "fa-solid fa-book-open" },
+      { name: "Study Roadmap", href: "/study-plan", icon: "fa-solid fa-map-location-dot" },
+      { name: "My Profile", href: "/profile", icon: "fa-solid fa-user-gear" }
+    ];
+  }, [mode, dict]);
 
-  const dashboardLinks = [
-    { name: "Courses", href: "/courses", icon: "fa-solid fa-book-open" },
-    { name: "Study Roadmap", href: "/study-plan", icon: "fa-solid fa-map-location-dot" },
-    { name: "My Profile", href: "/profile", icon: "fa-solid fa-user-gear" }
-  ];
+  useEffect(() => {
+    if (collapsed) return;
+    
+    const activeIdx = navLinks.findIndex(link => pathname === link.href);
+    if (activeIdx !== -1 && linksRef.current[activeIdx] && navRef.current) {
+      const activeLink = linksRef.current[activeIdx];
+      const navRect = navRef.current.getBoundingClientRect();
+      const linkRect = activeLink!.getBoundingClientRect();
+      
+      setIndicatorStyle({
+        left: linkRect.left - navRect.left,
+        width: linkRect.width,
+        opacity: 1
+      });
+    } else {
+      setIndicatorStyle(prev => ({ ...prev, opacity: 0 }));
+    }
+  }, [pathname, navLinks, collapsed]);
 
-  const navLinks = mode === "landing" ? landingLinks : dashboardLinks;
   const isDark = variant === "dark";
 
   return (
-    <div className={`hidden lg:flex items-center transition-all duration-500 ${
-      collapsed 
-        ? 'gap-3 bg-transparent border-none' 
-        : `gap-2 p-1.5 rounded-full border ${isDark ? 'bg-black/40 border-white/5 shadow-2xl' : 'bg-gray-50 border-slate-200/60'}`
-    }`}>
-      {navLinks.map((item) => {
+    <div 
+      ref={navRef}
+      className={`hidden lg:flex items-center relative transition-all duration-500 ${
+        collapsed 
+          ? 'gap-3 bg-transparent border-none' 
+          : `gap-1 p-1.5 rounded-full border ${isDark ? 'bg-black/40 border-white/5 shadow-2xl' : 'bg-gray-50 border-slate-200/60'}`
+      }`}
+    >
+      {/* Smooth Sliding Background Indicator */}
+      {!collapsed && (
+        <div 
+          className={`absolute transition-all duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1.0)] rounded-full z-0 ${
+            isDark ? 'bg-white shadow-[0_0_15px_rgba(255,255,255,0.3)]' : 'bg-slate-900 shadow-lg shadow-slate-200'
+          }`}
+          style={{
+            transform: `translateX(${indicatorStyle.left}px)`,
+            width: `${indicatorStyle.width}px`,
+            height: 'calc(100% - 12px)',
+            opacity: indicatorStyle.opacity,
+            top: '6px'
+          }}
+        />
+      )}
+
+      {navLinks.map((item, idx) => {
         const isActive = pathname === item.href;
         return (
           <Link 
             key={item.name} 
-            href={item.href} 
-            className={`group relative flex items-center justify-center transition-all duration-500 ${
+            href={item.href}
+            ref={(el) => { linksRef.current[idx] = el; }}
+            className={`group relative flex items-center justify-center transition-all duration-500 z-10 ${
               collapsed 
                 ? 'w-10 h-10 rounded-full hover:bg-white/10 text-gray-400 hover:text-white' 
-                : `px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-[0.2em] gap-2.5 ${
+                : `px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-[0.2em] gap-3 ${
                     isActive 
-                      ? (isDark ? 'bg-white text-gray-950 shadow-[0_0_15px_rgba(255,255,255,0.3)]' : 'bg-slate-900 text-white shadow-lg shadow-slate-200') 
-                      : (isDark ? 'text-gray-400 hover:text-white hover:bg-white/10' : 'text-slate-500 hover:text-slate-900 hover:bg-white')
+                      ? (isDark ? 'text-gray-950' : 'text-white') 
+                      : (isDark ? 'text-gray-400 hover:text-white' : 'text-slate-500 hover:text-slate-900')
                   }`
             }`}
             title={collapsed ? item.name : undefined}
