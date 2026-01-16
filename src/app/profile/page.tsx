@@ -70,18 +70,18 @@ export default async function ProfilePage() {
               </div>
             </div>
           </div>
-          <div className="flex flex-col gap-4">
-            <button className="flex items-center gap-2 px-3 py-1.5 -ml-3 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-all group cursor-pointer">
-              <i className="fa-solid fa-gear text-sm group-hover:rotate-90 transition-transform duration-500"></i>
-              <span className="text-xs font-bold uppercase tracking-widest">Account Settings</span>
+          <div className="flex flex-col gap-3">
+            <button className="flex items-center gap-2 btn-secondary px-6 py-2.5">
+              <i className="fa-solid fa-gear text-[10px]"></i>
+              <span>Settings</span>
             </button>
             <form action={async () => {
               "use server";
               await signOut({ redirectTo: "/login" });
             }}>
-              <button className="flex items-center gap-2 px-3 py-1.5 -ml-3 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all group cursor-pointer w-full">
-                <i className="fa-solid fa-arrow-right-from-bracket text-sm"></i>
-                <span className="text-xs font-bold uppercase tracking-widest">Sign Out</span>
+              <button className="flex items-center gap-2 btn-secondary px-6 py-2.5 w-full hover:border-red-200 hover:text-red-500">
+                <i className="fa-solid fa-arrow-right-from-bracket text-[10px]"></i>
+                <span>Sign Out</span>
               </button>
             </form>
           </div>
