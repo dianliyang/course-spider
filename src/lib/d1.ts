@@ -6,29 +6,39 @@ const DATABASE_ID = process.env.CLOUDFLARE_DATABASE_ID;
 const API_TOKEN = process.env.CLOUDFLARE_API_TOKEN;
 
 // In-memory mock store for verification tokens during development
-// Using globalThis to ensure persistence across hot reloads in next dev
-const globalForMocks = globalThis as unknown as {
-  mockVerificationTokens: Array<{
-    identifier: string;
-    token: string;
-    expires: string;
-  }>;
-};
+// Using a file-based approach for dev because Node and Edge processes don't share memory in next dev
+const TOKEN_STORE_PATH = ".dev_tokens.json";
 
-if (!globalForMocks.mockVerificationTokens) {
-  globalForMocks.mockVerificationTokens = [];
+function getMockTokens(): any[] {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const fs = require("fs");
+    if (fs.existsSync(TOKEN_STORE_PATH)) {
+      return JSON.parse(fs.readFileSync(TOKEN_STORE_PATH, "utf-8"));
+    }
+  } catch (e) {
+    // In Edge Runtime, 'fs' will fail
+  }
+  return (globalThis as any).mockVerificationTokens || [];
 }
 
-const mockVerificationTokens = globalForMocks.mockVerificationTokens;
+function saveMockTokens(tokens: any[]) {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const fs = require("fs");
+    fs.writeFileSync(TOKEN_STORE_PATH, JSON.stringify(tokens));
+  } catch (e) {}
+  (globalThis as any).mockVerificationTokens = tokens;
+}
 
 export async function queryD1<T = unknown>(
   sql: string,
   params: unknown[] = []
 ): Promise<T[]> {
-  // console.log(`[D1 Query] SQL: ${sql.substring(0, 100)}... Params: ${JSON.stringify(params)}`);
-
-  // 1. Try D1 Binding (Cloudflare Pages/Workers)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // Utility to clone results and avoid "immutable" errors in Edge runtime
+  const clone = (obj: any) => JSON.parse(JSON.stringify(obj));
+  
+  // 1. Try D1 Binding (Cloudflare Pages/Workers)  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const bindingDB = process.env.DB || (globalThis as any).DB;
 
   if (bindingDB && typeof bindingDB.prepare === "function") {
@@ -38,11 +48,11 @@ export async function queryD1<T = unknown>(
       if (sql.trim().toLowerCase().startsWith("select")) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const result = await (stmt as any).all();
-        return result.results || [];
+        return clone(result.results || []);
       } else {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const result = await (stmt as any).run();
-        return [result] as unknown as T[];
+        return [clone(result)] as unknown as T[];
       }
     } catch (e) {
       console.error("[D1 Binding Error]", e);
@@ -63,11 +73,10 @@ export async function queryD1<T = unknown>(
         body: JSON.stringify({ sql, params }),
       });
 
-      if (response.ok) {
-        const json = await response.json();
-        if (json.success) return json.result[0].results as T[];
-            } else {
-              const errText = await response.text();
+            if (response.ok) {
+              const json = await response.json();
+              if (json.success) return clone(json.result[0].results) as T[];
+            } else {              const errText = await response.text();
               console.error(`[D1 Remote Error] status: ${response.status}. Database ID: ${DATABASE_ID}. Response: ${errText}`);
               if (response.status === 404) {
                 console.error("CRITICAL: Your CLOUDFLARE_DATABASE_ID in .env does not match your wrangler.toml.");
@@ -126,10 +135,10 @@ export async function queryD1<T = unknown>(
         // console.log(`[D1 Local] Using SQLite: ${dbPath}`);
         const db = new Database(dbPath);
         if (sql.trim().toLowerCase().startsWith("select")) {
-          return db.prepare(sql).all(...params) as T[];
+          return clone(db.prepare(sql).all(...params)) as T[];
         } else {
           const result = db.prepare(sql).run(...params);
-          return [result] as unknown as T[];
+          return [clone(result)] as unknown as T[];
         }
       }
     } catch (e) {
@@ -139,85 +148,52 @@ export async function queryD1<T = unknown>(
 
   if (process.env.NODE_ENV === "development") {
     // console.warn(`[D1] No database binding or remote API found. Runtime: ${process.env.NEXT_RUNTIME}. Falling back to mocks.`);
-
+    
     // Mock Verification Tokens (Magic Link Support in Dev)
     if (sql.includes("INSERT INTO verification_tokens")) {
       const [identifier, token, expires] = params as [string, string, string];
-      mockVerificationTokens.push({ identifier, token, expires });
-      console.log(
-        `[D1 Mock] Token saved for ${identifier}, token: ${token.substring(
-          0,
-          8
-        )}... Total: ${mockVerificationTokens.length}`
-      );
+      const tokens = getMockTokens();
+      tokens.push({ identifier, token, expires });
+      saveMockTokens(tokens);
+      console.log(`[D1 Mock] Token saved for ${identifier}, token: ${token.substring(0, 8)}... Total: ${tokens.length}`);
       return [{ success: true }] as unknown as T[];
     }
 
-    if (
-      sql.includes(
-        "SELECT * FROM verification_tokens WHERE identifier = ? AND token = ?"
-      )
-    ) {
+    if (sql.includes("SELECT * FROM verification_tokens WHERE identifier = ? AND token = ?")) {
       const [identifier, token] = params as [string, string];
-      const found = mockVerificationTokens.find(
-        (t) => t.identifier === identifier && t.token === token
-      );
-      console.log(
-        `[D1 Mock] Token lookup for ${identifier}, token: ${token.substring(
-          0,
-          8
-        )}... Result: ${found ? "Found" : "Not Found"}`
-      );
+      const tokens = getMockTokens();
+      const found = tokens.find(t => t.identifier === identifier && t.token === token);
+      console.log(`[D1 Mock] Token lookup for ${identifier}, token: ${token.substring(0, 8)}... Result: ${found ? "Found" : "Not Found"}`);
       if (!found) {
-        console.log(
-          `[D1 Mock] Current tokens in store:`,
-          mockVerificationTokens
-            .map((t) => `${t.identifier}:${t.token.substring(0, 8)}...`)
-            .join(", ")
-        );
+        console.log(`[D1 Mock] Current tokens in store:`, tokens.map(t => `${t.identifier}:${t.token.substring(0, 8)}...`).join(', '));
       }
-      return (found ? [found] : []) as unknown as T[];
+      return (found ? [clone(found)] : []) as unknown as T[];
     }
 
-    if (
-      sql.includes(
-        "DELETE FROM verification_tokens WHERE identifier = ? AND token = ?"
-      )
-    ) {
+    if (sql.includes("DELETE FROM verification_tokens WHERE identifier = ? AND token = ?")) {
       const [identifier, token] = params as [string, string];
-      const idx = mockVerificationTokens.findIndex(
-        (t) => t.identifier === identifier && t.token === token
-      );
-      if (idx !== -1) mockVerificationTokens.splice(idx, 1);
-      console.log(
-        `[D1 Mock] Token deleted for ${identifier}, token: ${token.substring(
-          0,
-          8
-        )}... Remaining: ${mockVerificationTokens.length}`
-      );
+      let tokens = getMockTokens();
+      tokens = tokens.filter(t => !(t.identifier === identifier && t.token === token));
+      saveMockTokens(tokens);
+      console.log(`[D1 Mock] Token deleted for ${identifier}, token: ${token.substring(0, 8)}... Remaining: ${tokens.length}`);
       return [{ success: true }] as unknown as T[];
     }
 
     // Mock Guest User Fetch
-    if (
-      sql.includes("SELECT * FROM users WHERE email = ?") &&
-      params[0] === "guest@codecampus.example.com"
-    ) {
-      return [
-        {
-          id: "guest-user-id",
-          name: "Guest User",
-          email: "guest@codecampus.example.com",
-          image: null,
-          provider: "credentials",
-          created_at: new Date().toISOString(),
-        },
-      ] as unknown as T[];
+    if (sql.includes("SELECT * FROM users WHERE email = ?") && params[0] === "guest@codecampus.example.com") {
+        return [clone({
+            id: "guest-user-id",
+            name: "Guest User",
+            email: "guest@codecampus.example.com",
+            image: null,
+            provider: "credentials",
+            created_at: new Date().toISOString()
+        })] as unknown as T[];
     }
 
     // Mock User Courses (Empty but valid)
     if (sql.includes("FROM user_courses")) {
-      return [] as T[];
+        return [] as T[];
     }
   }
 
