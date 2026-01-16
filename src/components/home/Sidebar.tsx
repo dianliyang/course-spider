@@ -95,7 +95,7 @@ export default function Sidebar({ universities, fields, enrolledCount, dict }: S
           <h3 className="text-xs font-medium text-gray-400 uppercase tracking-[0.3em] mb-6">
             {dict?.sidebar_fields || "Focus Area"}
           </h3>
-          <div className="space-y-4 max-h-80 overflow-y-auto custom-scroll pr-4">
+          <div className="space-y-4">
             {fields.map((field) => (
               <label key={field.name} className="flex items-center justify-between group cursor-pointer">
                 <div className="flex items-center gap-3">
