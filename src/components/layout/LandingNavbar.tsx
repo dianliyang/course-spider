@@ -33,7 +33,7 @@ export default function LandingNavbar({ dict }: { dict: any }) {
             </div>
 
             {/* Navigation Links */}
-            <NavLinks variant="light" collapsed={scrolled} dict={dict} />
+            <NavLinks variant="light" collapsed={scrolled} dict={dict} mode="landing" />
 
             {/* CTA Section */}
             <div className="flex items-center gap-6">

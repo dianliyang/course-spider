@@ -31,21 +31,21 @@ export default async function Navbar() {
           <div className="flex items-center gap-12">
             <NavLinks />
             
-            <div className="flex items-center pl-8 border-l border-gray-200 h-8">
-                <Link href="/profile" className="flex items-center gap-3 group">
+            <div className="flex items-center pl-8 border-l border-slate-100 h-10">
+                <Link href="/profile" className="flex items-center gap-4 group">
                   <div className="hidden sm:flex flex-col items-end -space-y-0.5">
-                    <span className="text-[9px] font-black text-gray-900 uppercase tracking-tight">{session?.user?.name || "Guest User"}</span>
-                    <div className="flex items-center gap-1">
+                    <span className="text-[11px] font-bold text-slate-900 uppercase tracking-tight">{session?.user?.name || "Guest User"}</span>
+                    <div className="flex items-center gap-1.5">
                       <div className="w-1.5 h-1.5 bg-brand-green rounded-full animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.4)]"></div>
-                      <span className="text-[8px] font-bold text-gray-500 uppercase tracking-widest">Online</span>
+                      <span className="text-[9px] font-black text-brand-green uppercase tracking-[0.2em]">Active</span>
                     </div>
                   </div>
-                  <div className="w-9 h-9 bg-gray-100 rounded-xl flex items-center justify-center text-gray-500 border border-gray-200 shadow-sm group-hover:border-brand-blue/40 group-hover:text-brand-blue group-hover:shadow-md transition-all">
+                  <div className="w-10 h-10 bg-slate-900 rounded-xl flex items-center justify-center text-white border border-slate-800 shadow-lg group-hover:bg-brand-blue group-hover:border-brand-blue transition-all duration-300">
                     <i className="fa-solid fa-user text-sm"></i>
                   </div>
                 </Link>
                 {session && (
-                  <div className="ml-4">
+                  <div className="ml-6">
                      <LogoutButton />
                   </div>
                 )}
