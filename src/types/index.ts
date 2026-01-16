@@ -32,6 +32,8 @@ export interface EnrollRequest {
   courseId: number;
   action: 'enroll' | 'unenroll' | 'update_progress';
   progress?: number;
+  gpa?: number;
+  score?: number;
 }
 
 export interface ImportRequest {

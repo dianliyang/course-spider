@@ -46,14 +46,22 @@ export async function POST(request: Request) {
     if (action === 'update_progress') {
       const isCompleted = progress === 100;
       const status = isCompleted ? 'completed' : 'in_progress';
+      const { gpa, score } = body;
+
+      const updateData: any = { 
+        progress: progress, 
+        status: status, 
+        updated_at: new Date().toISOString() 
+      };
+
+      if (isCompleted) {
+        updateData.gpa = gpa ?? 0;
+        updateData.score = score ?? 0;
+      }
 
       const { error } = await supabase
         .from('user_courses')
-        .update({ 
-          progress: progress, 
-          status: status, 
-          updated_at: new Date().toISOString() 
-        })
+        .update(updateData)
         .match({ user_id: userId, course_id: courseId });
 
       if (error) throw error;
