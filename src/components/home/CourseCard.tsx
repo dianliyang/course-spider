@@ -30,7 +30,7 @@ export default function CourseCard({
     "Stanford": "/stanford.jpg", 
     "CMU": "/cmu.jpg", 
     "UC Berkeley": "/ucb.png", 
-    "CAU Kiel": "/cau.svg",
+    "CAU Kiel": "/cau.png",
   };
 
   const handleEnroll = async () => {

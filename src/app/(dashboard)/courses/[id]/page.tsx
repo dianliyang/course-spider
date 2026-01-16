@@ -91,7 +91,7 @@ async function CourseDetailData({ id, dict }: { id: string; dict: any }) {
     "Stanford": "/stanford.jpg", 
     "CMU": "/cmu.jpg", 
     "UC Berkeley": "/ucb.png", 
-    "CAU Kiel": "/cau.svg",
+    "CAU Kiel": "/cau.png",
   };
 
   return (
