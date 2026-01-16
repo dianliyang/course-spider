@@ -36,21 +36,29 @@
     "label": "Membership",
     "title_prefix": "Simple Plans for",
     "title_highlight": "Every Student",
-    "desc": "CodeCampus is primarily an open project. We offer a pro tier for those who want deeper insights.",
+    "desc": "Choose the level of insight that fits your academic goals.",
     "free": {
       "name": "Scholar",
       "price": "$0",
-      "desc": "Everything you need to find and track courses.",
-      "features": ["Unlimited Course Search", "Basic Progress Tracking", "Public Catalog Access", "Community Support"],
-      "cta": "Start for Free"
+      "desc": "Essential tools for finding and tracking courses.",
+      "features": ["Unlimited Course Search", "Basic Progress Tracking", "Public Catalog Access"],
+      "cta": "Get Started"
     },
     "pro": {
       "name": "Fellow",
       "price": "$9",
       "period": "/mo",
-      "desc": "Advanced tools for serious academic planning.",
-      "features": ["Advanced Analytics", "Degree Audit Tools", "Export Transcripts", "Priority Support"],
-      "cta": "Upgrade to Fellow"
+      "desc": "Advanced analytics for serious academic planning.",
+      "features": ["Degree Audit Tools", "Export Transcripts", "Learning Velocity Charts", "Priority Support"],
+      "cta": "Go Fellow"
+    },
+    "elite": {
+      "name": "Researcher",
+      "price": "$29",
+      "period": "/mo",
+      "desc": "Institutional-grade intelligence and research tools.",
+      "features": ["Unlimited Roadmap Plans", "Cross-Uni Gap Analysis", "API Access", "Dedicated Mentor"],
+      "cta": "Get Researcher"
     }
   },
   "universities": {
