@@ -3,48 +3,57 @@ import Image from "next/image";
 import { auth } from "@/auth";
 import LogoutButton from "./LogoutButton";
 import NavLinks from "./NavLinks";
+import FloatingNavWrapper from "./FloatingNavWrapper";
 
 export default async function Navbar() {
   const session = await auth();
 
   return (
-    <nav className="bg-white/90 backdrop-blur-xl border-b border-gray-100 sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-20">
+    <FloatingNavWrapper>
+      <div className="mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-16 md:h-20 transition-all duration-300">
           <div className="flex items-center">
             <Link href="/" className="group flex items-center gap-3">
-              <Image 
-                src="/code-campus-logo.svg" 
-                alt="CodeCampus" 
-                width={40} 
-                height={40} 
-                className="w-10 h-10 transition-transform group-hover:rotate-6"
-              />
-              <div className="flex flex-col -space-y-1.5">
-                <span className="text-xl font-black tracking-tighter text-gray-900 uppercase">CodeCampus</span>
-                <span className="text-[9px] font-black text-brand-blue uppercase tracking-[0.3em]">Network_v1.0</span>
+              <div className="relative w-9 h-9 md:w-10 md:h-10 transition-transform duration-300 group-hover:rotate-12 group-hover:scale-105">
+                <Image 
+                  src="/code-campus-logo.svg" 
+                  alt="CodeCampus" 
+                  fill
+                  className="object-contain"
+                />
+              </div>
+              <div className="flex flex-col -space-y-1">
+                <span className="text-lg md:text-xl font-black tracking-tighter text-gray-900 uppercase leading-none">CodeCampus</span>
+                <span className="text-[8px] md:text-[9px] font-black text-brand-blue uppercase tracking-[0.3em] opacity-80 group-hover:opacity-100 transition-opacity">Network_v1.0</span>
               </div>
             </Link>
           </div>
 
-          <div className="flex items-center gap-12">
+          <div className="flex items-center gap-6 md:gap-12">
             <NavLinks />
             
-            <div className="flex items-center gap-8 pl-10 border-l border-gray-100">
-                <Link href="/profile" className="flex items-center gap-4 group">
-                  <div className="hidden sm:flex flex-col items-end -space-y-1">
-                    <span className="text-[10px] font-black text-gray-900 uppercase tracking-tight">{session?.user?.name || "Guest Scholar"}</span>
-                    <span className="text-[9px] font-bold text-brand-green uppercase tracking-widest">Online</span>
+            <div className="flex items-center pl-6 md:pl-8 border-l border-gray-100/50 h-8">
+                <Link href="/profile" className="flex items-center gap-3 group">
+                  <div className="hidden sm:flex flex-col items-end -space-y-0.5">
+                    <span className="text-[9px] font-black text-gray-900 uppercase tracking-tight">{session?.user?.name || "Guest Scholar"}</span>
+                    <div className="flex items-center gap-1">
+                      <div className="w-1 h-1 bg-brand-green rounded-full animate-pulse"></div>
+                      <span className="text-[8px] font-bold text-gray-400 uppercase tracking-widest">Online</span>
+                    </div>
                   </div>
-                  <div className="w-10 h-10 bg-gray-50 rounded-full flex items-center justify-center text-gray-400 border border-gray-200 group-hover:border-brand-blue group-hover:text-brand-blue transition-all">
-                    <i className="fa-solid fa-user-shield text-sm"></i>
+                  <div className="w-8 h-8 md:w-9 md:h-9 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl flex items-center justify-center text-gray-400 border border-gray-200/60 shadow-sm group-hover:border-brand-blue/30 group-hover:text-brand-blue group-hover:shadow-brand-blue/10 transition-all">
+                    <i className="fa-solid fa-user-astronaut text-xs md:text-sm"></i>
                   </div>
                 </Link>
-                {session && <LogoutButton />}
+                {session && (
+                  <div className="ml-4">
+                     <LogoutButton />
+                  </div>
+                )}
               </div>
           </div>
         </div>
       </div>
-    </nav>
+    </FloatingNavWrapper>
   );
 }
