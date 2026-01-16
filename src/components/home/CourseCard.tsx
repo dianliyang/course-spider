@@ -31,6 +31,7 @@ export default function CourseCard({
     "CMU": "/cmu.jpg", 
     "UC Berkeley": "/ucb.png", 
     "CAU Kiel": "/cau.png",
+    "NCU": "/ncu.png",
   };
 
   const handleEnroll = async () => {

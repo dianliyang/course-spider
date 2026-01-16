@@ -31,6 +31,7 @@ export default function AchievementCard({ course, masteredLabel }: AchievementCa
     "CMU": "/cmu.jpg", 
     "UC Berkeley": "/ucb.png", 
     "CAU Kiel": "/cau.png",
+    "NCU": "/ncu.png",
   };
 
   const handleUpdate = async () => {

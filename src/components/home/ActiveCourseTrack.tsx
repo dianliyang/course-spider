@@ -26,6 +26,7 @@ export default function ActiveCourseTrack({ course, initialProgress, onUpdate, d
     "CMU": "/cmu.jpg", 
     "UC Berkeley": "/ucb.png", 
     "CAU Kiel": "/cau.png",
+    "NCU": "/ncu.png",
   };
 
   const handleProgressChange = async (newProgress: number) => {

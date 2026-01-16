@@ -146,6 +146,7 @@ export function formatUniversityName(name: string): string {
   if (n === 'cmu') return 'CMU';
   if (n === 'ucb') return 'UC Berkeley';
   if (n === 'cau') return 'CAU Kiel';
+  if (n === 'ncu') return 'NCU';
   return name.charAt(0).toUpperCase() + name.slice(1);
 }
 
