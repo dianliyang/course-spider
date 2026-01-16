@@ -19,16 +19,16 @@ export default function StudyPlanHeader({ enrolledCount, completedCount, average
           </h1>
         </div>
 
-        <div className="flex-grow flex flex-col sm:flex-row gap-16 sm:items-center relative z-10">
-          <div className="relative pt-10">
+        <div className="flex-grow flex flex-col sm:flex-row gap-16 sm:items-center relative z-10 min-w-0">
+          <div className="relative pt-10 flex-grow min-w-0">
             <span className="absolute top-0 left-0 text-[10px] font-black text-gray-300 uppercase tracking-[0.4em]">
               {dict?.learning_sequence || "Learning Sequence"}
             </span>
-            <div className="flex gap-2 items-end h-16 mb-6">
+            <div className={`flex ${enrolledCount > 30 ? 'gap-1' : 'gap-2'} items-end h-16 mb-6 overflow-x-auto no-scrollbar pb-2`}>
               {Array.from({ length: Math.max(enrolledCount, 12) }).map((_, i) => (
                 <div 
                   key={i} 
-                  className={`w-1.5 rounded-full transition-all duration-700 ${
+                  className={`${enrolledCount > 30 ? 'w-1' : 'w-1.5'} flex-shrink-0 rounded-full transition-all duration-700 ${
                     i < completedCount 
                       ? 'h-16 bg-brand-green shadow-[0_0_15px_rgba(16,185,129,0.5)]' 
                       : i < enrolledCount 
