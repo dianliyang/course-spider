@@ -185,7 +185,7 @@ export default function ImportPage() {
               <div className="flex flex-col md:flex-row items-center gap-10 pt-10">
                 <button 
                   disabled={loading} 
-                  className="btn-secondary disabled:opacity-50 cursor-pointer"
+                  className="btn-secondary disabled:opacity-50"
                 >
                   {loading ? "PROCESSING..." : "Execute Entry"}
                 </button>

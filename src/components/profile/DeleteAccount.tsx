@@ -37,13 +37,13 @@ export default function DeleteAccount() {
                 <button
                   onClick={handleDelete}
                   disabled={loading}
-                  className="bg-red-500 text-white btn-base px-6 py-2 rounded-xl hover:bg-red-600 cursor-pointer disabled:opacity-50"
+                  className="bg-red-500 text-white btn-base px-6 py-2 rounded-xl hover:bg-red-600 disabled:opacity-50"
                 >
                   {loading ? "Deleting..." : "Confirm Deletion"}
                 </button>
                 <button
                   onClick={() => setShowConfirm(false)}
-                  className="bg-white text-gray-500 border border-gray-200 btn-base px-6 py-2 rounded-xl hover:bg-gray-50 cursor-pointer"
+                  className="bg-white text-gray-500 border border-gray-200 btn-base px-6 py-2 rounded-xl hover:bg-gray-50"
                 >
                   Cancel
                 </button>
