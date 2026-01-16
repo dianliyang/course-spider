@@ -3,6 +3,7 @@ import CourseCard from "@/components/home/CourseCard";
 import AchievementCard from "@/components/home/AchievementCard";
 import ActiveCourseTrack from "@/components/home/ActiveCourseTrack";
 import StudyPlanHeader from "@/components/home/StudyPlanHeader";
+import SemesterFilter from "@/components/home/SemesterFilter";
 import Link from "next/link";
 import { getUser, createClient, mapCourseFromRow } from "@/lib/supabase/server";
 import { getLanguage } from "@/actions/language";
@@ -170,29 +171,12 @@ export default async function StudyPlanPage({ searchParams }: PageProps) {
                 </div>
               </div>
 
-              {/* Semester Filter Bar */}
+              {/* Semester Filter Dropdown */}
               {availableSemesters.length > 0 && (
-                <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-2 md:pb-0">
-                  <a 
-                    href="?semester=all" 
-                    className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap border ${
-                      selectedSemester === 'all' ? 'bg-brand-green text-white border-brand-green shadow-lg shadow-brand-green/20' : 'bg-gray-50 text-gray-400 border-transparent hover:border-gray-200'
-                    }`}
-                  >
-                    All Eras
-                  </a>
-                  {availableSemesters.map(sem => (
-                    <a 
-                      key={sem}
-                      href={`?semester=${encodeURIComponent(sem)}`}
-                      className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap border ${
-                        selectedSemester === sem ? 'bg-brand-green text-white border-brand-green shadow-lg shadow-brand-green/20' : 'bg-gray-50 text-gray-400 border-transparent hover:border-gray-200'
-                      }`}
-                    >
-                      {sem}
-                    </a>
-                  ))}
-                </div>
+                <SemesterFilter 
+                  availableSemesters={availableSemesters} 
+                  selectedSemester={selectedSemester} 
+                />
               )}
             </div>
 
