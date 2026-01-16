@@ -3,12 +3,12 @@ import { cookies } from "next/headers";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { Course } from "../scrapers/types";
 
-export async function getBaseUrl() {
+export function getBaseUrl() {
   const envUrl = process.env.NEXT_PUBLIC_APP_URL;
-  if (envUrl) return envUrl;
-  else {
-    throw new Error("Missing NEXT_PUBLIC_APP_URL environment variable");
-  }
+  let url = envUrl || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
+  
+  // Remove trailing slash if present
+  return url.replace(/\/$/, "");
 }
 
 export async function createClient() {
