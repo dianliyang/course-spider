@@ -32,16 +32,16 @@ export default async function Navbar() {
           <div className="flex items-center gap-6 md:gap-12">
             <NavLinks />
             
-            <div className="flex items-center pl-6 md:pl-8 border-l border-gray-100/50 h-8">
+            <div className="flex items-center pl-6 md:pl-8 border-l border-gray-200 h-8">
                 <Link href="/profile" className="flex items-center gap-3 group">
                   <div className="hidden sm:flex flex-col items-end -space-y-0.5">
                     <span className="text-[9px] font-black text-gray-900 uppercase tracking-tight">{session?.user?.name || "Guest Scholar"}</span>
                     <div className="flex items-center gap-1">
-                      <div className="w-1 h-1 bg-brand-green rounded-full animate-pulse"></div>
-                      <span className="text-[8px] font-bold text-gray-400 uppercase tracking-widest">Online</span>
+                      <div className="w-1.5 h-1.5 bg-brand-green rounded-full animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.4)]"></div>
+                      <span className="text-[8px] font-bold text-gray-500 uppercase tracking-widest">Online</span>
                     </div>
                   </div>
-                  <div className="w-8 h-8 md:w-9 md:h-9 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl flex items-center justify-center text-gray-400 border border-gray-200/60 shadow-sm group-hover:border-brand-blue/30 group-hover:text-brand-blue group-hover:shadow-brand-blue/10 transition-all">
+                  <div className="w-8 h-8 md:w-9 md:h-9 bg-gray-100 rounded-xl flex items-center justify-center text-gray-500 border border-gray-200 shadow-sm group-hover:border-brand-blue/40 group-hover:text-brand-blue group-hover:shadow-md transition-all">
                     <i className="fa-solid fa-user-astronaut text-xs md:text-sm"></i>
                   </div>
                 </Link>

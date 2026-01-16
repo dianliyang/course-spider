@@ -19,8 +19,8 @@ export default function FloatingNavWrapper({ children }: { children: React.React
     }`}>
       <div className={`transition-all duration-500 ease-out pointer-events-auto ${
         scrolled 
-          ? 'w-[90%] max-w-5xl rounded-2xl shadow-2xl shadow-gray-200/40 border border-white/60 bg-white/80 backdrop-blur-xl translate-y-0' 
-          : 'w-full border-b border-gray-100 bg-white/90 backdrop-blur-md translate-y-0'
+          ? 'w-[92%] max-w-5xl rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.1)] border border-gray-200/50 bg-white/95 backdrop-blur-2xl translate-y-0' 
+          : 'w-full border-b border-gray-100 bg-white/95 backdrop-blur-md translate-y-0'
       }`}>
         {children}
       </div>
