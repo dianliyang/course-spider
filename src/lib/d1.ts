@@ -39,7 +39,6 @@ export async function queryD1<T = unknown>(
 
   // 2. Remote HTTP API Fallback
   if (REMOTE_DB && ACCOUNT_ID && DATABASE_ID && API_TOKEN) {
-    // console.log("[D1 Remote] Using HTTP API");
     const url = `https://api.cloudflare.com/client/v4/accounts/${ACCOUNT_ID}/d1/database/${DATABASE_ID}/query`;
     try {
       const response = await fetch(url, {
@@ -56,7 +55,10 @@ export async function queryD1<T = unknown>(
         if (json.success) return json.result[0].results as T[];
       } else {
         const errText = await response.text();
-        console.error("[D1 Remote Error Response]", response.status, errText);
+        console.error(`[D1 Remote Error] status: ${response.status}. Database ID: ${DATABASE_ID}. Response: ${errText}`);
+        if (response.status === 404) {
+          console.error("TIP: Your CLOUDFLARE_DATABASE_ID might be incorrect in .env. Verify it against wrangler.toml.");
+        }
       }
     } catch (err) {
       console.error("[D1 Remote Error]", err);
@@ -64,10 +66,8 @@ export async function queryD1<T = unknown>(
   }
 
   // 3. Local Mode (better-sqlite3) - Enabled for local Node.js environment
-  if (!bindingDB && !REMOTE_DB && process.env.NODE_ENV === "development" && process.env.NEXT_RUNTIME !== "edge") {
-    // console.log("[D1 Local] Using better-sqlite3");
+  if (!bindingDB && process.env.NODE_ENV === "development" && process.env.NEXT_RUNTIME !== "edge") {
     try {
-      // Dynamic import/require to avoid bundle issues in non-node environments
       const nodeProcess = process;
       const cwd = nodeProcess.cwd();
       
@@ -90,19 +90,19 @@ export async function queryD1<T = unknown>(
             .readdirSync(wranglerDir)
             .filter((f: string) => f.endsWith(".sqlite"));
           if (files.length > 0) {
-            // Sort by mtime to get the latest one
             const sortedFiles = files
               .map((f: string) => ({
                 name: f,
                 time: fs.statSync(path.join(wranglerDir, f)).mtime.getTime(),
               }))
-              .sort((a: { time: number }, b: { time: number }) => b.time - a.time);
+              .sort((a: any, b: any) => b.time - a.time);
             dbPath = path.join(wranglerDir, sortedFiles[0].name);
           }
         }
       }
 
       if (dbPath && fs.existsSync(dbPath)) {
+        // console.log(`[D1 Local] Using SQLite: ${dbPath}`);
         const db = new Database(dbPath);
         if (sql.trim().toLowerCase().startsWith("select")) {
           return db.prepare(sql).all(...params) as T[];
