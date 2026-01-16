@@ -4,6 +4,7 @@ import Image from "next/image";
 import { Course } from "@/types";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 interface CourseCardProps {
   course: Course;
@@ -77,7 +78,7 @@ export default function CourseCard({ course, isInitialEnrolled, onEnrollToggle, 
             <span className="text-[10px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded font-mono font-black">{course.courseCode}</span>
           </div>
           <h2 className="text-lg font-extrabold text-gray-900 mt-1 leading-tight group-hover:text-brand-blue transition-colors line-clamp-2 pr-12">
-            <a href={course.url} target="_blank" rel="noopener noreferrer">{course.title}</a>
+            <Link href={`/courses/${course.id}`}>{course.title}</Link>
           </h2>
           <div className="flex gap-2 mt-3 flex-wrap">
             {course.fields?.map((f) => (
@@ -147,9 +148,9 @@ export default function CourseCard({ course, isInitialEnrolled, onEnrollToggle, 
             )}
           </div>
         </div>
-        <a href={course.url} target="_blank" rel="noopener noreferrer" className="text-brand-blue text-[10px] font-black uppercase tracking-widest hover:underline flex items-center gap-1.5">
-          {dict?.details || "Course Detail"} <i className="fa-solid fa-arrow-up-right-from-square text-[8px]"></i>
-        </a>
+        <Link href={`/courses/${course.id}`} className="text-brand-blue text-[10px] font-black uppercase tracking-widest hover:underline flex items-center gap-1.5">
+          {dict?.details || "Course Detail"} <i className="fa-solid fa-arrow-right text-[8px]"></i>
+        </Link>
       </div>
     </div>
   );
