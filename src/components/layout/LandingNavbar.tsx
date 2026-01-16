@@ -68,7 +68,7 @@ export default function LandingNavbar({ dict }: { dict: any }) {
               <Link 
                 href="/courses" 
                 className={`flex items-center justify-center btn-primary group transition-all duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1.0)] ${
-                   scrolled ? 'w-10 h-10 rounded-full !px-0 !py-0' : 'gap-4 px-6 py-3'
+                   scrolled ? 'w-10 h-10 !rounded-full !px-0 !py-0' : '!rounded-full gap-4 px-6 py-3'
                 }`}
               >
                 <span className={`transition-all duration-500 overflow-hidden whitespace-nowrap ${
