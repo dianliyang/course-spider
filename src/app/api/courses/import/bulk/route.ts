@@ -16,33 +16,33 @@ export async function POST(request: Request) {
 
     const adminSupabase = createAdminClient();
     
-    // Prepare courses for bulk insert
-    const coursesToInsert = courses.map(course => ({
+    // Prepare courses for bulk upsert
+    const coursesToUpsert = courses.map(course => ({
       university: course.university,
       course_code: course.courseCode,
       title: course.title,
       description: course.description || "",
       url: course.url || "#",
       level: course.level || "undergraduate",
+      is_internal: course.isInternal || false,
       units: course.units || "",
       department: course.department || "",
       popularity: 0
     }));
 
-    // Perform bulk insert. Since we don't have a reliable unique constraint on course_code 
-    // across all universities in the schema yet, we'll use a simple insert.
+    // Perform bulk upsert using the unique constraint on (university, course_code)
     const { error } = await adminSupabase
       .from('courses')
-      .insert(coursesToInsert);
+      .upsert(coursesToUpsert, { onConflict: 'university,course_code' });
 
     if (error) {
-      console.error("Bulk insert error details:", error);
+      console.error("Bulk upsert error details:", error);
       throw error;
     }
 
     return NextResponse.json({ 
       success: true, 
-      message: `Successfully processed ${coursesToInsert.length} courses.` 
+      message: `Successfully processed ${coursesToUpsert.length} courses.` 
     });
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : String(error);

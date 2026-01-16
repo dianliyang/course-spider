@@ -41,6 +41,7 @@ export interface ImportRequest {
   description?: string;
   url?: string;
   level?: string;
+  isInternal?: boolean;
   units?: string;
   department?: string;
 }

@@ -18,6 +18,9 @@ interface ImportFormProps {
     form_level: string;
     level_undergraduate: string;
     level_graduate: string;
+    form_internal: string;
+    internal_public: string;
+    internal_private: string;
     form_desc: string;
     submit_btn: string;
     submit_loading: string;
@@ -36,6 +39,7 @@ export default function ImportForm({ dict }: ImportFormProps) {
     description: "", 
     url: "", 
     level: "undergraduate",
+    isInternal: false,
     units: "",
     department: ""
   });
@@ -63,6 +67,7 @@ export default function ImportForm({ dict }: ImportFormProps) {
           description: "", 
           url: "", 
           level: "undergraduate",
+          isInternal: false,
           units: "",
           department: ""
         });
@@ -247,6 +252,23 @@ export default function ImportForm({ dict }: ImportFormProps) {
                       ))}
                     </div>
                   </div>
+                  <div className="flex flex-col gap-3">
+                    <label className="text-xs font-black text-gray-400 uppercase tracking-[0.2em]">
+                      {dict.form_internal}
+                    </label>
+                    <div className="flex bg-gray-50 p-1 rounded-xl gap-1 w-fit border border-gray-100">
+                      {[false, true].map(isInternal => (
+                        <button
+                          key={String(isInternal)}
+                          type="button"
+                          onClick={() => setFormData({...formData, isInternal: isInternal})}
+                          className={`px-6 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer ${formData.isInternal === isInternal ? 'bg-white text-brand-blue shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+                        >
+                          {isInternal ? (dict.internal_private || 'Internal') : (dict.internal_public || 'Public')}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </div>
               
@@ -297,6 +319,7 @@ export default function ImportForm({ dict }: ImportFormProps) {
                       { key: 'university', req: true, note: 'Official school name' },
                       { key: 'courseCode', req: true, note: 'Unique alphanumeric ID' },
                       { key: 'title', req: true, note: 'Full name of course' },
+                      { key: 'isInternal', req: false, note: 'Boolean: true/false' },
                       { key: 'description', req: false, note: 'Optional overview' },
                       { key: 'url', req: false, note: 'Link to catalog' },
                       { key: 'department', req: false, note: 'Academic department' },

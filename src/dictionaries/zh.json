@@ -49,7 +49,12 @@
       "price": "¥38",
       "period": "/月",
       "desc": "为严谨学习规划设计的进阶分析工具。",
-      "features": ["学位审计工具", "导出成绩单", "学习加速度图表", "优先技术支持"],
+      "features": [
+        "学位审计工具",
+        "导出成绩单",
+        "学习加速度图表",
+        "优先技术支持"
+      ],
       "cta": "选择专业版"
     },
     "elite": {
@@ -57,7 +62,12 @@
       "price": "¥98",
       "period": "/月",
       "desc": "高阶的学术情报与专业研究工具。",
-      "features": ["无限路线图规划", "跨校差距分析", "API 数据接入", "专属技术支持"],
+      "features": [
+        "无限路线图规划",
+        "跨校差距分析",
+        "API 数据接入",
+        "专属技术支持"
+      ],
       "cta": "选择专家版"
     }
   },
@@ -89,7 +99,7 @@
       "popular": "热门节点"
     },
     "courses": {
-      "sidebar_universities": "合作学府",
+      "sidebar_universities": "机构",
       "sidebar_fields": "学科领域",
       "sidebar_enrolled": "仅看我已加入",
       "sidebar_library": "个人图书馆",
@@ -214,6 +224,9 @@
       "form_level": "学术等级",
       "level_undergraduate": "本科",
       "level_graduate": "研究生",
+      "form_internal": "内外部状态",
+      "internal_public": "公开目录",
+      "internal_private": "内部课程",
       "form_desc": "课程大纲",
       "submit_btn": "执行导入",
       "submit_loading": "处理中...",

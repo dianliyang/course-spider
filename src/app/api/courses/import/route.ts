@@ -10,7 +10,7 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json() as ImportRequest;
-    const { university, courseCode, title, description, url, level, units, department } = body;
+    const { university, courseCode, title, description, url, level, units, department, isInternal } = body;
 
     if (!university || !courseCode || !title) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -18,11 +18,12 @@ export async function POST(request: Request) {
 
     const adminSupabase = createAdminClient();
 
-    // Check if course already exists
+    // Check if course already exists (Note: with our new UNIQUE constraint, we could also just use upsert here)
     const { data: existing, error: checkError } = await adminSupabase
       .from('courses')
       .select('id')
       .eq('course_code', courseCode)
+      .eq('university', university)
       .limit(1);
 
     if (checkError) {
@@ -31,7 +32,7 @@ export async function POST(request: Request) {
     }
     
     if (existing && existing.length > 0) {
-      return NextResponse.json({ error: "Course code already registered in system" }, { status: 409 });
+      return NextResponse.json({ error: "Course code already registered for this university" }, { status: 409 });
     }
 
     // Insert new course
@@ -44,6 +45,7 @@ export async function POST(request: Request) {
         description: description || "",
         url: url || "#",
         level: level || "undergraduate",
+        is_internal: isInternal || false,
         units: units || "",
         department: department || "",
         popularity: 0
