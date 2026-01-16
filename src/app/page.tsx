@@ -64,8 +64,8 @@ export default async function Home() {
       <Mission dict={dict.mission} />
 
       {/* SECTION 3: ECOSYSTEM & FOOTER */}
-      <div id="ecosystem" className="min-h-screen flex flex-col justify-center bg-gray-50 border-t border-gray-200">
-        <div className="flex-grow flex flex-col justify-center">
+      <div id="ecosystem" className="min-h-screen flex flex-col justify-center bg-gray-950 border-t border-white/5 relative">
+        <div className="flex-grow flex flex-col justify-center relative z-10">
            <div id="universities">
              <UniversityLogos dict={dict.universities} />
            </div>
@@ -76,10 +76,10 @@ export default async function Home() {
         </div>
 
         {/* Footer */}
-        <div className="py-12 bg-gray-50 border-t border-gray-200/50">
+        <div className="py-12 bg-gray-950 border-t border-white/5 relative z-10">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center flex flex-col items-center gap-8">
-            <div className="w-16 h-1 bg-gray-200"></div>
-            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.3em]">
+            <div className="w-16 h-1 bg-white/10 rounded-full"></div>
+            <p className="text-[10px] font-bold text-slate-600 uppercase tracking-[0.3em]">
               {dict.footer.copyright}
             </p>
             <LanguageSwitcher currentLang={lang} />
