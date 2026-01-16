@@ -36,10 +36,10 @@ export default function Home() {
           <div className="flex justify-center">
             <Link 
               href="/courses" 
-              className="inline-flex items-center justify-center gap-4 btn-primary group shadow-2xl shadow-brand-blue/20"
+              className="inline-flex items-center justify-center gap-5 btn-primary group shadow-2xl shadow-brand-blue/20 ring-1 ring-gray-900/10 hover:ring-brand-blue/40"
             >
               Explore the Catalog
-              <i className="fa-solid fa-chevron-right text-[10px] transition-transform group-hover:translate-x-2"></i>
+              <i className="fa-solid fa-chevron-right text-[9px] transition-transform group-hover:translate-x-2"></i>
             </Link>
           </div>
         </div>
