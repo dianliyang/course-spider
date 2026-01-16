@@ -40,6 +40,8 @@ export interface ImportRequest {
   description?: string;
   url?: string;
   level?: string;
+  units?: string;
+  department?: string;
 }
 
 export interface EnrolledCoursesResponse {
@@ -50,4 +52,5 @@ export interface ApiResponse {
   success: boolean;
   message?: string;
   error?: string;
+  details?: string;
 }

@@ -60,7 +60,7 @@ export default function ActiveCourseTrack({ course, initialProgress, onUpdate, d
               </span>
             )}
           </div>
-          <h3 className="text-xs font-black text-gray-900 uppercase tracking-tight truncate group-hover:text-brand-blue transition-colors">
+          <h3 className="text-xs font-black text-gray-900 tracking-tight truncate group-hover:text-brand-blue transition-colors">
             {course.title}
           </h3>
           {course.corequisites && (

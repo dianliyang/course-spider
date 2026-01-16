@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { Course } from "@/types";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 interface CourseCardProps {
   course: Course;
@@ -13,6 +14,7 @@ interface CourseCardProps {
 }
 
 export default function CourseCard({ course, isInitialEnrolled, onEnrollToggle, progress, dict }: CourseCardProps) {
+  const router = useRouter();
   const [isEnrolled, setIsEnrolled] = useState(isInitialEnrolled);
   const [loading, setLoading] = useState(false);
 
@@ -31,6 +33,7 @@ export default function CourseCard({ course, isInitialEnrolled, onEnrollToggle, 
       if (response.ok) {
         setIsEnrolled(!isEnrolled);
         onEnrollToggle?.();
+        router.refresh();
       }
     } catch (e) {
       console.error("Enrollment failed:", e);

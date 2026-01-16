@@ -52,7 +52,7 @@ export default function AchievementCard({ course, masteredLabel }: AchievementCa
       </div>
 
       <div className="flex-grow">
-        <h3 className="text-sm font-black text-gray-900 leading-tight uppercase tracking-tight line-clamp-2">
+        <h3 className="text-sm font-black text-gray-900 leading-tight tracking-tight line-clamp-2">
           {course.title}
         </h3>
       </div>

@@ -5,9 +5,39 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ApiResponse, ImportRequest } from "@/types";
 
-export default function ImportForm({ dict }: { dict: any }) {
+interface ImportFormProps {
+  dict: {
+    label: string;
+    title_main: string;
+    title_sub: string;
+    return_btn: string;
+    form_uni: string;
+    form_code: string;
+    form_title: string;
+    form_url: string;
+    form_level: string;
+    level_undergraduate: string;
+    level_graduate: string;
+    form_desc: string;
+    submit_btn: string;
+    submit_loading: string;
+    bulk_title: string;
+    bulk_desc: string;
+    bulk_drop: string;
+    bulk_or: string;
+  };
+}
+
+export default function ImportForm({ dict }: ImportFormProps) {
   const [formData, setFormData] = useState<ImportRequest>({
-    university: "", courseCode: "", title: "", description: "", url: "", level: "undergraduate"
+    university: "", 
+    courseCode: "", 
+    title: "", 
+    description: "", 
+    url: "", 
+    level: "undergraduate",
+    units: "",
+    department: ""
   });
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
@@ -26,11 +56,22 @@ export default function ImportForm({ dict }: { dict: any }) {
       const data = await res.json() as ApiResponse;
       if (res.ok) {
         setMessage({ type: "success", text: data.message || "Success" });
-        setTimeout(() => router.push("/"), 2000);
+        setFormData({
+          university: "", 
+          courseCode: "", 
+          title: "", 
+          description: "", 
+          url: "", 
+          level: "undergraduate",
+          units: "",
+          department: ""
+        });
+        setTimeout(() => router.push("/study-plan"), 2000);
       } else {
-        setMessage({ type: "error", text: data.error || "Error" });
+        setMessage({ type: "error", text: (data.error + (data.details ? `: ${data.details}` : "")) || "Error" });
       }
-    } catch {
+    } catch (err: unknown) {
+      console.error("Submission error:", err);
       setMessage({ type: "error", text: "Network sync failure" });
     }
     finally { setLoading(false); }
@@ -55,11 +96,11 @@ export default function ImportForm({ dict }: { dict: any }) {
           const headers = lines[0].split(',').map(h => h.trim());
           courses = lines.slice(1).filter(l => l.trim()).map(line => {
             const values = line.split(',').map(v => v.trim());
-            return headers.reduce((obj: any, header, index) => {
+            return headers.reduce((obj: Record<string, string>, header, index) => {
               obj[header] = values[index];
               return obj;
             }, {});
-          });
+          }) as unknown as ImportRequest[];
         }
 
         const res = await fetch("/api/courses/import/bulk", {
@@ -71,10 +112,14 @@ export default function ImportForm({ dict }: { dict: any }) {
         
         if (res.ok) {
           setMessage({ type: "success", text: data.message || "Bulk Success" });
-          setTimeout(() => router.push("/"), 3000);
-        } else setMessage({ type: "error", text: data.error || "Bulk Error" });
+          if (fileInputRef.current) fileInputRef.current.value = "";
+          setTimeout(() => router.push("/study-plan"), 3000);
+        } else {
+          setMessage({ type: "error", text: (data.error + (data.details ? `: ${data.details}` : "")) || "Bulk Error" });
+        }
 
-    } catch {
+    } catch (err: unknown) {
+      console.error("Bulk upload error:", err);
       setMessage({ type: "error", text: "Failed to import courses. Please check the file format." });
       } finally {
         setLoading(false);
@@ -86,7 +131,7 @@ export default function ImportForm({ dict }: { dict: any }) {
 
   return (
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 w-full">
-        {/* Header * */}
+        {/* Header */}
         <div className="relative mb-20 flex flex-col md:flex-row md:items-end justify-between gap-8">
 
           <div>
@@ -104,7 +149,7 @@ export default function ImportForm({ dict }: { dict: any }) {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-24">
-          {/* Left Column: Manual Form * */}
+          {/* Left Column: Manual Form */}
           <div className="lg:col-span-2">
             <form onSubmit={handleSubmit} className="space-y-20">
               <div className="space-y-12">
@@ -116,7 +161,7 @@ export default function ImportForm({ dict }: { dict: any }) {
                     <input 
                       required 
                       placeholder="e.g. Stanford"
-                      className="bg-transparent border-b-2 border-gray-100 focus:border-brand-blue outline-none py-3 text-xl font-black transition-all placeholder:text-gray-100 uppercase tracking-tighter" 
+                      className="bg-transparent border-b-2 border-gray-100 focus:border-brand-blue outline-none py-3 text-xl font-black transition-all placeholder:text-gray-100 uppercase tracking-tighter"
                       value={formData.university} 
                       onChange={(e) => setFormData({...formData, university: e.target.value})} 
                     />
@@ -128,7 +173,7 @@ export default function ImportForm({ dict }: { dict: any }) {
                     <input 
                       required 
                       placeholder="e.g. CS106A"
-                      className="bg-transparent border-b-2 border-gray-100 focus:border-brand-blue outline-none py-3 text-xl font-black transition-all placeholder:text-gray-100 uppercase tracking-tighter" 
+                      className="bg-transparent border-b-2 border-gray-100 focus:border-brand-blue outline-none py-3 text-xl font-black transition-all placeholder:text-gray-100 uppercase tracking-tighter"
                       value={formData.courseCode} 
                       onChange={(e) => setFormData({...formData, courseCode: e.target.value})} 
                     />
@@ -142,10 +187,35 @@ export default function ImportForm({ dict }: { dict: any }) {
                   <input 
                     required 
                     placeholder="e.g. Programming Methodology"
-                    className="bg-transparent border-b-2 border-gray-100 focus:border-brand-blue outline-none py-3 text-xl font-black transition-all placeholder:text-gray-100 uppercase tracking-tighter" 
+                    className="bg-transparent border-b-2 border-gray-100 focus:border-brand-blue outline-none py-3 text-xl font-black transition-all placeholder:text-gray-100 uppercase tracking-tighter"
                     value={formData.title} 
                     onChange={(e) => setFormData({...formData, title: e.target.value})} 
                   />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-12 pt-4">
+                  <div className="flex flex-col gap-3">
+                    <label className="text-xs font-black text-gray-400 uppercase tracking-[0.2em]">
+                      Department
+                    </label>
+                    <input 
+                      placeholder="e.g. Computer Science"
+                      className="bg-transparent border-b-2 border-gray-100 focus:border-brand-blue outline-none py-3 text-sm font-bold transition-all placeholder:text-gray-100"
+                      value={formData.department} 
+                      onChange={(e) => setFormData({...formData, department: e.target.value})} 
+                    />
+                  </div>
+                  <div className="flex flex-col gap-3">
+                    <label className="text-xs font-black text-gray-400 uppercase tracking-[0.2em]">
+                      Units / Credits
+                    </label>
+                    <input 
+                      placeholder="e.g. 3.0"
+                      className="bg-transparent border-b-2 border-gray-100 focus:border-brand-blue outline-none py-3 text-sm font-bold transition-all placeholder:text-gray-100"
+                      value={formData.units} 
+                      onChange={(e) => setFormData({...formData, units: e.target.value})} 
+                    />
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-12 pt-4">
@@ -155,7 +225,7 @@ export default function ImportForm({ dict }: { dict: any }) {
                     </label>
                     <input 
                       placeholder="https://..."
-                      className="bg-transparent border-b-2 border-gray-100 focus:border-brand-blue outline-none py-3 text-sm font-bold transition-all placeholder:text-gray-100" 
+                      className="bg-transparent border-b-2 border-gray-100 focus:border-brand-blue outline-none py-3 text-sm font-bold transition-all placeholder:text-gray-100"
                       value={formData.url} 
                       onChange={(e) => setFormData({...formData, url: e.target.value})} 
                     />
@@ -188,7 +258,7 @@ export default function ImportForm({ dict }: { dict: any }) {
                   <textarea 
                     rows={4} 
                     placeholder="Enter detailed curriculum overview and learning objectives..."
-                    className="bg-gray-50 border border-gray-100 rounded-3xl p-8 outline-none text-sm font-medium transition-all focus:ring-4 focus:ring-brand-blue/5 focus:bg-white focus:border-brand-blue/20" 
+                    className="bg-gray-50 border border-gray-100 rounded-3xl p-8 outline-none text-sm font-medium transition-all focus:ring-4 focus:ring-brand-blue/5 focus:bg-white focus:border-brand-blue/20"
                     value={formData.description} 
                     onChange={(e) => setFormData({...formData, description: e.target.value})} 
                   />
@@ -199,6 +269,7 @@ export default function ImportForm({ dict }: { dict: any }) {
                 <button 
                   disabled={loading} 
                   className="btn-secondary disabled:opacity-50"
+                  type="submit"
                 >
                   {loading ? dict.submit_loading : dict.submit_btn}
                 </button>
@@ -228,6 +299,8 @@ export default function ImportForm({ dict }: { dict: any }) {
                       { key: 'title', req: true, note: 'Full name of course' },
                       { key: 'description', req: false, note: 'Optional overview' },
                       { key: 'url', req: false, note: 'Link to catalog' },
+                      { key: 'department', req: false, note: 'Academic department' },
+                      { key: 'units', req: false, note: 'Credit value' },
                     ].map(f => (
                       <div key={f.key} className="flex items-center justify-between border-b border-gray-50 pb-4">
                         <div>
@@ -254,8 +327,7 @@ export default function ImportForm({ dict }: { dict: any }) {
     "courseCode": "6.001",
     "title": "Structure..."
   }
-]`}
-                    </pre>
+]`}                    </pre>
                   </div>
                   <div>
                     <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-6">CSV Headers</span>
@@ -272,7 +344,7 @@ export default function ImportForm({ dict }: { dict: any }) {
             </div>
           </div>
 
-          {/* Right Column: Bulk Upload * */}
+          {/* Right Column: Bulk Upload */}
           <div className="relative">
             <div className="absolute -left-12 top-0 bottom-0 w-px bg-gray-50 hidden lg:block"></div>
             <div className="space-y-10 sticky top-32">
@@ -288,6 +360,9 @@ export default function ImportForm({ dict }: { dict: any }) {
               <div 
                 onClick={() => fileInputRef.current?.click()}
                 className="group border-2 border-dashed border-gray-100 rounded-3xl p-12 flex flex-col items-center justify-center gap-6 hover:border-brand-blue hover:bg-blue-50/30 transition-all cursor-pointer bg-gray-50/30"
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => e.key === 'Enter' && fileInputRef.current?.click()}
               >
                 <div className="w-16 h-16 bg-white border border-gray-100 rounded-2xl flex items-center justify-center text-gray-300 group-hover:text-brand-blue group-hover:scale-110 transition-all shadow-sm">
                   <i className="fa-solid fa-cloud-arrow-up text-xl"></i>

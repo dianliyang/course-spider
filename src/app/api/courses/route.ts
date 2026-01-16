@@ -78,6 +78,7 @@ async function fetchCourses(
       .eq('user_id', userId);
     
     const ids = (enrolledIds || []).map(r => r.course_id);
+    if (ids.length === 0) return { items: [], total: 0, pages: 0 };
     supabaseQuery = supabaseQuery.in('id', ids);
   }
 
@@ -87,6 +88,20 @@ async function fetchCourses(
 
   if (universities.length > 0) {
     supabaseQuery = supabaseQuery.in('university', universities);
+  }
+
+  if (fields.length > 0) {
+    // Filter courses that have at least one of the selected fields
+    const { data: fieldData } = await supabase
+      .from('fields')
+      .select('course_fields(course_id)')
+      .in('name', fields);
+    
+    const fieldCourseIds = (fieldData || [])
+      .flatMap(f => (f.course_fields as any[] || []).map(cf => cf.course_id));
+    
+    if (fieldCourseIds.length === 0) return { items: [], total: 0, pages: 0 };
+    supabaseQuery = supabaseQuery.in('id', fieldCourseIds);
   }
 
   if (levels.length > 0) {

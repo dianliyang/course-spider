@@ -25,7 +25,7 @@ export default async function CoursesPage({ searchParams }: PageProps) {
       
       <div className="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full flex flex-col md:flex-row gap-8">
         <Suspense fallback={<SidebarSkeleton />}>
-          <SidebarData dict={dict.dashboard.courses} />
+          <SidebarData userId={user?.id} params={params} dict={dict.dashboard.courses} />
         </Suspense>
         
         <Suspense fallback={<CourseListSkeleton />}>
@@ -36,8 +36,49 @@ export default async function CoursesPage({ searchParams }: PageProps) {
   );
 }
 
-async function SidebarData({ dict }: { dict: any }) {
+async function SidebarData({ userId, params, dict }: { userId?: string, params: any, dict: any }) {
   const supabase = await createClient();
+  
+  // Extract filters for dynamic counts
+  const universitiesParam = ((params.universities as string) || "").split(",").filter(Boolean);
+  const fieldsParam = ((params.fields as string) || "").split(",").filter(Boolean);
+  const levelsParam = ((params.levels as string) || "").split(",").filter(Boolean);
+  const queryParam = (params.q as string) || "";
+
+  // Helper to apply common filters
+  const applyFilters = (query: any) => {
+    let q = query.eq('is_hidden', false);
+    if (queryParam) {
+      q = q.or(`title.ilike.%${queryParam}%,description.ilike.%${queryParam}%,course_code.ilike.%${queryParam}%`);
+    }
+    if (universitiesParam.length > 0) {
+      q = q.in('university', universitiesParam);
+    }
+    if (levelsParam.length > 0) {
+      q = q.in('level', levelsParam);
+    }
+    // Note: fields filtering is more complex due to join table, skipping for Sidebar for simplicity unless needed
+    return q;
+  };
+
+  // Fetch enrolled count if user is logged in
+  let enrolledCount = 0;
+  if (userId) {
+    const { data: enrolledIdsRows } = await supabase
+      .from('user_courses')
+      .select('course_id')
+      .eq('user_id', userId);
+    
+    const enrolledIds = (enrolledIdsRows || []).map(r => r.course_id);
+    
+    if (enrolledIds.length > 0) {
+      let q = supabase.from('courses').select('id', { count: 'exact', head: true });
+      q = applyFilters(q);
+      q = q.in('id', enrolledIds);
+      const { count } = await q;
+      enrolledCount = count || 0;
+    }
+  }
   
   // Use RPC or separate queries for aggregations in Supabase
   const { data: universitiesData } = await supabase
@@ -64,7 +105,7 @@ async function SidebarData({ dict }: { dict: any }) {
     count: f.course_fields?.[0]?.count || 0
   })).sort((a, b) => b.count - a.count);
 
-  return <Sidebar universities={dbUniversities} fields={dbFields} enrolledCount={0} dict={dict} />;
+  return <Sidebar universities={dbUniversities} fields={dbFields} enrolledCount={enrolledCount} dict={dict} />;
 }
 
 async function CourseListData({ params, dict }: { params: any, dict: any }) {
@@ -137,6 +178,7 @@ async function fetchCourses(
       .eq('user_id', userId);
     
     const ids = (enrolledIds || []).map(r => r.course_id);
+    if (ids.length === 0) return { items: [], total: 0, pages: 0 };
     supabaseQuery = supabaseQuery.in('id', ids);
   }
 
@@ -146,6 +188,20 @@ async function fetchCourses(
 
   if (universities.length > 0) {
     supabaseQuery = supabaseQuery.in('university', universities);
+  }
+
+  if (fields.length > 0) {
+    // Filter courses that have at least one of the selected fields
+    const { data: fieldData } = await supabase
+      .from('fields')
+      .select('course_fields(course_id)')
+      .in('name', fields);
+    
+    const fieldCourseIds = (fieldData || [])
+      .flatMap(f => (f.course_fields as any[] || []).map(cf => cf.course_id));
+    
+    if (fieldCourseIds.length === 0) return { items: [], total: 0, pages: 0 };
+    supabaseQuery = supabaseQuery.in('id', fieldCourseIds);
   }
 
   if (levels.length > 0) {
