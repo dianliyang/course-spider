@@ -4,16 +4,16 @@
     "title_prefix": "全球",
     "title_highlight": "CS",
     "title_suffix": "课程图谱",
-    "description": "通过统一的高性能终端，深度解析并探索来自世界顶尖学府的计算机科学课程体系。",
-    "cta": "探索课程库"
+    "description": "解构全球计算机科学教育矩阵。通过统一的高性能终端，深度解析来自世界顶尖学府的课程体系，构建你的高保真知识图谱。",
+    "cta": "接入网络"
   },
   "mission": {
     "label": "系统架构",
     "title_prefix": "计算机科学的",
     "title_middle": "",
     "title_highlight": "中央索引库",
-    "desc_1": "CodeCampus 是一个垂直搜索引擎，旨在索引全球顶尖学府的公开课目录，建立统一的对比标准。",
-    "desc_2": "我们不生产内容，而是重构数据。我们将分散的先修要求、难度评级和教学大纲，编织成可查询的知识图谱，助你规划专属学习路径。",
+    "desc_1": "CodeCampus 不仅仅是一个搜索引擎，它是去中心化的学术情报单元。我们摄取分散的目录数据，为全球教育比对打造标准化的数据基座。",
+    "desc_2": "我们在混沌中构建秩序。通过将碎片化的教学大纲、先修逻辑和学习成果重构为可查询的知识图谱，助你逆向工程通往精通的路径。",
     "stat_sources": "数据源",
     "stat_nodes": "知识节点",
     "stat_schema": "结构化"
@@ -21,15 +21,16 @@
   "features": {
     "universal_index": {
       "title": "全网索引",
-      "desc": "在一个统一的界面中，无缝检索 MIT、Stanford、Berkeley 和 CMU 的标准化课程数据。"
+      "desc": "通过单一的低延迟控制平面，无缝检索 MIT、Stanford、Berkeley 和 CMU 的标准化课程注册表。"
     },
     "progress_analytics": {
-      "title": "学业追踪",
-      "desc": "记录你的修读进度。可视化展示学术轨迹，追踪跨领域的学分分布。"
+      "title": "学业遥测",
+      "desc": "追踪你的智力加速度。记录修读课程，实时生成学分分布和领域专长的可视化数据。",
+      "note": "Telemetry translated as 遥测 conveys a high-tech/space feel."
     },
     "gap_analysis": {
-      "title": "能力对标",
-      "desc": "将你的成绩单与顶尖学位要求进行对标，精准识别先修课缺失和技能盲区。"
+      "title": "技能审计",
+      "desc": "算法化比对你的成绩单与顶尖学位要求。精准探测先修课黑洞，优化你的学习矢量。"
     }
   },
   "universities": {
@@ -40,8 +41,8 @@
   },
   "navbar": {
     "mission": "愿景",
-    "universities": "学府",
-    "curriculum": "体系",
+    "universities": "节点",
+    "curriculum": "协议",
     "enter": "接入",
     "enter_network": "接入网络",
     "global_network": "全球学术网络"
