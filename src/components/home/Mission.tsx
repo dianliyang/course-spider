@@ -1,4 +1,4 @@
-import KnowledgeGraph from "@/components/home/KnowledgeGraph";
+import OrbitingCircles from "@/components/home/OrbitingCircles";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function Mission({ dict }: { dict: any }) {
@@ -46,8 +46,8 @@ export default function Mission({ dict }: { dict: any }) {
           
           <div className="relative group">
              {/* Data Visualization Container */}
-             <div className="aspect-square bg-slate-50 rounded-[2rem] border border-slate-200 flex items-center justify-center relative overflow-hidden transition-all duration-700 shadow-xl shadow-slate-200/50">
-                <KnowledgeGraph />
+             <div className="aspect-square bg-slate-50 rounded-[2rem] border border-slate-200 flex items-center justify-center relative overflow-hidden transition-all duration-700 shadow-xl shadow-slate-200/50 p-12">
+                <OrbitingCircles />
                 
                 {/* Overlay Vignette */}
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_30%,_var(--tw-gradient-stops))] from-transparent to-slate-50/80 pointer-events-none"></div>

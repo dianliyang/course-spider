@@ -1,5 +1,5 @@
 import { signIn } from "@/auth";
-import KnowledgeGraph from "@/components/home/KnowledgeGraph";
+import OrbitingCircles from "@/components/home/OrbitingCircles";
 import Image from "next/image";
 import Link from "next/link";
 import { AuthError } from "next-auth";
@@ -61,7 +61,7 @@ export default async function LoginPage({ searchParams }: PageProps) {
         {/* Visualization Container */}
         <div className="absolute inset-0 flex items-center justify-center opacity-40">
            <div className="w-[120%] h-[120%]">
-             <KnowledgeGraph nodeColor="#3b82f6" />
+             <OrbitingCircles />
            </div>
         </div>
 

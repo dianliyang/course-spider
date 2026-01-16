@@ -16,6 +16,12 @@
   .animate-float {
     animation: float 6s ease-in-out infinite;
   }
+  .animate-spin-slow {
+    animation: spin 20s linear infinite;
+  }
+  .animate-spin-reverse-slower {
+    animation: spin-reverse 30s linear infinite;
+  }
   .perspective-1000 {
     perspective: 1000px;
   }
@@ -25,6 +31,16 @@
     border: 1px solid rgba(255, 255, 255, 0.1);
     box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
   }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes spin-reverse {
+  from { transform: rotate(360deg); }
+  to { transform: rotate(0deg); }
 }
 
 @keyframes float {
