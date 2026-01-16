@@ -6,7 +6,16 @@ const DATABASE_ID = process.env.CLOUDFLARE_DATABASE_ID;
 const API_TOKEN = process.env.CLOUDFLARE_API_TOKEN;
 
 // In-memory mock store for verification tokens during development
-const mockVerificationTokens: Array<{ identifier: string; token: string; expires: string }> = [];
+// Using globalThis to ensure persistence across hot reloads in next dev
+const globalForMocks = globalThis as unknown as {
+  mockVerificationTokens: Array<{ identifier: string; token: string; expires: string }>;
+};
+
+if (!globalForMocks.mockVerificationTokens) {
+  globalForMocks.mockVerificationTokens = [];
+}
+
+const mockVerificationTokens = globalForMocks.mockVerificationTokens;
 
 export async function queryD1<T = unknown>(
   sql: string,
@@ -123,14 +132,17 @@ export async function queryD1<T = unknown>(
     if (sql.includes("INSERT INTO verification_tokens")) {
       const [identifier, token, expires] = params as [string, string, string];
       mockVerificationTokens.push({ identifier, token, expires });
-      console.log(`[D1 Mock] Token saved for ${identifier}. Total: ${mockVerificationTokens.length}`);
+      console.log(`[D1 Mock] Token saved for ${identifier}, token: ${token.substring(0, 8)}... Total: ${mockVerificationTokens.length}`);
       return [{ success: true }] as unknown as T[];
     }
 
     if (sql.includes("SELECT * FROM verification_tokens WHERE identifier = ? AND token = ?")) {
       const [identifier, token] = params as [string, string];
       const found = mockVerificationTokens.find(t => t.identifier === identifier && t.token === token);
-      console.log(`[D1 Mock] Token lookup for ${identifier}: ${found ? "Found" : "Not Found"}`);
+      console.log(`[D1 Mock] Token lookup for ${identifier}, token: ${token.substring(0, 8)}... Result: ${found ? "Found" : "Not Found"}`);
+      if (!found) {
+        console.log(`[D1 Mock] Current tokens in store:`, mockVerificationTokens.map(t => `${t.identifier}:${t.token.substring(0, 8)}...`).join(', '));
+      }
       return (found ? [found] : []) as unknown as T[];
     }
 
@@ -138,7 +150,7 @@ export async function queryD1<T = unknown>(
       const [identifier, token] = params as [string, string];
       const idx = mockVerificationTokens.findIndex(t => t.identifier === identifier && t.token === token);
       if (idx !== -1) mockVerificationTokens.splice(idx, 1);
-      console.log(`[D1 Mock] Token deleted for ${identifier}. Remaining: ${mockVerificationTokens.length}`);
+      console.log(`[D1 Mock] Token deleted for ${identifier}, token: ${token.substring(0, 8)}... Remaining: ${mockVerificationTokens.length}`);
       return [{ success: true }] as unknown as T[];
     }
 

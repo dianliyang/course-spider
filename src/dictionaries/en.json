@@ -184,6 +184,7 @@
       "error_oauth": "This email is linked to another provider.",
       "error_denied": "Access denied. Your account may be restricted.",
       "error_config": "System configuration error.",
+      "error_verification": "The sign-in link is no longer valid. It may have expired or already been used.",
       "error_default": "Please verify your identity vector.",
       "email_label": "Identity Vector (Email)",
       "submit_loading": "Processing...",

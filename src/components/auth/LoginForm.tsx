@@ -86,12 +86,13 @@ export default function LoginForm({ onMagicLink, sent: initialSent, dict }: Logi
               <p className="text-xs text-red-700 font-medium leading-relaxed">
                 {error === "OAuthAccountNotLinked"
                   ? (dict?.error_oauth || "This email is linked to another provider.")
-                  : error === "AccessDenied"
-                  ? (dict?.error_denied || "Access denied. Your account may be restricted.")
-                  : error === "Configuration"
-                  ? (dict?.error_config || "System configuration error.")
-                  : `${dict?.error_default || "Error"}: ${error}.`}
-              </p>
+                                : error === "AccessDenied"
+                                ? (dict?.error_denied || "Access denied. Your account may be restricted.")
+                                : error === "Configuration"
+                                ? (dict?.error_config || "System configuration error.")
+                                : error === "Verification"
+                                ? (dict?.error_verification || "The sign-in link is no longer valid.")
+                                : `${dict?.error_default || "Error"}: ${error}.`}              </p>
             </div>
           )}
 
