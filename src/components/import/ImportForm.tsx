@@ -3,10 +3,10 @@
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { ApiResponse, ImportRequest } from "@/types";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function ImportForm({ dict }: { dict: any }) {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<ImportRequest>({
     university: "", courseCode: "", title: "", description: "", url: "", level: "undergraduate"
   });
   const [loading, setLoading] = useState(false);
@@ -23,12 +23,12 @@ export default function ImportForm({ dict }: { dict: any }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData)
       });
-      const data = await res.json();
+      const data = await res.json() as ApiResponse;
       if (res.ok) {
-        setMessage({ type: "success", text: data.message });
+        setMessage({ type: "success", text: data.message || "Success" });
         setTimeout(() => router.push("/"), 2000);
       } else {
-        setMessage({ type: "error", text: data.error });
+        setMessage({ type: "error", text: data.error || "Error" });
       }
     } catch {
       setMessage({ type: "error", text: "Network sync failure" });
@@ -45,7 +45,7 @@ export default function ImportForm({ dict }: { dict: any }) {
     
     reader.onload = async (event) => {
       const content = event.target?.result as string;
-      let courses = [];
+      let courses: ImportRequest[] = [];
 
       try {
         if (file.name.endsWith('.json')) {
@@ -55,7 +55,7 @@ export default function ImportForm({ dict }: { dict: any }) {
           const headers = lines[0].split(',').map(h => h.trim());
           courses = lines.slice(1).filter(l => l.trim()).map(line => {
             const values = line.split(',').map(v => v.trim());
-            return headers.reduce((obj: Record<string, string>, header, index) => {
+            return headers.reduce((obj: any, header, index) => {
               obj[header] = values[index];
               return obj;
             }, {});
@@ -67,12 +67,12 @@ export default function ImportForm({ dict }: { dict: any }) {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(courses)
         });
-        const data = await res.json();
+        const data = await res.json() as ApiResponse;
         
         if (res.ok) {
-          setMessage({ type: "success", text: data.message });
+          setMessage({ type: "success", text: data.message || "Bulk Success" });
           setTimeout(() => router.push("/"), 3000);
-        } else setMessage({ type: "error", text: data.error });
+        } else setMessage({ type: "error", text: data.error || "Bulk Error" });
 
     } catch {
       setMessage({ type: "error", text: "Failed to import courses. Please check the file format." });

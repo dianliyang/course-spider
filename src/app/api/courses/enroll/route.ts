@@ -1,17 +1,18 @@
 import { NextResponse } from 'next/server';
 import { runD1, queryD1 } from '@/lib/d1';
 import { auth } from '@/auth';
+import { EnrollRequest } from '@/types';
 
 export async function POST(request: Request) {
   const session = await auth();
   const email = session?.user?.email || "guest@codecampus.example.com";
 
   try {
-    const body = await request.json();
+    const body = await request.json() as EnrollRequest;
     const { courseId, action } = body; // action: 'enroll' | 'unenroll' | 'update_progress'
     const progress = body.progress ?? 0;
 
-    const user = await queryD1<{ id: number }>('SELECT id FROM users WHERE email = ?', [email]);
+    const user = await queryD1<{ id: string }>('SELECT id FROM users WHERE email = ?', [email]);
     
     if (user.length === 0) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });

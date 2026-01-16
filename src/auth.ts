@@ -1,12 +1,12 @@
 import NextAuth from "next-auth";
 import Resend from "next-auth/providers/resend";
 import { D1Adapter } from "@auth/d1-adapter";
-import { getD1 } from "@/lib/d1";
 import { authConfig } from "./auth.config";
+import { getD1Database } from "./lib/d1";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   ...authConfig,
-  adapter: D1Adapter(getD1()),
+  adapter: D1Adapter(getD1Database()),
   secret: process.env.AUTH_SECRET,
   session: {
     strategy: "database",
@@ -24,11 +24,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         process.env.EMAIL_FROM ||
         "CodeCampus <no-reply@codecampus.example.com>",
       maxAge: 60 * 60, // Increased to 60 minutes
-      generateVerificationToken() {
-        const token = crypto.randomUUID();
-        console.log(`[Auth] Generated Verification Token: ${token.substring(0, 8)}...`);
-        return token;
-      },
       async sendVerificationRequest({ identifier: email, url }) {
         console.log(`[Auth] Dispatching Link for ${email}. URL: ${url}`);
 
@@ -109,10 +104,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   ],
   callbacks: {
     async signIn({ user, account, email }) {
-      console.log("[Auth] signIn callback start", { 
-        provider: account?.provider, 
-        email: user?.email,
-        hasUser: !!user
+      console.log("[Auth] signIn callback start", {
+        provider: account?.provider,
+        email: email,
+        hasUser: !!user,
       });
 
       // Allow sign in for resend/email providers
@@ -126,24 +121,24 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     },
 
     async session({ session, token, user }) {
-      console.log("[Auth] session callback start", { 
-        hasToken: !!token, 
+      console.log("[Auth] session callback start", {
+        hasToken: !!token,
         tokenId: token?.id,
         hasUser: !!user,
-        userId: user?.id
+        userId: user?.id,
       });
 
       // Add user id from token or user object to session
       const userId = (token?.id || user?.id) as string;
-      
+
       if (userId) {
         console.log(`[Auth] Returning enriched session for user: ${userId}`);
         return {
           ...session,
           user: {
             ...session.user,
-            id: userId
-          }
+            id: userId,
+          },
         };
       }
 
@@ -153,7 +148,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     async authorized({ auth, request }) {
       const isLoggedIn = !!auth?.user;
       const path = request.nextUrl.pathname;
-      console.log(`[Auth] authorized check for ${path}. LoggedIn: ${isLoggedIn}, User: ${auth?.user?.email || 'none'}`);
+      console.log(
+        `[Auth] authorized check for ${path}. LoggedIn: ${isLoggedIn}, User: ${
+          auth?.user?.email || "none"
+        }`
+      );
       return isLoggedIn;
     },
   },

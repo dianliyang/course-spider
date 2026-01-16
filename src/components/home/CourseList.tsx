@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Course } from "@/types";
+import { Course, EnrolledCoursesResponse } from "@/types";
 import CourseCard from "./CourseCard";
 import CourseListHeader from "./CourseListHeader";
 import Pagination from "./Pagination";
@@ -40,7 +40,7 @@ export default function CourseList({
 
   const fetchEnrolled = async () => {
     const res = await fetch("/api/user/courses");
-    const data = await res.json();
+    const data = await res.json() as EnrolledCoursesResponse;
     if (data.enrolledIds) setEnrolledIds(data.enrolledIds);
   };
 

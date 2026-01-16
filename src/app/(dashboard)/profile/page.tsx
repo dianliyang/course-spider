@@ -4,6 +4,9 @@ import { auth, signOut } from "@/auth";
 import { getLanguage } from "@/actions/language";
 import { getDictionary } from "@/lib/dictionary";
 
+export const dynamic = "force-dynamic";
+export const runtime = "edge";
+
 export default async function ProfilePage() {
   const session = await auth();
   const lang = await getLanguage();

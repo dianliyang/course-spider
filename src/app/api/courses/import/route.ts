@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server';
 import { runD1, queryD1 } from '@/lib/d1';
+import { ImportRequest } from '@/types';
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
+    const body = await request.json() as ImportRequest;
     const { university, courseCode, title, description, url, level } = body;
 
     if (!university || !courseCode || !title) {

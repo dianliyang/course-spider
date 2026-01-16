@@ -26,3 +26,28 @@ export interface Field {
   name: string;
   count: number;
 }
+
+export interface EnrollRequest {
+  courseId: number;
+  action: 'enroll' | 'unenroll' | 'update_progress';
+  progress?: number;
+}
+
+export interface ImportRequest {
+  university: string;
+  courseCode: string;
+  title: string;
+  description?: string;
+  url?: string;
+  level?: string;
+}
+
+export interface EnrolledCoursesResponse {
+  enrolledIds: number[];
+}
+
+export interface ApiResponse {
+  success: boolean;
+  message?: string;
+  error?: string;
+}
