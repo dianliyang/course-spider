@@ -16,7 +16,11 @@ export default function ActiveCourseTrack({ course, initialProgress, onUpdate, d
   const [isUpdating, setIsInUpdating] = useState(false);
 
   const logos: Record<string, string> = {
-    mit: "/mit.svg", stanford: "/stanford.jpg", cmu: "/cmu.jpg", ucb: "/ucb.png",
+    "MIT": "/mit.svg", 
+    "Stanford": "/stanford.jpg", 
+    "CMU": "/cmu.jpg", 
+    "UC Berkeley": "/ucb.png", 
+    "CAU Kiel": "/cau.png",
   };
 
   const handleProgressChange = async (newProgress: number) => {
