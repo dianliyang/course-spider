@@ -54,11 +54,40 @@ export async function queryD1<T = unknown>(
     }
   }
 
-  // 3. Local Mode (better-sqlite3) - REMOVED for Edge Compatibility
-  // The previous implementation used Node.js APIs (fs, path, better-sqlite3) and process.versions
-  // which caused build errors in the Edge Runtime.
-  // For local development, rely on 'wrangler dev' or Remote D1 fallback.
-  
+  // 3. Local Mode (better-sqlite3) - Re-enabled for development only
+  if (process.env.NODE_ENV === "development") {
+    try {
+      const fs = await import("fs");
+      const path = await import("path");
+      
+      const d1Dir = path.resolve(process.cwd(), ".wrangler/state/v3/d1/miniflare-D1DatabaseObject");
+      
+      if (fs.existsSync(d1Dir)) {
+        const files = fs.readdirSync(d1Dir)
+          .filter(f => f.endsWith(".sqlite"))
+          .map(f => ({
+            name: f,
+            time: fs.statSync(path.join(d1Dir, f)).mtime.getTime()
+          }))
+          .sort((a, b) => b.time - a.time); // Newest first
+
+        if (files.length > 0) {
+          const dbPath = path.join(d1Dir, files[0].name);
+          const Database = (await import("better-sqlite3")).default;
+          const db = new Database(dbPath);
+          
+          if (sql.trim().toLowerCase().startsWith("select")) {
+            return db.prepare(sql).all(params) as T[];
+          } else {
+            return [db.prepare(sql).run(params)] as unknown as T[];
+          }
+        }
+      }
+    } catch (e) {
+      console.warn("[D1 Local] Failed to use local fallback:", e);
+    }
+  }
+
   if (process.env.NODE_ENV === "development") {
     console.warn("[D1] No database binding found and remote fallback inactive. Query returning empty.");
   }
