@@ -68,13 +68,14 @@ export default function ImportForm({ dict }: ImportFormProps) {
     units: "",
     department: ""
   });
+  const [stagedBulkData, setStagedBulkData] = useState<ImportRequest[] | null>(null);
+  const [stagedFileName, setStagedFileName] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const executeManualImport = async () => {
     setLoading(true);
     try {
       const res = await fetch("/api/courses/import", {
@@ -86,15 +87,7 @@ export default function ImportForm({ dict }: ImportFormProps) {
       if (res.ok) {
         setMessage({ type: "success", text: dict.msg_success });
         setFormData({
-          university: "", 
-          courseCode: "", 
-          title: "", 
-          description: "", 
-          url: "", 
-          level: "undergraduate",
-          isInternal: false,
-          units: "",
-          department: ""
+          university: "", courseCode: "", title: "", description: "", url: "", level: "undergraduate", isInternal: false, units: "", department: ""
         });
         setTimeout(() => router.push("/study-plan"), 2000);
       } else {
@@ -103,28 +96,63 @@ export default function ImportForm({ dict }: ImportFormProps) {
     } catch (err: unknown) {
       console.error("Submission error:", err);
       setMessage({ type: "error", text: dict.msg_error_network });
+    } finally {
+      setLoading(false);
     }
-    finally { setLoading(false); }
   };
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const executeBulkImport = async () => {
+    if (!stagedBulkData) return;
+    setLoading(true);
+    try {
+      const res = await fetch("/api/courses/import/bulk", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(stagedBulkData)
+      });
+      const data = await res.json() as ApiResponse;
+      if (res.ok) {
+        setMessage({ type: "success", text: dict.msg_bulk_success });
+        setStagedBulkData(null);
+        setStagedFileName("");
+        if (fileInputRef.current) fileInputRef.current.value = "";
+        setTimeout(() => router.push("/study-plan"), 2000);
+      } else {
+        setMessage({ type: "error", text: (data.error + (data.details ? `: ${data.details}` : "")) || "Bulk Error" });
+      }
+    } catch (err: unknown) {
+      console.error("Bulk upload error:", err);
+      setMessage({ type: "error", text: dict.msg_error_network });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGlobalExecute = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (stagedBulkData) {
+      executeBulkImport();
+    } else {
+      executeManualImport();
+    }
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    setLoading(true);
+    setStagedFileName(file.name);
     const reader = new FileReader();
-    
-    reader.onload = async (event) => {
-      const content = event.target?.result as string;
-      let courses: ImportRequest[] = [];
-
+    reader.onload = (event) => {
       try {
+        const content = event.target?.result as string;
+        let data: ImportRequest[] = [];
         if (file.name.endsWith('.json')) {
-          courses = JSON.parse(content);
+          data = JSON.parse(content);
         } else if (file.name.endsWith('.csv')) {
           const lines = content.split('\n');
           const headers = lines[0].split(',').map(h => h.trim());
-          courses = lines.slice(1).filter(l => l.trim()).map(line => {
+          data = lines.slice(1).filter(l => l.trim()).map(line => {
             const values = line.split(',').map(v => v.trim());
             return headers.reduce((obj: Record<string, string>, header, index) => {
               obj[header] = values[index];
@@ -132,38 +160,61 @@ export default function ImportForm({ dict }: ImportFormProps) {
             }, {});
           }) as unknown as ImportRequest[];
         }
-
-        const res = await fetch("/api/courses/import/bulk", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(courses)
-        });
-        const data = await res.json() as ApiResponse;
-        
-        if (res.ok) {
-          setMessage({ type: "success", text: dict.msg_bulk_success });
-          if (fileInputRef.current) fileInputRef.current.value = "";
-          setTimeout(() => router.push("/study-plan"), 3000);
-        } else {
-          setMessage({ type: "error", text: (data.error + (data.details ? `: ${data.details}` : "")) || "Bulk Error" });
-        }
-
-    } catch (err: unknown) {
-      console.error("Bulk upload error:", err);
-      setMessage({ type: "error", text: dict.msg_error_network });
-      } finally {
-        setLoading(false);
+        setStagedBulkData(data);
+        setMessage({ type: "success", text: `Ready to import ${data.length} courses from ${file.name}` });
+      } catch (err) {
+        console.error("File parse error:", err);
+        setMessage({ type: "error", text: "Invalid file format" });
       }
     };
-
     reader.readAsText(file);
   };
 
   return (
+    <div className="relative pb-32">
+      {/* Global Sticky Action Bar */}
+      <div className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-xl border-t border-gray-100 z-50 py-6 px-4 md:px-8 shadow-[0_-10px_40px_rgba(0,0,0,0.03)]">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="flex items-center gap-6">
+            <div className="hidden sm:flex flex-col">
+              <span className="text-[10px] font-black text-gray-300 uppercase tracking-[0.3em]">System Protocol</span>
+              <span className="text-xs font-bold text-gray-900 uppercase">{stagedBulkData ? `Bulk Ingest (${stagedBulkData.length} nodes)` : 'Manual Single Entry'}</span>
+            </div>
+            {message.text && (
+              <div className={`flex items-center gap-3 px-4 py-2 rounded-full border text-[10px] font-black uppercase tracking-widest ${message.type === 'success' ? 'bg-green-50 border-green-100 text-brand-green' : 'bg-red-50 border-red-100 text-red-500'}`}>
+                <span className={`w-1.5 h-1.5 rounded-full ${message.type === 'success' ? 'bg-brand-green' : 'bg-red-500'} animate-pulse`}></span>
+                {message.text}
+              </div>
+            )}
+          </div>
+          
+          <div className="flex items-center gap-4 w-full md:w-auto">
+            {stagedBulkData && (
+              <button 
+                onClick={() => { setStagedBulkData(null); setStagedFileName(""); if (fileInputRef.current) fileInputRef.current.value = ""; }}
+                className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] hover:text-red-500 transition-colors px-4"
+              >
+                Clear File
+              </button>
+            )}
+            <button 
+              onClick={handleGlobalExecute}
+              disabled={loading || (!stagedBulkData && (!formData.university || !formData.courseCode || !formData.title))}
+              className="flex-grow md:flex-grow-0 btn-primary px-12 py-4 rounded-2xl shadow-2xl shadow-brand-blue/30 disabled:bg-gray-100 disabled:text-gray-300 disabled:shadow-none min-w-[200px]"
+            >
+              {loading ? (
+                <span className="flex items-center gap-2"><i className="fa-solid fa-circle-notch fa-spin"></i> {dict.submit_loading}</span>
+              ) : (
+                <span className="flex items-center gap-2">{dict.submit_btn} <i className="fa-solid fa-arrow-right-to-bracket text-[10px]"></i></span>
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 w-full">
         {/* Header */}
         <div className="relative mb-20 flex flex-col md:flex-row md:items-end justify-between gap-8">
-
           <div>
             <span className="text-[10px] font-black text-brand-blue uppercase tracking-[0.5em] mb-4 block">
               {dict.label}
@@ -181,7 +232,7 @@ export default function ImportForm({ dict }: ImportFormProps) {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-24">
           {/* Left Column: Manual Form */}
           <div className="lg:col-span-2">
-            <form onSubmit={handleSubmit} className="space-y-20">
+            <form onSubmit={handleGlobalExecute} className="space-y-20">
               <div className="space-y-12">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
                   <div className="flex flex-col gap-3 group">
@@ -311,23 +362,6 @@ export default function ImportForm({ dict }: ImportFormProps) {
                   />
                 </div>
               </div>
-
-              <div className="flex flex-col md:flex-row items-center gap-10 pt-10">
-                <button 
-                  disabled={loading} 
-                  className="btn-secondary disabled:opacity-50"
-                  type="submit"
-                >
-                  {loading ? dict.submit_loading : dict.submit_btn}
-                </button>
-
-                {message.type && !fileInputRef.current?.value && (
-                  <span className={`text-[11px] font-black uppercase tracking-widest flex items-center gap-3 ${message.type === 'success' ? 'text-brand-green' : 'text-red-500'}`}>
-                    <span className={`w-2 h-2 rounded-full ${message.type === 'success' ? 'bg-brand-green' : 'bg-red-500'} animate-pulse`}></span>
-                    {message.text}
-                  </span>
-                )}
-              </div>
             </form>
 
             <div className="mt-32 pt-24 border-t border-gray-100">
@@ -407,33 +441,28 @@ export default function ImportForm({ dict }: ImportFormProps) {
 
               <div 
                 onClick={() => fileInputRef.current?.click()}
-                className="group border-2 border-dashed border-gray-100 rounded-3xl p-12 flex flex-col items-center justify-center gap-6 hover:border-brand-blue hover:bg-blue-50/30 transition-all cursor-pointer bg-gray-50/30"
+                className={`group border-2 border-dashed rounded-3xl p-12 flex flex-col items-center justify-center gap-6 transition-all cursor-pointer ${stagedBulkData ? 'border-brand-blue bg-blue-50/10' : 'border-gray-100 bg-gray-50/30 hover:border-brand-blue hover:bg-blue-50/30'}`}
                 role="button"
                 tabIndex={0}
                 onKeyDown={(e) => e.key === 'Enter' && fileInputRef.current?.click()}
               >
-                <div className="w-16 h-16 bg-white border border-gray-100 rounded-2xl flex items-center justify-center text-gray-300 group-hover:text-brand-blue group-hover:scale-110 transition-all shadow-sm">
-                  <i className="fa-solid fa-cloud-arrow-up text-xl"></i>
+                <div className={`w-16 h-16 bg-white border rounded-2xl flex items-center justify-center transition-all shadow-sm ${stagedBulkData ? 'border-brand-blue text-brand-blue scale-110' : 'border-gray-100 text-gray-300 group-hover:text-brand-blue group-hover:scale-110'}`}>
+                  <i className={`fa-solid ${stagedBulkData ? 'fa-file-circle-check' : 'fa-cloud-arrow-up'} text-xl`}></i>
                 </div>
                 <div className="text-center">
-                  <span className="text-[11px] font-black text-gray-500 uppercase tracking-[0.2em] block mb-1 group-hover:text-brand-blue">
-                    {dict.bulk_drop}
+                  <span className={`text-[11px] font-black uppercase tracking-[0.2em] block mb-1 ${stagedBulkData ? 'text-brand-blue' : 'text-gray-500 group-hover:text-brand-blue'}`}>
+                    {stagedFileName || dict.bulk_drop}
                   </span>
                   <span className="text-[9px] font-bold text-gray-300 uppercase tracking-widest">
-                    {dict.bulk_or}
+                    {stagedBulkData ? `${stagedBulkData.length} courses identified` : dict.bulk_or}
                   </span>
                 </div>
-                <input type="file" ref={fileInputRef} className="hidden" accept=".json,.csv" onChange={handleFileUpload} />
+                <input type="file" ref={fileInputRef} className="hidden" accept=".json,.csv" onChange={handleFileSelect} />
               </div>
-
-              {message.text && fileInputRef.current?.value && (
-                <div className={`p-6 rounded-2xl border text-[11px] font-black uppercase tracking-widest leading-relaxed ${message.type === 'success' ? 'bg-green-50 border-green-100 text-brand-green' : 'bg-red-50 border-red-100 text-red-500'}`}>
-                  {message.text}
-                </div>
-              )}
             </div>
           </div>
         </div>
       </main>
+    </div>
   );
 }
