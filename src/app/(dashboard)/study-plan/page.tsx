@@ -130,7 +130,7 @@ export default async function StudyPlanPage({ searchParams }: PageProps) {
               </div>
             </div>
 
-            <div className={focusView === 'track' ? "flex flex-col gap-4 pl-0 md:pl-20" : "grid grid-cols-1 md:grid-cols-2 gap-8 pl-0 md:pl-20"}>
+            <div className={focusView === 'track' ? "grid grid-cols-1 lg:grid-cols-2 gap-6 pl-0 md:pl-20" : "grid grid-cols-1 md:grid-cols-2 gap-8 pl-0 md:pl-20"}>
               {inProgress.length > 0 ? (
                 inProgress.map(course => (
                   focusView === 'track' 
