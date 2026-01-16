@@ -16,27 +16,32 @@ export async function POST(request: Request) {
 
     const adminSupabase = createAdminClient();
     
-    // Prepare courses for bulk upsert
-    const coursesToUpsert = courses.map(course => {
-      const base: any = {
-        university: course.university,
-        course_code: course.courseCode,
-        title: course.title,
-        description: course.description || "",
-        url: course.url || "#",
-        level: course.level || "undergraduate",
-        units: course.units || "",
-        department: course.department || "",
-        popularity: 0
-      };
-      
-      // Only add is_internal if explicitly provided, 
-      // but we wrap the whole call in a try to handle missing columns
-      if (course.isInternal !== undefined || (course as any).isInternal !== undefined) {
-        base.is_internal = course.isInternal ?? (course as any).isInternal;
+    // Prepare courses for bulk upsert - De-duplicate locally first to avoid DB errors
+    const uniqueCoursesMap = new Map();
+    
+    courses.forEach(course => {
+      const key = `${course.university}-${course.courseCode}`;
+      if (!uniqueCoursesMap.has(key)) {
+        const base: any = {
+          university: course.university,
+          course_code: course.courseCode,
+          title: course.title,
+          description: course.description || "",
+          url: course.url || "#",
+          level: course.level || "undergraduate",
+          units: course.units || "",
+          department: course.department || "",
+          popularity: 0
+        };
+        
+        if (course.isInternal !== undefined || (course as any).isInternal !== undefined) {
+          base.is_internal = course.isInternal ?? (course as any).isInternal;
+        }
+        uniqueCoursesMap.set(key, base);
       }
-      return base;
     });
+
+    const coursesToUpsert = Array.from(uniqueCoursesMap.values());
 
     // Perform bulk upsert
     let { data: upsertedCourses, error: upsertError } = await adminSupabase
