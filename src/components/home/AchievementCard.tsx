@@ -57,27 +57,29 @@ export default function AchievementCard({ course, masteredLabel }: AchievementCa
         </div>
       </div>
 
-      <div className="flex-grow space-y-4">
-        <h3 className="text-base font-black text-gray-900 leading-tight tracking-tight line-clamp-2 group-hover:text-brand-green transition-colors">
+      <div className="flex-grow space-y-4 flex flex-col">
+        <h3 className="text-base font-black text-gray-900 leading-tight tracking-tight line-clamp-2 group-hover:text-brand-green transition-colors min-h-[3rem]">
           {course.title}
         </h3>
 
-        {(course.gpa || course.score) && (
-          <div className="flex gap-4 items-center bg-gray-50/50 p-3 rounded-xl border border-gray-100/50">
-            {course.gpa && (
-              <div className="flex flex-col">
-                <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">GPA</span>
-                <span className="text-sm font-black text-gray-900 italic">{Number(course.gpa).toFixed(2)}</span>
-              </div>
-            )}
-            {course.score && (
-              <div className="flex flex-col border-l border-gray-200 pl-4">
-                <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">SCORE</span>
-                <span className="text-sm font-black text-gray-900 italic">{Number(course.score).toFixed(1)}%</span>
-              </div>
-            )}
-          </div>
-        )}
+        <div className="mt-auto">
+          {(course.gpa || course.score) && (
+            <div className="flex gap-4 items-center bg-gray-50/50 p-3 rounded-xl border border-gray-100/50">
+              {course.gpa && (
+                <div className="flex flex-col">
+                  <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">GPA</span>
+                  <span className="text-sm font-black text-gray-900 italic">{Number(course.gpa).toFixed(2)}</span>
+                </div>
+              )}
+              {course.score && (
+                <div className="flex flex-col border-l border-gray-200 pl-4">
+                  <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">SCORE</span>
+                  <span className="text-sm font-black text-gray-900 italic">{Number(course.score).toFixed(1)}%</span>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="flex items-center justify-between pt-5 border-t border-gray-50">
