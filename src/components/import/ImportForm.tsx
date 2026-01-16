@@ -191,7 +191,7 @@ export default function ImportForm({ dict }: ImportFormProps) {
                     <input 
                       required 
                       placeholder={dict.form_uni_placeholder}
-                      className="bg-transparent border-b-2 border-gray-100 focus:border-brand-blue outline-none py-3 text-xl font-black transition-all placeholder:text-gray-100 uppercase tracking-tighter"
+                      className="bg-transparent border-b-2 border-gray-100 focus:border-brand-blue outline-none py-3 text-xl font-black transition-all placeholder:text-gray-100 tracking-tighter"
                       value={formData.university} 
                       onChange={(e) => setFormData({...formData, university: e.target.value})} 
                     />
@@ -203,7 +203,7 @@ export default function ImportForm({ dict }: ImportFormProps) {
                     <input 
                       required 
                       placeholder={dict.form_code_placeholder}
-                      className="bg-transparent border-b-2 border-gray-100 focus:border-brand-blue outline-none py-3 text-xl font-black transition-all placeholder:text-gray-100 uppercase tracking-tighter"
+                      className="bg-transparent border-b-2 border-gray-100 focus:border-brand-blue outline-none py-3 text-xl font-black transition-all placeholder:text-gray-100 tracking-tighter"
                       value={formData.courseCode} 
                       onChange={(e) => setFormData({...formData, courseCode: e.target.value})} 
                     />
@@ -217,7 +217,7 @@ export default function ImportForm({ dict }: ImportFormProps) {
                   <input 
                     required 
                     placeholder={dict.form_title_placeholder}
-                    className="bg-transparent border-b-2 border-gray-100 focus:border-brand-blue outline-none py-3 text-xl font-black transition-all placeholder:text-gray-100 uppercase tracking-tighter"
+                    className="bg-transparent border-b-2 border-gray-100 focus:border-brand-blue outline-none py-3 text-xl font-black transition-all placeholder:text-gray-100 tracking-tighter"
                     value={formData.title} 
                     onChange={(e) => setFormData({...formData, title: e.target.value})} 
                   />
