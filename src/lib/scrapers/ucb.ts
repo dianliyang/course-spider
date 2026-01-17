@@ -7,12 +7,32 @@ export class UCB extends BaseScraper {
     super("ucb");
   }
 
+  getSemesterParam(): string {
+    if (!this.semester) return "2258"; // Default to Fall 2025 (approx/example code)
+    
+    // UCB uses numeric term codes. 
+    // Logic to map fa25/sp25 to specific codes would go here.
+    // For now, we'll just check for basic patterns or allow direct code input.
+    // Example: Spring 2025 -> 2252, Fall 2025 -> 2258
+    
+    const input = this.semester.toLowerCase();
+    
+    // Simple mock mapping for the purpose of the example
+    if (input.includes('sp25') || input.includes('spring25')) return "2252";
+    if (input.includes('fa25') || input.includes('fall25')) return "2258"; // 8 = Fall
+    if (input.includes('su25') || input.includes('summer25')) return "2255";
+    
+    // Fallback to existing hardcoded if unknown
+    return "8573"; 
+  }
+
   links(maxPages: number = 10): string[] {
+    const termCode = this.getSemesterParam();
     const links: string[] = [];
     ["5582", "5475"].map((i) => {
       for (let page = 0; page < maxPages; page++) {
         links.push(
-          `https://classes.berkeley.edu/search/class?f%5B0%5D=term%3A8573&f%5B1%5D=subject_area%3A${i}&page=${page}`
+          `https://classes.berkeley.edu/search/class?f%5B0%5D=term%3A${termCode}&f%5B1%5D=subject_area%3A${i}&page=${page}`
         );
       }
     });

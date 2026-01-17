@@ -8,6 +8,15 @@ export abstract class BaseScraper {
     this.name = name;
   }
 
+  /**
+   * Returns the university-specific semester parameter based on the `this.semester` property.
+   * Default implementation returns empty string.
+   * Override this in subclasses to provide specific mapping logic.
+   */
+  getSemesterParam(): string {
+    return "";
+  }
+
   abstract links(): string[] | Promise<string[]>;
 
   abstract parser(html: string): Course[] | Promise<Course[]>;
