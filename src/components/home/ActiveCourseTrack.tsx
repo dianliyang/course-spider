@@ -4,7 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import { Course } from "@/types";
 import { useRouter } from "next/navigation";
-import { UNIVERSITY_LOGOS } from "@/lib/supabase/storage";
+import UniversityIcon from "@/components/common/UniversityIcon";
 
 interface ActiveCourseTrackProps {
   course: Course;
@@ -151,13 +151,11 @@ export default function ActiveCourseTrack({ course, initialProgress, onUpdate, d
       {/* Top Section: Title & Logo */}
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-start gap-4 min-w-0">
-          <div className="w-10 h-10 relative flex-shrink-0 bg-gray-50 rounded-xl p-1.5 border border-gray-100">
-            {UNIVERSITY_LOGOS[course.university] ? (
-              <Image src={UNIVERSITY_LOGOS[course.university]} alt={course.university} fill className="object-contain p-1" />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center font-black text-gray-400 text-xs uppercase">{course.university.substring(0, 1)}</div>
-            )}
-          </div>
+          <UniversityIcon 
+            name={course.university} 
+            size={40} 
+            className="flex-shrink-0 bg-gray-50 rounded-xl border border-gray-100 p-1.5"
+          />
           <div className="min-w-0">
             <div className="flex items-center gap-2 mb-1">
               <span className="text-[10px] font-black text-brand-blue uppercase tracking-[0.2em] leading-none">{course.university}</span>

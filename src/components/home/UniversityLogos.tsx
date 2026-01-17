@@ -1,11 +1,10 @@
-import Image from "next/image";
-import { UNIVERSITY_LOGOS } from "@/lib/supabase/storage";
+import UniversityIcon from "@/components/common/UniversityIcon";
 
 const universities = [
-  { name: "MIT", logo: UNIVERSITY_LOGOS["MIT"], width: 50, height: 50 },
-  { name: "Stanford", logo: UNIVERSITY_LOGOS["Stanford"], width: 50, height: 50 },
-  { name: "UC Berkeley", logo: UNIVERSITY_LOGOS["UC Berkeley"], width: 50, height: 50 },
-  { name: "Carnegie Mellon", logo: UNIVERSITY_LOGOS["CMU"], width: 50, height: 50 },
+  "MIT",
+  "Stanford",
+  "UC Berkeley",
+  "Carnegie Mellon",
 ];
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -18,14 +17,12 @@ export default function UniversityLogos({ dict }: { dict: any }) {
         </p>
         <div className="flex flex-wrap justify-center items-center gap-12 md:gap-24 grayscale opacity-40 hover:grayscale-0 hover:opacity-100 transition-all duration-700">
           {universities.map((uni) => (
-            <div key={uni.name} className="relative group">
+            <div key={uni} className="relative group">
               <div className="relative h-12 w-auto flex items-center justify-center transition-transform duration-500 group-hover:scale-110">
-                <Image
-                  src={uni.logo}
-                  alt={uni.name}
-                  width={uni.width}
-                  height={uni.height}
-                  className="object-contain h-10 w-auto mix-blend-multiply"
+                <UniversityIcon 
+                  name={uni} 
+                  size={50} 
+                  className="mix-blend-multiply"
                 />
               </div>
             </div>

@@ -5,7 +5,7 @@ import { Course } from "@/types";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { UNIVERSITY_LOGOS } from "@/lib/supabase/storage";
+import UniversityIcon from "@/components/common/UniversityIcon";
 
 interface CourseCardProps {
   course: Course;
@@ -76,19 +76,11 @@ export default function CourseCard({
       </button>
 
       <div className="flex gap-4 min-w-0">
-        {UNIVERSITY_LOGOS[course.university] ? (
-          <Image
-            src={UNIVERSITY_LOGOS[course.university]}
-            alt={course.university}
-            width={44}
-            height={44}
-            className="object-contain self-start mt-1"
-          />
-        ) : (
-          <div className="w-11 h-11 bg-gray-100 text-gray-800 flex items-center justify-center font-bold rounded-lg uppercase text-xs self-start mt-1">
-            {course.university.substring(0, 3)}
-          </div>
-        )}
+        <UniversityIcon 
+          name={course.university} 
+          size={44} 
+          className="self-start mt-1 bg-white rounded-lg p-1"
+        />
         <div className="min-w-0 flex-grow">
           <div className="flex items-center gap-2">
             <h4 className="text-xs text-gray-400 font-bold truncate tracking-widest">

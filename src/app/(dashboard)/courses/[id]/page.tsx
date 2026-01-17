@@ -6,7 +6,7 @@ import { createClient, mapCourseFromRow, getUser } from "@/lib/supabase/server";
 import { getLanguage } from "@/actions/language";
 import { getDictionary } from "@/lib/dictionary";
 import { Course } from "@/types";
-import { UNIVERSITY_LOGOS } from "@/lib/supabase/storage";
+import UniversityIcon from "@/components/common/UniversityIcon";
 
 export const dynamic = "force-dynamic";
 
@@ -91,19 +91,11 @@ async function CourseDetailData({ id, dict }: { id: string; dict: any }) {
     <div className="space-y-12">
       <header className="space-y-6">
         <div className="flex items-center gap-4">
-          {UNIVERSITY_LOGOS[fullCourse.university] ? (
-            <Image
-              src={UNIVERSITY_LOGOS[fullCourse.university]}
-              alt={fullCourse.university}
-              width={64}
-              height={64}
-              className="object-contain"
-            />
-          ) : (
-            <div className="w-16 h-16 bg-gray-100 text-gray-800 flex items-center justify-center font-bold rounded-xl uppercase text-xl">
-              {fullCourse.university.substring(0, 3)}
-            </div>
-          )}
+          <UniversityIcon 
+            name={fullCourse.university} 
+            size={64} 
+            className="bg-white rounded-xl p-1 shadow-sm border border-gray-100"
+          />
           <div>
             <div className="flex items-center gap-3">
               <span className="text-xs font-black text-brand-blue tracking-widest bg-brand-blue/5 px-2 py-1 rounded">
