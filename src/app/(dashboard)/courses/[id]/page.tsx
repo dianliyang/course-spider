@@ -94,7 +94,7 @@ async function CourseDetailData({ id, dict }: { id: string; dict: any }) {
           <UniversityIcon 
             name={fullCourse.university} 
             size={64} 
-            className="bg-white rounded-xl p-1 shadow-sm border border-gray-100"
+            className="flex-shrink-0 bg-white rounded-xl p-1 shadow-sm border border-gray-100"
           />
           <div>
             <div className="flex items-center gap-3">

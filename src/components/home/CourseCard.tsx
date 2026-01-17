@@ -79,7 +79,7 @@ export default function CourseCard({
         <UniversityIcon 
           name={course.university} 
           size={44} 
-          className="self-start mt-1 bg-white rounded-lg p-1"
+          className="flex-shrink-0 self-start mt-1 bg-white rounded-lg p-1"
         />
         <div className="min-w-0 flex-grow">
           <div className="flex items-center gap-2">
