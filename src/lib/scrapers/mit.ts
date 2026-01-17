@@ -115,6 +115,12 @@ export class MIT extends BaseScraper {
     const courses: Course[] = [];
     const h3Tags = $('h3');
 
+    // Parse requested semester into term and year
+    const input = this.semester?.toLowerCase() || "";
+    const yearNum = input.replace(/\D/g, "") || "26";
+    const fullYear = 2000 + parseInt(yearNum);
+    const termName = (input.includes('fa') || input.includes('fall')) ? "Fall" : "Spring";
+
     h3Tags.each((_, h3Element) => {
       const h3 = $(h3Element);
       const headerText = h3.text().replace(/\s+/g, ' ').trim();
@@ -203,7 +209,7 @@ export class MIT extends BaseScraper {
               level = 'graduate';
             }
 
-            if (['Fall', 'Spring', 'Summer', 'IAP'].includes(alt)) {
+            if (['Fall', 'Spring', 'Summer'].includes(alt)) {
               if (!details['terms']) details['terms'] = [];
               if (Array.isArray(details['terms']) && !details['terms'].includes(alt)) {
                  (details['terms'] as string[]).push(alt);
@@ -237,6 +243,7 @@ export class MIT extends BaseScraper {
         department: "Electrical Engineering and Computer Science",
         level: level,
         corequisites: details.prerequisites as string | undefined,
+        semesters: [{ term: termName, year: fullYear }],
         details: {
           terms: details.terms,
           instructors: instructors
