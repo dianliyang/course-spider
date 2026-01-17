@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Course } from "@/types";
-import { updateCourse } from "@/actions/courses";
+import { updateCourse, deleteCourse } from "@/actions/courses";
 
 interface EditCourseModalProps {
   course: Course;
@@ -11,6 +11,7 @@ interface EditCourseModalProps {
 
 export default function EditCourseModal({ course, onClose }: EditCourseModalProps) {
   const [loading, setLoading] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [formData, setFormData] = useState({
     university: course.university,
     courseCode: course.courseCode,
@@ -39,6 +40,22 @@ export default function EditCourseModal({ course, onClose }: EditCourseModalProp
       alert("Failed to update course");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!confirm("Are you sure you want to delete this course? This action cannot be undone.")) {
+      return;
+    }
+    
+    setIsDeleting(true);
+    try {
+      await deleteCourse(course.id);
+      // No need to onClose, as deleteCourse redirects
+    } catch (error) {
+      console.error(error);
+      alert("Failed to delete course");
+      setIsDeleting(false);
     }
   };
 
@@ -244,24 +261,43 @@ export default function EditCourseModal({ course, onClose }: EditCourseModalProp
             </label>
           </div>
 
-          <div className="pt-6 border-t border-gray-100 flex gap-4">
+          <div className="pt-6 border-t border-gray-100 flex flex-col gap-4">
+            <div className="flex gap-4">
+              <button
+                type="button"
+                onClick={onClose}
+                className="flex-1 py-4 rounded-xl text-xs font-black uppercase tracking-widest text-gray-400 hover:text-gray-900 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={loading || isDeleting}
+                className="flex-1 btn-primary py-4 rounded-xl flex items-center justify-center gap-2 text-xs font-black uppercase tracking-widest disabled:opacity-50"
+              >
+                {loading ? (
+                  <i className="fa-solid fa-circle-notch fa-spin"></i>
+                ) : (
+                  <>
+                    Save Changes <i className="fa-solid fa-check"></i>
+                  </>
+                )}
+              </button>
+            </div>
+            
             <button
               type="button"
-              onClick={onClose}
-              className="flex-1 py-4 rounded-xl text-xs font-black uppercase tracking-widest text-gray-400 hover:text-gray-900 transition-colors"
+              onClick={handleDelete}
+              disabled={loading || isDeleting}
+              className="w-full py-3 rounded-xl text-xs font-black uppercase tracking-widest text-red-500 hover:bg-red-50 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
             >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="flex-1 btn-primary py-4 rounded-xl flex items-center justify-center gap-2 text-xs font-black uppercase tracking-widest"
-            >
-              {loading ? (
-                <i className="fa-solid fa-circle-notch fa-spin"></i>
+              {isDeleting ? (
+                <>
+                  <i className="fa-solid fa-circle-notch fa-spin"></i> Deleting...
+                </>
               ) : (
                 <>
-                  Save Changes <i className="fa-solid fa-check"></i>
+                  <i className="fa-solid fa-trash"></i> Delete Course
                 </>
               )}
             </button>

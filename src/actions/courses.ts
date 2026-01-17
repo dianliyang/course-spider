@@ -55,3 +55,25 @@ export async function updateCourse(courseId: number, data: {
   revalidatePath(`/courses/${courseId}`);
   revalidatePath("/courses");
 }
+
+export async function deleteCourse(courseId: number) {
+  const user = await getUser();
+  if (!user) {
+    throw new Error("Unauthorized");
+  }
+
+  const supabase = createAdminClient();
+
+  const { error } = await supabase
+    .from("courses")
+    .delete()
+    .eq("id", courseId);
+
+  if (error) {
+    console.error("Failed to delete course:", error);
+    throw new Error("Failed to delete course");
+  }
+
+  revalidatePath("/courses");
+  redirect("/courses");
+}
