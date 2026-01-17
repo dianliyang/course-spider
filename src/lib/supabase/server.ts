@@ -67,7 +67,7 @@ export class SupabaseDatabase {
   async saveCourses(courses: Course[]): Promise<void> {
     if (courses.length === 0) return;
 
-    const university = courses[0].university;
+    const university = formatUniversityName(courses[0].university);
     console.log(
       `[Supabase] Saving ${courses.length} courses for ${university}...`
     );
@@ -76,7 +76,7 @@ export class SupabaseDatabase {
 
     // Bulk upsert based on university and course_code
     const toUpsert = courses.map((c) => ({
-      university: c.university,
+      university: university,
       course_code: c.courseCode,
       title: c.title,
       units: c.units,
