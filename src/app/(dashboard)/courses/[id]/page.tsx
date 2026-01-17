@@ -186,10 +186,10 @@ async function CourseDetailData({ id, dict }: { id: string; dict: any }) {
               href={fullCourse.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="w-full btn-primary py-4 rounded-xl flex items-center justify-center gap-3 mb-4"
+              className="w-full btn-primary py-4 rounded-xl flex items-center justify-center gap-3 mb-4 text-xs tracking-[0.15em]"
             >
               Go to Course Page{" "}
-              <i className="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+              <i className="fa-solid fa-arrow-up-right-from-square text-xs"></i>
             </a>
 
             {isEnrolled && (
