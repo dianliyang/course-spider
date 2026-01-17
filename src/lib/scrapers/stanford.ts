@@ -35,7 +35,7 @@ export class Stanford extends BaseScraper {
   }
 
   async retrieve(): Promise<Course[]> {
-    const DEPTS = ["CS", "EE"];
+    const DEPTS = ["CS"];
     const allCourses: Course[] = [];
     
     let termsToScrape: { term: string, year: number }[] = [];
