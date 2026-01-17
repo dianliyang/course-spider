@@ -15,4 +15,5 @@ export interface Course {
   isHidden?: boolean;
   isInternal?: boolean;
   fields?: string[];
+  semesters?: { term: string; year: number }[];
 }

@@ -93,9 +93,10 @@ export class SupabaseDatabase {
       is_internal: c.isInternal || false,
     }));
 
-    const { error } = await supabase
+    const { data: savedCourses, error } = await supabase
       .from("courses")
-      .upsert(toUpsert, { onConflict: 'university,course_code' });
+      .upsert(toUpsert, { onConflict: 'university,course_code' })
+      .select('id, course_code');
       
     if (error) {
       console.error(
@@ -103,6 +104,67 @@ export class SupabaseDatabase {
         error
       );
       throw error;
+    }
+
+    // Handle Semesters
+    const coursesWithSemesters = courses.filter(c => c.semesters && c.semesters.length > 0);
+    if (coursesWithSemesters.length > 0 && savedCourses) {
+      // 1. Collect all unique semesters
+      const uniqueSemesters = new Map<string, { term: string, year: number }>();
+      coursesWithSemesters.forEach(c => {
+        c.semesters?.forEach(s => {
+          const key = `${s.term}-${s.year}`;
+          uniqueSemesters.set(key, s);
+        });
+      });
+
+      // 2. Upsert semesters and get IDs
+      // Note: upsert on 'year, term' unique constraint
+      const semestersArray = Array.from(uniqueSemesters.values());
+      const { data: savedSemesters, error: semError } = await supabase
+        .from('semesters')
+        .upsert(semestersArray, { onConflict: 'year, term' })
+        .select('id, term, year');
+      
+      if (semError) {
+         console.error(`[Supabase] Error saving semesters:`, semError);
+      } else if (savedSemesters) {
+        // 3. Map semester keys to IDs
+        const semesterIdMap = new Map<string, number>();
+        savedSemesters.forEach(s => {
+           semesterIdMap.set(`${s.term}-${s.year}`, s.id);
+        });
+
+        // 4. Create course_semesters links
+        const courseCodeToId = new Map<string, number>();
+        savedCourses.forEach(c => {
+          courseCodeToId.set(c.course_code, c.id);
+        });
+
+        const semesterLinks: { course_id: number, semester_id: number }[] = [];
+        
+        coursesWithSemesters.forEach(c => {
+          const courseId = courseCodeToId.get(c.courseCode);
+          if (!courseId) return;
+
+          c.semesters?.forEach(s => {
+            const semId = semesterIdMap.get(`${s.term}-${s.year}`);
+            if (semId) {
+              semesterLinks.push({ course_id: courseId, semester_id: semId });
+            }
+          });
+        });
+
+        if (semesterLinks.length > 0) {
+           const { error: linkError } = await supabase
+             .from('course_semesters')
+             .upsert(semesterLinks, { onConflict: 'course_id, semester_id' });
+           
+           if (linkError) {
+             console.error(`[Supabase] Error linking course semesters:`, linkError);
+           }
+        }
+      }
     }
   }
 

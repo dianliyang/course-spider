@@ -151,6 +151,11 @@ export class CMU extends BaseScraper {
             if (num >= 600) level = "graduate";
           }
 
+          let department = "Computer Science";
+          if (rawId.startsWith("18")) {
+            department = "Electrical & Computer Engineering";
+          }
+
           currentCourse = {
             university: this.name,
             courseCode: rawId,
@@ -158,8 +163,10 @@ export class CMU extends BaseScraper {
             units: getText(2),
             description: description,
             url: courseUrl,
+            department: department,
             corequisites: corequisites,
             level: level,
+            semesters: [{ term: "Fall", year: 2025 }],
             details: {
               sections: [],
             },
