@@ -8,7 +8,22 @@ export class MIT extends BaseScraper {
     super("mit");
   }
 
+  getSemesterParam(): string {
+    if (!this.semester) return "";
+    
+    const input = this.semester.toLowerCase();
+    if (input.includes('sp') || input.includes('spring')) return "spring";
+    if (input.includes('fa') || input.includes('fall')) return "fall";
+    
+    return "";
+  }
+
   links(term?: string): string[] {
+    // If term is not explicitly passed, try to get it from the instance config
+    if (!term) {
+      term = this.getSemesterParam();
+    }
+
     let termPath = "";
     if (term === "spring") {
       termPath = "/archive/spring";
@@ -145,6 +160,7 @@ export class MIT extends BaseScraper {
         title: courseTitle,
         units: details.units as string | undefined,
         description: descriptionParts.join(" ").trim(),
+        department: "Electrical Engineering and Computer Science",
         level: level,
         corequisites: details.prerequisites as string | undefined,
         details: {
