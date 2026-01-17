@@ -122,6 +122,16 @@ async function CourseDetailData({ id, dict }: { id: string; dict: any }) {
               Syllabus & Details
             </h2>
             <div className="grid grid-cols-2 gap-8">
+              {fullCourse.department && (
+                <div>
+                  <span className="block text-[10px] font-black text-gray-300 uppercase tracking-widest mb-2">
+                    Department
+                  </span>
+                  <span className="text-sm font-bold text-gray-900 uppercase">
+                    {fullCourse.department}
+                  </span>
+                </div>
+              )}
               <div>
                 <span className="block text-[10px] font-black text-gray-300 uppercase tracking-widest mb-2">
                   Academic Level
@@ -130,6 +140,16 @@ async function CourseDetailData({ id, dict }: { id: string; dict: any }) {
                   {fullCourse.level || "Unspecified"}
                 </span>
               </div>
+              {fullCourse.units && (
+                <div>
+                  <span className="block text-[10px] font-black text-gray-300 uppercase tracking-widest mb-2">
+                    Units / Credits
+                  </span>
+                  <span className="text-sm font-bold text-gray-900 uppercase">
+                    {fullCourse.units}
+                  </span>
+                </div>
+              )}
               <div>
                 <span className="block text-[10px] font-black text-gray-300 uppercase tracking-widest mb-2">
                   Workload
@@ -138,6 +158,16 @@ async function CourseDetailData({ id, dict }: { id: string; dict: any }) {
                   {fullCourse.workload || "Standard"}
                 </span>
               </div>
+              {typeof fullCourse.difficulty === 'number' && fullCourse.difficulty > 0 && (
+                <div>
+                  <span className="block text-[10px] font-black text-gray-300 uppercase tracking-widest mb-2">
+                    Difficulty Rating
+                  </span>
+                  <span className="text-sm font-bold text-gray-900 uppercase">
+                    {fullCourse.difficulty.toFixed(1)} / 5.0
+                  </span>
+                </div>
+              )}
               <div>
                 <span className="block text-[10px] font-black text-gray-300 uppercase tracking-widest mb-2">
                   Availability
