@@ -259,6 +259,30 @@
       "note_url": "课程目录链接",
       "note_dept": "学术院系",
       "note_units": "学分数值"
+    },
+    "course_detail": {
+      "back_to_catalog": "返回目录",
+      "description_title": "课程简介",
+      "description_empty": "暂无此课程的详细描述。",
+      "corequisites_title": "先修要求 & 课程条件",
+      "syllabus_title": "大纲 & 详情",
+      "department": "院系",
+      "level": "学术等级",
+      "level_unspecified": "未指定",
+      "units": "学分 / 单元",
+      "workload": "工作量",
+      "workload_standard": "标准",
+      "difficulty": "难度评分",
+      "availability": "开设学期",
+      "historical": "历史存档",
+      "global_index": "全局索引",
+      "enrollment_status": "注册状态",
+      "status_enrolled": "已追踪",
+      "status_ready": "待加入",
+      "go_to_page": "前往课程主页",
+      "progress": "进度",
+      "impact_stats": "影响力统计",
+      "global_interest": "全球关注度"
     }
   }
 }

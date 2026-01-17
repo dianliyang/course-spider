@@ -27,7 +27,7 @@ export default async function CourseDetailPage({ params }: PageProps) {
           className="inline-flex items-center gap-2 text-xs font-black text-gray-400 uppercase tracking-[0.3em] hover:text-brand-blue transition-colors mb-12 group"
         >
           <i className="fa-solid fa-arrow-left transition-transform group-hover:-translate-x-1"></i>
-          Back to Catalog
+          {dict.dashboard.course_detail.back_to_catalog}
         </Link>
 
         <Suspense fallback={<CourseDetailSkeleton />}>
@@ -95,12 +95,12 @@ async function CourseDetailData({ id, dict }: { id: string; dict: any }) {
         <div className="lg:col-span-2 space-y-12">
           <section>
             <h2 className="text-xs font-black text-gray-400 uppercase tracking-[0.4em] mb-6">
-              Course Description
+              {dict.course_detail.description_title}
             </h2>
             <div className="prose prose-gray max-w-none">
               <p className="text-lg text-gray-600 leading-relaxed font-medium">
                 {fullCourse.description ||
-                  "No detailed description available for this course registry entry."}
+                  dict.course_detail.description_empty}
               </p>
             </div>
           </section>
@@ -109,7 +109,7 @@ async function CourseDetailData({ id, dict }: { id: string; dict: any }) {
             <section className="bg-brand-blue/[0.02] border border-brand-blue/10 rounded-2xl p-8">
               <h3 className="text-xs font-black text-brand-blue uppercase tracking-[0.3em] mb-4 flex items-center gap-2">
                 <i className="fa-solid fa-link"></i>
-                Corequisites & Requirements
+                {dict.course_detail.corequisites_title}
               </h3>
               <p className="text-sm text-gray-700 font-bold leading-relaxed italic">
                 {fullCourse.corequisites}
@@ -119,13 +119,13 @@ async function CourseDetailData({ id, dict }: { id: string; dict: any }) {
 
           <section>
             <h2 className="text-xs font-black text-gray-400 uppercase tracking-[0.4em] mb-6">
-              Syllabus & Details
+              {dict.course_detail.syllabus_title}
             </h2>
             <div className="grid grid-cols-2 gap-8">
               {fullCourse.department && (
                 <div>
                   <span className="block text-[10px] font-black text-gray-300 uppercase tracking-widest mb-2">
-                    Department
+                    {dict.course_detail.department}
                   </span>
                   <span className="text-sm font-bold text-gray-900 uppercase">
                     {fullCourse.department}
@@ -134,16 +134,16 @@ async function CourseDetailData({ id, dict }: { id: string; dict: any }) {
               )}
               <div>
                 <span className="block text-[10px] font-black text-gray-300 uppercase tracking-widest mb-2">
-                  Academic Level
+                  {dict.course_detail.level}
                 </span>
                 <span className="text-sm font-bold text-gray-900 uppercase">
-                  {fullCourse.level || "Unspecified"}
+                  {fullCourse.level || dict.course_detail.level_unspecified}
                 </span>
               </div>
               {fullCourse.units && (
                 <div>
                   <span className="block text-[10px] font-black text-gray-300 uppercase tracking-widest mb-2">
-                    Units / Credits
+                    {dict.course_detail.units}
                   </span>
                   <span className="text-sm font-bold text-gray-900 uppercase">
                     {fullCourse.units}
@@ -152,16 +152,16 @@ async function CourseDetailData({ id, dict }: { id: string; dict: any }) {
               )}
               <div>
                 <span className="block text-[10px] font-black text-gray-300 uppercase tracking-widest mb-2">
-                  Workload
+                  {dict.course_detail.workload}
                 </span>
                 <span className="text-sm font-bold text-gray-900 uppercase">
-                  {fullCourse.workload || "Standard"}
+                  {fullCourse.workload || dict.course_detail.workload_standard}
                 </span>
               </div>
               {typeof fullCourse.difficulty === 'number' && fullCourse.difficulty > 0 && (
                 <div>
                   <span className="block text-[10px] font-black text-gray-300 uppercase tracking-widest mb-2">
-                    Difficulty Rating
+                    {dict.course_detail.difficulty}
                   </span>
                   <span className="text-sm font-bold text-gray-900 uppercase">
                     {fullCourse.difficulty.toFixed(1)} / 5.0
@@ -170,7 +170,7 @@ async function CourseDetailData({ id, dict }: { id: string; dict: any }) {
               )}
               <div>
                 <span className="block text-[10px] font-black text-gray-300 uppercase tracking-widest mb-2">
-                  Availability
+                  {dict.course_detail.availability}
                 </span>
                 <div className="flex gap-2 flex-wrap">
                   {fullCourse.semesters.map((s) => (
@@ -183,14 +183,14 @@ async function CourseDetailData({ id, dict }: { id: string; dict: any }) {
                   ))}
                   {fullCourse.semesters.length === 0 && (
                     <span className="text-xs font-bold text-gray-400 italic">
-                      Historical Registry
+                      {dict.course_detail.historical}
                     </span>
                   )}
                 </div>
               </div>
               <div>
                 <span className="block text-[10px] font-black text-gray-300 uppercase tracking-widest mb-2">
-                  Global Index
+                  {dict.course_detail.global_index}
                 </span>
                 <span className="text-sm font-bold text-gray-900 uppercase">
                   #{fullCourse.id}
@@ -206,10 +206,10 @@ async function CourseDetailData({ id, dict }: { id: string; dict: any }) {
               <i className="fa-solid fa-bolt-lightning text-2xl"></i>
             </div>
             <h3 className="text-xl font-black text-gray-900 tracking-tighter mb-2">
-              Enrollment Status
+              {dict.course_detail.enrollment_status}
             </h3>
             <p className="text-xs text-gray-400 font-bold uppercase tracking-widest mb-8">
-              {isEnrolled ? "Successfully Tracked" : "Ready for Ingestion"}
+              {isEnrolled ? dict.course_detail.status_enrolled : dict.course_detail.status_ready}
             </p>
 
             <a
@@ -219,7 +219,7 @@ async function CourseDetailData({ id, dict }: { id: string; dict: any }) {
               className="group relative w-full flex items-center justify-center gap-3 overflow-hidden rounded-xl bg-brand-dark px-6 py-4 text-sm font-bold tracking-wide text-white shadow-xl shadow-brand-dark/20 transition-all duration-300 hover:bg-gray-800 hover:shadow-brand-dark/40 hover:-translate-y-1 active:scale-95"
             >
               <span className="relative z-10 flex items-center gap-2">
-                Go to Course Page
+                {dict.course_detail.go_to_page}
                 <i className="fa-solid fa-arrow-up-right-from-square text-xs transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1"></i>
               </span>
               <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/10 to-transparent transition-transform duration-700 ease-in-out group-hover:translate-x-full" />
@@ -229,7 +229,7 @@ async function CourseDetailData({ id, dict }: { id: string; dict: any }) {
               <div className="w-full mt-4 pt-4 border-t border-gray-100">
                 <div className="flex justify-between items-center mb-2">
                   <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
-                    Progress
+                    {dict.course_detail.progress}
                   </span>
                   <span className="text-sm font-black text-brand-blue italic">
                     {progress}%
@@ -247,7 +247,7 @@ async function CourseDetailData({ id, dict }: { id: string; dict: any }) {
 
           <div className="p-8 border border-gray-100 rounded-3xl">
             <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em] mb-6">
-              Impact Statistics
+              {dict.course_detail.impact_stats}
             </h3>
             <div className="flex items-center gap-4">
               <div className="flex-grow">
@@ -255,7 +255,7 @@ async function CourseDetailData({ id, dict }: { id: string; dict: any }) {
                   {fullCourse.popularity}
                 </div>
                 <div className="text-[9px] font-black text-gray-300 uppercase tracking-widest mt-1">
-                  Global Interest
+                  {dict.course_detail.global_interest}
                 </div>
               </div>
               <div className="w-12 h-12 bg-orange-50 rounded-full flex items-center justify-center text-orange-500">

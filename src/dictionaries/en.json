@@ -249,6 +249,30 @@
       "note_url": "Link to catalog",
       "note_dept": "Academic department",
       "note_units": "Credit value"
+    },
+    "course_detail": {
+      "back_to_catalog": "Back to Catalog",
+      "description_title": "Course Description",
+      "description_empty": "No detailed description available for this course registry entry.",
+      "corequisites_title": "Corequisites & Requirements",
+      "syllabus_title": "Syllabus & Details",
+      "department": "Department",
+      "level": "Academic Level",
+      "level_unspecified": "Unspecified",
+      "units": "Units / Credits",
+      "workload": "Workload",
+      "workload_standard": "Standard",
+      "difficulty": "Difficulty Rating",
+      "availability": "Availability",
+      "historical": "Historical Registry",
+      "global_index": "Global Index",
+      "enrollment_status": "Enrollment Status",
+      "status_enrolled": "Successfully Tracked",
+      "status_ready": "Ready for Ingestion",
+      "go_to_page": "Go to Course Page",
+      "progress": "Progress",
+      "impact_stats": "Impact Statistics",
+      "global_interest": "Global Interest"
     }
   }
 }
