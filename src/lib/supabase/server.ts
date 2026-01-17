@@ -93,10 +93,10 @@ export class SupabaseDatabase {
       is_internal: c.isInternal || false,
     }));
 
-    const { data: savedCourses, error } = await supabase
+    // 1. Upsert Courses (Ignore duplicates to preserve existing details)
+    const { error } = await supabase
       .from("courses")
-      .upsert(toUpsert, { onConflict: 'university,course_code' })
-      .select('id, course_code');
+      .upsert(toUpsert, { onConflict: 'university,course_code', ignoreDuplicates: true });
       
     if (error) {
       console.error(
@@ -106,9 +106,24 @@ export class SupabaseDatabase {
       throw error;
     }
 
+    // 2. Fetch IDs for ALL courses in this batch (both new and existing)
+    // We need to match based on university and course_code.
+    const courseCodes = courses.map(c => c.courseCode);
+    const { data: allCourses, error: fetchError } = await supabase
+      .from("courses")
+      .select("id, course_code")
+      .eq("university", university)
+      .in("course_code", courseCodes);
+
+    if (fetchError) {
+      console.error(`[Supabase] Error fetching course IDs:`, fetchError);
+      // Continue? If we can't get IDs, we can't link semesters.
+      return; 
+    }
+
     // Handle Semesters
     const coursesWithSemesters = courses.filter(c => c.semesters && c.semesters.length > 0);
-    if (coursesWithSemesters.length > 0 && savedCourses) {
+    if (coursesWithSemesters.length > 0 && allCourses) {
       // 1. Collect all unique semesters
       const uniqueSemesters = new Map<string, { term: string, year: number }>();
       coursesWithSemesters.forEach(c => {
@@ -137,7 +152,7 @@ export class SupabaseDatabase {
 
         // 4. Create course_semesters links
         const courseCodeToId = new Map<string, number>();
-        savedCourses.forEach(c => {
+        allCourses.forEach(c => {
           courseCodeToId.set(c.course_code, c.id);
         });
 

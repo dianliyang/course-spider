@@ -29,7 +29,7 @@ export class CMU extends BaseScraper {
 
     const html = await this.fetchPage(url, params);
     if (html) {
-      return await this.parser(html);
+      return await this.parser(html, "F25");
     }
     return [];
   }
@@ -91,9 +91,27 @@ export class CMU extends BaseScraper {
     }
   }
 
-  async parser(html: string): Promise<Course[]> {
+  async parser(html: string, semesterCode: string): Promise<Course[]> {
     const $ = cheerio.load(html);
     const courses: Course[] = [];
+
+    // Parse semester code (e.g., "F25" -> "Fall", 2025)
+    let term = "Fall";
+    let year = 2025;
+    
+    if (semesterCode) {
+      const termCode = semesterCode.charAt(0);
+      const yearCode = semesterCode.substring(1);
+      
+      const termMap: Record<string, string> = {
+        'F': 'Fall',
+        'S': 'Spring',
+        'M': 'Summer'
+      };
+      
+      term = termMap[termCode] || "Fall";
+      year = 2000 + parseInt(yearCode);
+    }
 
     const ALLOWED_DEPTS = [
       "ELECTRICAL & COMPUTER ENGINEERING",
@@ -166,7 +184,7 @@ export class CMU extends BaseScraper {
             department: department,
             corequisites: corequisites,
             level: level,
-            semesters: [{ term: "Fall", year: 2025 }],
+            semesters: [{ term: term, year: year }],
             details: {
               sections: [],
             },
