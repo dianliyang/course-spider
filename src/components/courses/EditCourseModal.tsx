@@ -12,12 +12,20 @@ interface EditCourseModalProps {
 export default function EditCourseModal({ course, onClose }: EditCourseModalProps) {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    title: course.title,
+    university: course.university,
     courseCode: course.courseCode,
+    title: course.title,
+    units: course.units || "",
     description: course.description || "",
     url: course.url || "",
+    department: course.department || "",
+    corequisites: course.corequisites || "",
     level: course.level || "",
+    difficulty: course.difficulty || 0,
+    popularity: course.popularity || 0,
     workload: course.workload || "",
+    isHidden: course.isHidden || false,
+    isInternal: course.isInternal || false,
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -53,13 +61,13 @@ export default function EditCourseModal({ course, onClose }: EditCourseModalProp
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
-                Course Title
+                University
               </label>
               <input
                 type="text"
                 required
-                value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                value={formData.university}
+                onChange={(e) => setFormData({ ...formData, university: e.target.value })}
                 className="w-full bg-gray-50 border-2 border-gray-100 focus:border-brand-blue rounded-xl px-4 py-3 outline-none font-bold text-gray-900 transition-all"
               />
             </div>
@@ -79,13 +87,63 @@ export default function EditCourseModal({ course, onClose }: EditCourseModalProp
 
           <div className="space-y-2">
             <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+              Course Title
+            </label>
+            <input
+              type="text"
+              required
+              value={formData.title}
+              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              className="w-full bg-gray-50 border-2 border-gray-100 focus:border-brand-blue rounded-xl px-4 py-3 outline-none font-bold text-gray-900 transition-all"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                Department
+              </label>
+              <input
+                type="text"
+                value={formData.department}
+                onChange={(e) => setFormData({ ...formData, department: e.target.value })}
+                className="w-full bg-gray-50 border-2 border-gray-100 focus:border-brand-blue rounded-xl px-4 py-3 outline-none font-bold text-gray-900 transition-all"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                Units
+              </label>
+              <input
+                type="text"
+                value={formData.units}
+                onChange={(e) => setFormData({ ...formData, units: e.target.value })}
+                className="w-full bg-gray-50 border-2 border-gray-100 focus:border-brand-blue rounded-xl px-4 py-3 outline-none font-bold text-gray-900 transition-all"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
               Description
             </label>
             <textarea
-              rows={5}
+              rows={4}
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               className="w-full bg-gray-50 border-2 border-gray-100 focus:border-brand-blue rounded-xl px-4 py-3 outline-none font-medium text-gray-700 transition-all resize-none"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+              Corequisites
+            </label>
+            <input
+              type="text"
+              value={formData.corequisites}
+              onChange={(e) => setFormData({ ...formData, corequisites: e.target.value })}
+              className="w-full bg-gray-50 border-2 border-gray-100 focus:border-brand-blue rounded-xl px-4 py-3 outline-none font-bold text-gray-900 transition-all"
             />
           </div>
 
@@ -124,6 +182,66 @@ export default function EditCourseModal({ course, onClose }: EditCourseModalProp
                 className="w-full bg-gray-50 border-2 border-gray-100 focus:border-brand-blue rounded-xl px-4 py-3 outline-none font-bold text-gray-900 transition-all"
               />
             </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                Difficulty (0-10)
+              </label>
+              <input
+                type="number"
+                step="0.1"
+                min="0"
+                max="10"
+                value={formData.difficulty}
+                onChange={(e) => setFormData({ ...formData, difficulty: parseFloat(e.target.value) })}
+                className="w-full bg-gray-50 border-2 border-gray-100 focus:border-brand-blue rounded-xl px-4 py-3 outline-none font-bold text-gray-900 transition-all"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                Popularity
+              </label>
+              <input
+                type="number"
+                value={formData.popularity}
+                onChange={(e) => setFormData({ ...formData, popularity: parseInt(e.target.value) })}
+                className="w-full bg-gray-50 border-2 border-gray-100 focus:border-brand-blue rounded-xl px-4 py-3 outline-none font-bold text-gray-900 transition-all"
+              />
+            </div>
+          </div>
+
+          <div className="flex gap-8 pt-4">
+            <label className="flex items-center gap-3 cursor-pointer group">
+              <div className="relative">
+                <input
+                  type="checkbox"
+                  checked={formData.isInternal}
+                  onChange={(e) => setFormData({ ...formData, isInternal: e.target.checked })}
+                  className="sr-only peer"
+                />
+                <div className="w-10 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-blue"></div>
+              </div>
+              <span className="text-xs font-black text-gray-400 uppercase tracking-widest group-hover:text-gray-900 transition-colors">
+                Internal Course
+              </span>
+            </label>
+
+            <label className="flex items-center gap-3 cursor-pointer group">
+              <div className="relative">
+                <input
+                  type="checkbox"
+                  checked={formData.isHidden}
+                  onChange={(e) => setFormData({ ...formData, isHidden: e.target.checked })}
+                  className="sr-only peer"
+                />
+                <div className="w-10 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-500"></div>
+              </div>
+              <span className="text-xs font-black text-gray-400 uppercase tracking-widest group-hover:text-gray-900 transition-colors">
+                Hidden
+              </span>
+            </label>
           </div>
 
           <div className="pt-6 border-t border-gray-100 flex gap-4">

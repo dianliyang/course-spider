@@ -5,6 +5,9 @@ export interface Course {
   university: string;
   url: string;
   description: string;
+  units?: string;
+  department?: string;
+  difficulty?: number;
   popularity: number;
   workload: string;
   isHidden: boolean;
