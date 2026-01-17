@@ -4,6 +4,7 @@ import Image from "next/image";
 import { Course } from "@/types";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { UNIVERSITY_LOGOS } from "@/lib/supabase/storage";
 
 interface AchievementCardProps {
   course: Course & { gpa?: number; score?: number };
@@ -24,15 +25,6 @@ export default function AchievementCard({ course, masteredLabel }: AchievementCa
     const randomPart = Math.random().toString(36).substring(2, 6).toUpperCase();
     setCompletionId(`${randomPart}`); // eslint-disable-line react-hooks/set-state-in-effect
   }, []);
-
-  const logos: Record<string, string> = {
-    "MIT": "/mit.svg", 
-    "Stanford": "/stanford.jpg", 
-    "CMU": "/cmu.jpg", 
-    "UC Berkeley": "/ucb.png", 
-    "CAU Kiel": "/cau.png",
-    "NCU": "/ncu.png",
-  };
 
   const handleUpdate = async () => {
     setIsUpdating(true);
@@ -135,10 +127,10 @@ export default function AchievementCard({ course, masteredLabel }: AchievementCa
       <div className="absolute top-6 right-6 w-2 h-2 bg-brand-green rounded-full shadow-[0_0_8px_rgba(34,197,94,0.4)] group-hover:opacity-0 transition-opacity"></div>
 
       <div className="flex items-center gap-3">
-        {logos[course.university] ? (
+        {UNIVERSITY_LOGOS[course.university] ? (
           <div className="w-10 h-10 relative bg-gray-50 rounded-lg p-1.5 border border-gray-100">
             <Image
-              src={logos[course.university]}
+              src={UNIVERSITY_LOGOS[course.university]}
               alt={course.university}
               fill
               className="object-contain p-1"

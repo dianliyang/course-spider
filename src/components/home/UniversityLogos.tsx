@@ -1,10 +1,11 @@
 import Image from "next/image";
+import { UNIVERSITY_LOGOS } from "@/lib/supabase/storage";
 
 const universities = [
-  { name: "MIT", logo: "/mit.svg", width: 50, height: 50 },
-  { name: "Stanford", logo: "/stanford.jpg", width: 50, height: 50 },
-  { name: "UC Berkeley", logo: "/ucb.png", width: 50, height: 50 },
-  { name: "Carnegie Mellon", logo: "/cmu.jpg", width: 50, height: 50 },
+  { name: "MIT", logo: UNIVERSITY_LOGOS["MIT"], width: 50, height: 50 },
+  { name: "Stanford", logo: UNIVERSITY_LOGOS["Stanford"], width: 50, height: 50 },
+  { name: "UC Berkeley", logo: UNIVERSITY_LOGOS["UC Berkeley"], width: 50, height: 50 },
+  { name: "Carnegie Mellon", logo: UNIVERSITY_LOGOS["CMU"], width: 50, height: 50 },
 ];
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

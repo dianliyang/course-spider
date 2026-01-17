@@ -6,6 +6,7 @@ import { createClient, mapCourseFromRow, getUser } from "@/lib/supabase/server";
 import { getLanguage } from "@/actions/language";
 import { getDictionary } from "@/lib/dictionary";
 import { Course } from "@/types";
+import { UNIVERSITY_LOGOS } from "@/lib/supabase/storage";
 
 export const dynamic = "force-dynamic";
 
@@ -86,22 +87,13 @@ async function CourseDetailData({ id, dict }: { id: string; dict: any }) {
     }
   }
 
-  const logos: Record<string, string> = {
-    "MIT": "/mit.svg", 
-    "Stanford": "/stanford.jpg", 
-    "CMU": "/cmu.jpg", 
-    "UC Berkeley": "/ucb.png", 
-    "CAU Kiel": "/cau.png",
-    "NCU": "/ncu.png",
-  };
-
   return (
     <div className="space-y-12">
       <header className="space-y-6">
         <div className="flex items-center gap-4">
-          {logos[fullCourse.university] ? (
+          {UNIVERSITY_LOGOS[fullCourse.university] ? (
             <Image
-              src={logos[fullCourse.university]}
+              src={UNIVERSITY_LOGOS[fullCourse.university]}
               alt={fullCourse.university}
               width={64}
               height={64}

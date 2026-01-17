@@ -5,6 +5,7 @@ import { Course } from "@/types";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { UNIVERSITY_LOGOS } from "@/lib/supabase/storage";
 
 interface CourseCardProps {
   course: Course;
@@ -24,15 +25,6 @@ export default function CourseCard({
   const router = useRouter();
   const [isEnrolled, setIsEnrolled] = useState(isInitialEnrolled);
   const [loading, setLoading] = useState(false);
-
-  const logos: Record<string, string> = {
-    "MIT": "/mit.svg", 
-    "Stanford": "/stanford.jpg", 
-    "CMU": "/cmu.jpg", 
-    "UC Berkeley": "/ucb.png", 
-    "CAU Kiel": "/cau.png",
-    "NCU": "/ncu.png",
-  };
 
   const handleEnroll = async () => {
     setLoading(true);
@@ -84,9 +76,9 @@ export default function CourseCard({
       </button>
 
       <div className="flex gap-4 min-w-0">
-        {logos[course.university] ? (
+        {UNIVERSITY_LOGOS[course.university] ? (
           <Image
-            src={logos[course.university]}
+            src={UNIVERSITY_LOGOS[course.university]}
             alt={course.university}
             width={44}
             height={44}

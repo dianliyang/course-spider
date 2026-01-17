@@ -4,6 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import { Course } from "@/types";
 import { useRouter } from "next/navigation";
+import { UNIVERSITY_LOGOS } from "@/lib/supabase/storage";
 
 interface ActiveCourseTrackProps {
   course: Course;
@@ -19,15 +20,6 @@ export default function ActiveCourseTrack({ course, initialProgress, onUpdate, d
   const [showCompleteModal, setShowCompleteModal] = useState(false);
   const [gpa, setGpa] = useState("");
   const [score, setScore] = useState("");
-
-  const logos: Record<string, string> = {
-    "MIT": "/mit.svg", 
-    "Stanford": "/stanford.jpg", 
-    "CMU": "/cmu.jpg", 
-    "UC Berkeley": "/ucb.png", 
-    "CAU Kiel": "/cau.png",
-    "NCU": "/ncu.png",
-  };
 
   const handleProgressChange = async (newProgress: number) => {
     if (newProgress === 100) {
@@ -160,8 +152,8 @@ export default function ActiveCourseTrack({ course, initialProgress, onUpdate, d
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-start gap-4 min-w-0">
           <div className="w-10 h-10 relative flex-shrink-0 bg-gray-50 rounded-xl p-1.5 border border-gray-100">
-            {logos[course.university] ? (
-              <Image src={logos[course.university]} alt={course.university} fill className="object-contain p-1" />
+            {UNIVERSITY_LOGOS[course.university] ? (
+              <Image src={UNIVERSITY_LOGOS[course.university]} alt={course.university} fill className="object-contain p-1" />
             ) : (
               <div className="w-full h-full flex items-center justify-center font-black text-gray-400 text-xs uppercase">{course.university.substring(0, 1)}</div>
             )}
