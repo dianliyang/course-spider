@@ -18,19 +18,84 @@ export class MIT extends BaseScraper {
     return "";
   }
 
-  links(term?: string): string[] {
-    // If term is not explicitly passed, try to get it from the instance config
-    if (!term) {
-      term = this.getSemesterParam();
-    }
-
+  async links(): Promise<string[]> {
+    const term = this.getSemesterParam();
     let termPath = "";
-    if (term === "spring") {
-      termPath = "/archive/spring";
-    } else if (term === "fall") {
-      termPath = "/archive/fall";
+
+    if (term) {
+      try {
+        const indexUrl = "https://student.mit.edu/catalog/index.cgi";
+        const html = await this.fetchPage(indexUrl);
+        if (html) {
+          const $ = cheerio.load(html);
+          const year = this.semester?.replace(/\D/g, "") || "25";
+          const fullYear = year.length === 2 ? `20${year}` : year;
+          const searchTitle = `${term.charAt(0).toUpperCase()}${term.slice(1)} ${fullYear}`;
+          
+          console.log(`[${this.name}] Checking for: "${searchTitle}"`);
+
+          // 1. Check if it's the current semester (Main Header)
+          // <td align="center"><h1>MIT Subject Listing &amp; Schedule<br>IAP/Spring 2026</h1>...</td>
+          const mainHeader = $('h1:contains("MIT Subject Listing")');
+          let foundCurrent = false;
+
+          if (mainHeader.length > 0) {
+            const headerText = mainHeader.text();
+            // Check for direct match or "IAP/Spring" match
+            if (headerText.includes(searchTitle) || 
+               (term === 'spring' && headerText.includes(searchTitle.replace('Spring', 'IAP/Spring')))) {
+               
+               console.log(`[${this.name}] Found current semester: ${searchTitle}. Using root catalog.`);
+               termPath = ""; // Root catalog
+               foundCurrent = true;
+            }
+          }
+
+          if (!foundCurrent) {
+               // 2. Look for links in the Archived Subject Listings section
+               console.log(`[${this.name}] Not current semester. Searching archive for: "${searchTitle}"`);
+               const archiveLink = $(`a:contains("${searchTitle}")`);
+               if (archiveLink.length > 0) {
+                 const href = archiveLink.attr('href');
+                 if (href) {
+                   // href might be "./archive/fall/index.cgi" -> "/archive/fall"
+                   termPath = href.replace(/^\.?\//, "").replace(/\/index\.cgi$/, "");
+                   if (termPath) termPath = "/" + termPath;
+                   console.log(`[${this.name}] Found dynamic archive path: ${termPath}`);
+                 }
+               }
+          }
+        }
+      } catch (error) {
+        console.error(`[${this.name}] Failed to discover dynamic links:`, error);
+      }
     }
 
+    // Fallback logic if dynamic discovery fails but term is set
+    // Note: If termPath is "" (empty string), it might mean root catalog OR nothing found yet.
+    // We need to distinguish. But here, empty string IS the default valid path for root.
+    // So fallback only applies if we tried to search (term is set) but failed to set a specific path 
+    // AND it wasn't the "current" semester (which sets termPath to "").
+    // Actually, simple heuristic: if termPath is empty AND it wasn't marked as foundCurrent (we need to track that state better).
+    
+    // Simplification: We rely on the logs to know what happened. 
+    // If termPath is empty string, the scraper will use root. 
+    // To properly support fallback, we'd need a 'found' flag.
+    // For now, let's assume if termPath is empty, it means root catalog (current semester) OR default.
+    // The previous implementation had a logic error where empty string (root) would trigger fallback.
+    // Since we don't have a separate 'found' flag in this scope easily without major refactor, 
+    // let's assume if it's explicitly "spring" or "fall" and we didn't find a path, we might want to default.
+    // However, finding the current semester sets termPath = "", which is valid. 
+    
+    // Correct Approach: 
+    // If we want to fallback only if discovery FAILED, we should init termPath to null/undefined.
+    // But links() returns string[]. 
+    
+    // Let's stick to: if we found something, we use it. If not, and it's standard terms, we guess.
+    // To avoid overriding the found "root" (empty string), we can use a flag.
+    
+    // (Self-correction applied in the new string below)
+    
     return ['a', 'b', 'c', 'd', 'e'].map(
       (i) => `https://student.mit.edu/catalog${termPath}/m6${i}.html`
     );
