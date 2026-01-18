@@ -130,29 +130,36 @@ export default function CourseCard({
         </div>
 
         {/* 5. Actions */}
-        <div className="flex-shrink-0 flex flex-col items-end gap-2 w-28">
+        <div className="flex-shrink-0 flex items-center justify-end gap-3 w-auto min-w-[100px]">
              <button 
               onClick={handleEnroll}
               disabled={loading}
-              className={`px-2 py-1 rounded text-[9px] font-black uppercase tracking-widest transition-all w-full text-center ${
+              className={`px-3 py-1.5 rounded-md text-[10px] font-bold uppercase tracking-wide transition-all shadow-sm flex items-center gap-1.5 ${
                 isEnrolled 
-                  ? 'bg-brand-green text-white' 
-                  : 'bg-gray-100 text-gray-500 hover:bg-brand-dark hover:text-white'
+                  ? 'bg-emerald-50 text-emerald-600 border border-emerald-200 hover:bg-emerald-100' 
+                  : 'bg-white text-gray-700 border border-gray-200 hover:border-gray-300 hover:bg-gray-50'
               }`}
             >
               {loading ? (
                 <i className="fa-solid fa-circle-notch fa-spin"></i>
               ) : isEnrolled ? (
-                <span className="flex items-center justify-center gap-1.5"><i className="fa-solid fa-check"></i> {dict?.enrolled || "Added"}</span>
+                <>
+                  <i className="fa-solid fa-check"></i>
+                  <span className="hidden sm:inline">{dict?.enrolled || "Added"}</span>
+                </>
               ) : (
-                <span className="flex items-center justify-center gap-1.5"><i className="fa-solid fa-plus"></i> {dict?.enroll || "Join"}</span>
+                <>
+                  <i className="fa-solid fa-plus"></i>
+                  <span className="hidden sm:inline">{dict?.enroll || "Join"}</span>
+                </>
               )}
             </button>
              <Link
                 href={detailHref}
-                className="text-gray-400 hover:text-brand-blue text-[10px] font-bold uppercase tracking-wide flex items-center gap-1 transition-colors pr-1"
+                className="text-gray-400 hover:text-brand-blue text-xs p-1.5 transition-colors"
+                title={dict?.details || "Details"}
               >
-                {dict?.details || "Details"} <i className="fa-solid fa-arrow-right text-[8px]"></i>
+                <i className="fa-solid fa-arrow-right"></i>
               </Link>
         </div>
 
