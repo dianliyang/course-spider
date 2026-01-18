@@ -81,7 +81,7 @@ export default function CourseCard({
                 {course.courseCode}
               </span>
               {course.level && (
-                <span className="text-gray-300 text-[10px]" title={course.level}>
+                <span className="text-gray-500 text-[10px]" title={course.level}>
                   {course.level.toLowerCase().includes('grad') ? (
                     <i className="fa-solid fa-user-graduate"></i>
                   ) : (
@@ -197,7 +197,7 @@ export default function CourseCard({
               {course.courseCode}
             </span>
             {course.level && (
-              <span className="text-gray-300 text-[11px]" title={course.level}>
+              <span className="text-gray-500 text-[11px]" title={course.level}>
                 {course.level.toLowerCase().includes('grad') ? (
                   <i className="fa-solid fa-user-graduate"></i>
                 ) : (
