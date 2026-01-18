@@ -54,6 +54,15 @@ export default function CourseList({
       />
 
       <div className={viewMode === "grid" ? "grid grid-cols-1 md:grid-cols-2 gap-6" : "space-y-4"}>
+        {viewMode === "list" && initialCourses && initialCourses.length > 0 && (
+          <div className="hidden md:flex items-center gap-4 px-4 pb-2 text-[9px] font-black uppercase tracking-widest text-gray-300 select-none">
+             <div className="w-[40px] flex-shrink-0 text-center"></div>
+             <div className="w-[30%] flex-shrink-0">Course</div>
+             <div className="w-[20%] flex-shrink-0">Tags</div>
+             <div className="flex-grow min-w-0">Info</div>
+             <div className="w-24 flex-shrink-0 text-right">Action</div>
+          </div>
+        )}
         {initialCourses?.map((course) => (
           <CourseCard 
             key={course.id} 

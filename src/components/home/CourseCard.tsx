@@ -60,90 +60,93 @@ export default function CourseCard({
 
   if (viewMode === "list") {
     return (
-      <div className="bg-white border border-gray-200 rounded-xl p-4 hover:shadow-lg transition-all relative overflow-hidden group flex flex-col md:flex-row items-start gap-4 md:gap-6">
-        {/* Enrolled Badge - Smaller/Different position for list */}
-        <button 
-          onClick={handleEnroll}
-          disabled={loading}
-          className={`absolute top-0 right-4 px-2 py-0.5 rounded-b text-[9px] font-black uppercase tracking-widest transition-all z-10 ${
-            isEnrolled 
-              ? 'bg-brand-green text-white translate-y-0' 
-              : 'bg-gray-100 text-gray-500 hover:bg-brand-dark hover:text-white -translate-y-0.5 group-hover:translate-y-0'
-          }`}
-        >
-          {loading ? (
-            <i className="fa-solid fa-circle-notch fa-spin"></i>
-          ) : isEnrolled ? (
-            <span className="flex items-center gap-1">
-              <i className="fa-solid fa-check"></i> {dict?.enrolled || "Added"}
-            </span>
-          ) : (
-            <span className="flex items-center gap-1">
-              <i className="fa-solid fa-plus"></i> {dict?.enroll || "Join"}
-            </span>
-          )}
-        </button>
-
-        {/* Left: Logo & Basic Info */}
-        <div className="flex items-start gap-4 flex-grow min-w-0">
+      <div className="bg-white border border-gray-200 rounded-xl p-4 hover:shadow-lg transition-all relative overflow-hidden group flex items-center gap-4">
+        
+        {/* 1. Icon */}
+        <div className="flex-shrink-0">
           <UniversityIcon 
             name={course.university} 
             size={40} 
-            className="flex-shrink-0 bg-white rounded-lg p-1 border border-gray-100"
+            className="bg-white rounded-lg p-1 border border-gray-100"
           />
-          <div className="min-w-0 flex-grow">
-             <div className="flex items-center gap-2 mb-1">
+        </div>
+
+        {/* 2. Main Info: Code & Title */}
+        <div className="w-[30%] flex-shrink-0 min-w-0">
+            <div className="flex items-center gap-2 mb-1">
               <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest truncate">
                 {course.university}
               </span>
               <span className="text-[9px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded font-mono font-black">
                 {course.courseCode}
               </span>
+              {course.isInternal && (
+                <span className="text-[8px] font-black bg-brand-blue/10 text-brand-blue px-1.5 py-0.5 rounded uppercase tracking-tighter">
+                    Internal
+                </span>
+              )}
             </div>
-            <h2 className="text-base font-extrabold text-gray-900 leading-tight line-clamp-2 transition-colors pr-12 md:pr-0">
+            <h2 className="text-sm font-extrabold text-gray-900 leading-tight line-clamp-2 pr-4">
               <Link href={detailHref} className="hover:text-brand-blue hover:underline decoration-2 underline-offset-4">
                 {course.title}
               </Link>
             </h2>
-            <div className="flex gap-2 mt-2 flex-wrap">
-              {course.fields?.slice(0, 3).map((f) => (
+        </div>
+
+        {/* 3. Tags / Fields */}
+        <div className="w-[20%] flex-shrink-0 hidden md:flex flex-wrap gap-1">
+             {course.fields?.slice(0, 3).map((f) => (
                 <span
                   key={f}
-                  className="bg-gray-50 text-gray-500 text-[8px] uppercase tracking-widest font-black px-1.5 py-0.5 rounded border border-gray-100"
+                  className="bg-gray-50 text-gray-500 text-[8px] uppercase tracking-widest font-black px-1.5 py-0.5 rounded border border-gray-100 truncate max-w-full"
                 >
                   {f}
                 </span>
               ))}
-            </div>
-            {course.corequisites && (
-               <p className="text-[9px] font-bold text-brand-blue/60 uppercase tracking-widest mt-2 flex items-center gap-2 truncate">
+        </div>
+
+        {/* 4. Details / Coreqs / Stats */}
+        <div className="flex-grow min-w-0 flex flex-col justify-center gap-1">
+             {course.corequisites && (
+               <p className="text-[9px] font-bold text-brand-blue/60 uppercase tracking-widest flex items-center gap-2 truncate">
                 <i className="fa-solid fa-link text-[8px]"></i> {course.corequisites}
               </p>
             )}
-          </div>
-        </div>
-
-
-
-        {/* Right: Stats & Action */}
-        <div className="w-full md:w-40 flex-shrink-0 flex flex-row md:flex-col items-center md:items-end justify-between border-l-0 md:border-l border-t md:border-t-0 border-gray-100 pl-0 md:pl-6 pt-4 md:pt-0 mt-0 h-auto md:h-full gap-2">
-           <div className="flex flex-col md:items-end gap-1">
              <div className="flex items-center gap-1">
                 <i className="fa-solid fa-fire-flame-simple text-orange-500 text-[10px]"></i>
-                <span className="text-sm font-black text-gray-900 tracking-tighter italic">
+                <span className="text-xs font-black text-gray-900 tracking-tighter italic">
                   {course.popularity}
                 </span>
              </div>
-             <span className="text-[8px] font-black text-gray-300 uppercase tracking-widest">Global Interest</span>
-           </div>
-
-           <Link
-            href={detailHref}
-            className="text-brand-blue text-[9px] font-black uppercase tracking-widest hover:underline flex items-center gap-1.5 md:mt-auto"
-          >
-            {dict?.details || "Details"} <i className="fa-solid fa-arrow-right text-[8px]"></i>
-          </Link>
         </div>
+
+        {/* 5. Actions */}
+        <div className="flex-shrink-0 flex flex-col items-end gap-2 w-24">
+             <button 
+              onClick={handleEnroll}
+              disabled={loading}
+              className={`px-2 py-1 rounded text-[9px] font-black uppercase tracking-widest transition-all w-full text-center ${
+                isEnrolled 
+                  ? 'bg-brand-green text-white' 
+                  : 'bg-gray-100 text-gray-500 hover:bg-brand-dark hover:text-white'
+              }`}
+            >
+              {loading ? (
+                <i className="fa-solid fa-circle-notch fa-spin"></i>
+              ) : isEnrolled ? (
+                <span><i className="fa-solid fa-check"></i> {dict?.enrolled || "Added"}</span>
+              ) : (
+                <span><i className="fa-solid fa-plus"></i> {dict?.enroll || "Join"}</span>
+              )}
+            </button>
+             <Link
+                href={detailHref}
+                className="text-brand-blue text-[9px] font-black uppercase tracking-widest hover:underline flex items-center gap-1"
+              >
+                {dict?.details || "Details"} <i className="fa-solid fa-arrow-right text-[8px]"></i>
+              </Link>
+        </div>
+
       </div>
     );
   }
