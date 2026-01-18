@@ -1,6 +1,6 @@
 export function getStorageBaseUrl(): string {
   const baseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  return baseUrl ? `${baseUrl}/storage/v1/object/public/logos` : '/logos';
+  return baseUrl ? `${baseUrl}/storage/v1/object/public/logos` : '';
 }
 
 export function getUniversityLogoBase(universityName: string): string {
