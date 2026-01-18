@@ -120,9 +120,6 @@ export default function CourseCard({
 
         {/* Middle: Description */}
         <div className="flex-grow min-w-0 border-l-0 md:border-l border-t md:border-t-0 border-gray-100 pl-0 md:pl-6 pt-4 md:pt-0 mt-0 h-auto md:h-full flex flex-col justify-center w-full md:w-auto">
-          <p className="text-xs text-gray-600 line-clamp-2 leading-relaxed">
-            {course.description || `${dict?.view_details_prefix || "View details on"} ${course.university}.`}
-          </p>
           {course.corequisites && (
              <p className="text-[9px] font-bold text-brand-blue/60 uppercase tracking-widest mt-2 flex items-center gap-2 truncate">
               <i className="fa-solid fa-link text-[8px]"></i> {course.corequisites}
@@ -214,13 +211,6 @@ export default function CourseCard({
       </div>
 
       <div className="mt-5 pt-5 border-t border-gray-50 flex-grow">
-        <p className="text-sm text-gray-600 line-clamp-2 leading-relaxed">
-          {course.description ||
-            `${
-              dict?.view_details_prefix ||
-              "View course details and requirements on"
-            } ${course.university}.`}
-        </p>
         {course.corequisites && (
           <p className="text-[9px] font-bold text-brand-blue/60 uppercase tracking-widest mt-4 flex items-center gap-2">
             <i className="fa-solid fa-link text-[8px]"></i>

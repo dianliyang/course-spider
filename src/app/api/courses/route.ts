@@ -64,7 +64,7 @@ async function fetchCourses(
   let supabaseQuery = supabase
     .from('courses')
     .select(`
-      *,
+      id, university, course_code, title, units, url, details, department, corequisites, level, difficulty, popularity, workload, is_hidden, is_internal, created_at,
       fields:course_fields(fields(name)),
       semesters:course_semesters(semesters(term, year))
     `, { count: 'exact' })
