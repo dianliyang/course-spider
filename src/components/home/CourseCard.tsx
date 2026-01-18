@@ -80,6 +80,15 @@ export default function CourseCard({
               <span className="text-[10px] font-mono font-medium text-gray-500">
                 {course.courseCode}
               </span>
+              {course.level && (
+                <span className="text-gray-300 text-[10px]" title={course.level}>
+                  {course.level.toLowerCase().includes('grad') ? (
+                    <i className="fa-solid fa-user-graduate"></i>
+                  ) : (
+                    <i className="fa-solid fa-graduation-cap"></i>
+                  )}
+                </span>
+              )}
               {course.isInternal && (
                 <span className="text-[9px] font-bold bg-blue-50 text-brand-blue px-1.5 py-0.5 rounded uppercase">
                     Internal
@@ -110,17 +119,9 @@ export default function CourseCard({
               )}
         </div>
 
-        {/* 4. Details / Coreqs / Stats */}
+        {/* 4. Details / Stats */}
         <div className="flex-grow min-w-0 flex flex-col justify-center gap-1">
-             {course.corequisites ? (
-               <p className="text-xs text-gray-500 flex items-center gap-1.5 truncate">
-                <i className="fa-solid fa-link text-[10px] text-gray-300"></i> 
-                <span className="truncate">{course.corequisites}</span>
-              </p>
-             ) : (
-                <span className="text-xs text-gray-300 italic">No coreqs</span>
-             )}
-             <div className="flex items-center gap-1.5 mt-0.5">
+             <div className="flex items-center gap-1.5">
                 <i className="fa-solid fa-fire-flame-simple text-orange-400 text-[10px]"></i>
                 <span className="text-xs font-semibold text-gray-700">
                   {course.popularity}
@@ -133,10 +134,10 @@ export default function CourseCard({
              <button 
               onClick={handleEnroll}
               disabled={loading}
-              className={`px-3 py-1.5 rounded-md text-[10px] font-bold uppercase tracking-wide transition-all w-full text-center shadow-sm ${
+              className={`px-2 py-1 rounded text-[9px] font-black uppercase tracking-widest transition-all w-full text-center ${
                 isEnrolled 
-                  ? 'bg-emerald-50 text-emerald-600 border border-emerald-200 hover:bg-emerald-100' 
-                  : 'bg-white text-gray-700 border border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                  ? 'bg-brand-green text-white' 
+                  : 'bg-gray-100 text-gray-500 hover:bg-brand-dark hover:text-white'
               }`}
             >
               {loading ? (
@@ -161,23 +162,26 @@ export default function CourseCard({
 
   return (
     <div className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-all relative overflow-hidden group flex flex-col h-full">
-      <div className="absolute top-5 right-5 z-10">
+      <div className="absolute top-0 right-6 z-10">
         <button 
           onClick={handleEnroll}
           disabled={loading}
-          className={`w-8 h-8 rounded-full flex items-center justify-center transition-all shadow-sm ${
+          className={`px-3 py-1 rounded-b-lg text-[10px] font-black uppercase tracking-widest transition-all ${
             isEnrolled 
-              ? 'bg-emerald-50 text-emerald-600 border border-emerald-100 hover:bg-emerald-100' 
-              : 'bg-white text-gray-400 border border-gray-200 hover:text-brand-blue hover:border-brand-blue hover:scale-105'
+              ? 'bg-brand-green text-white' 
+              : 'bg-gray-100 text-gray-500 hover:bg-brand-dark hover:text-white'
           }`}
-          title={isEnrolled ? "Enrolled" : "Join Course"}
         >
           {loading ? (
-            <i className="fa-solid fa-circle-notch fa-spin text-xs"></i>
+            <i className="fa-solid fa-circle-notch fa-spin"></i>
           ) : isEnrolled ? (
-            <i className="fa-solid fa-check text-xs"></i>
+            <span className="flex items-center gap-1">
+              <i className="fa-solid fa-check"></i> {dict?.enrolled || "Added"}
+            </span>
           ) : (
-            <i className="fa-solid fa-plus text-xs"></i>
+            <span className="flex items-center gap-1">
+              <i className="fa-solid fa-plus"></i> {dict?.enroll || "Join"}
+            </span>
           )}
         </button>
       </div>
@@ -188,7 +192,7 @@ export default function CourseCard({
           size={48} 
           className="flex-shrink-0 self-start bg-white rounded-xl p-1 shadow-sm border border-gray-100"
         />
-        <div className="min-w-0 flex-grow pr-8">
+        <div className="min-w-0 flex-grow pr-12">
           <div className="flex items-center gap-2 mb-1">
             <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider truncate">
               {course.university}
@@ -202,8 +206,19 @@ export default function CourseCard({
           <h2 className="text-lg font-bold text-gray-900 leading-snug transition-colors">
             <Link href={detailHref} className="hover:text-brand-blue">{course.title}</Link>
           </h2>
-          <div className="text-xs font-mono font-medium text-gray-500 mt-1">
-            {course.courseCode}
+          <div className="flex items-center gap-2 mt-1">
+            <span className="text-xs font-mono font-medium text-gray-500">
+              {course.courseCode}
+            </span>
+            {course.level && (
+              <span className="text-gray-300 text-[11px]" title={course.level}>
+                {course.level.toLowerCase().includes('grad') ? (
+                  <i className="fa-solid fa-user-graduate"></i>
+                ) : (
+                  <i className="fa-solid fa-graduation-cap"></i>
+                )}
+              </span>
+            )}
           </div>
         </div>
       </div>
@@ -221,19 +236,16 @@ export default function CourseCard({
 
       <div className="mt-auto pt-5 border-t border-gray-100">
         <div className="flex items-center justify-between text-xs">
-          {course.corequisites ? (
-            <p className="text-gray-500 flex items-center gap-2 max-w-[70%] truncate">
-              <i className="fa-solid fa-link text-gray-300"></i>
-              <span className="truncate" title={course.corequisites}>Coreq: {course.corequisites}</span>
-            </p>
-          ) : (
-             <span className="text-gray-300 italic">No corequisites</span>
-          )}
-          
           <div className="flex items-center gap-1.5">
             <i className="fa-solid fa-fire-flame-simple text-orange-400"></i>
             <span className="font-semibold text-gray-700">{course.popularity}</span>
           </div>
+          <Link
+            href={detailHref}
+            className="text-gray-400 hover:text-brand-blue text-[10px] font-bold uppercase tracking-wide flex items-center gap-1 transition-colors"
+          >
+            {dict?.details || "Details"} <i className="fa-solid fa-arrow-right text-[8px]"></i>
+          </Link>
         </div>
       </div>
 
