@@ -20,7 +20,8 @@ export default async function ProfilePage() {
   const { data: enrolledData } = await supabase
     .from('user_courses')
     .select('course_id, status, updated_at')
-    .eq('user_id', user.id);
+    .eq('user_id', user.id)
+    .neq('status', 'hidden');
     
   const enrolledIds = enrolledData?.map(r => r.course_id) || [];
   const statusCounts: Record<string, number> = {};

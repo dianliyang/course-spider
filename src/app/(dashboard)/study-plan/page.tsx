@@ -78,6 +78,7 @@ async function StudyPlanContent({
       semesters:course_semesters(semesters(term, year))
     `)
     .eq('user_courses.user_id', userId)
+    .neq('user_courses.status', 'hidden')
     .order('updated_at', { foreignTable: 'user_courses', ascending: false });
 
   if (error) {

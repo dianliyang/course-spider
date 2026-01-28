@@ -16,6 +16,8 @@ export async function POST(request: Request) {
     const body = await request.json() as EnrollRequest;
     const { courseId, action } = body; // action: 'enroll' | 'unenroll' | 'update_progress'
     const progress = body.progress ?? 0;
+    
+    console.log(`[Enroll API] Processing action: ${action} for course ${courseId} user ${userId}`);
 
     const supabase = await createClient();
 

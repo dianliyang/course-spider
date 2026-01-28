@@ -78,7 +78,8 @@ async function fetchCourses(
     const { data: enrolledIds } = await supabase
       .from('user_courses')
       .select('course_id')
-      .eq('user_id', userId);
+      .eq('user_id', userId)
+      .neq('status', 'hidden');
     
     const ids = (enrolledIds || []).map(r => r.course_id);
     if (ids.length === 0) return { items: [], total: 0, pages: 0 };
@@ -92,6 +93,7 @@ async function fetchCourses(
       .eq('status', 'hidden');
     
     const idsToExclude = (hiddenIds || []).map(r => r.course_id);
+    console.log(`[Courses API] User ${userId} has hidden courses:`, idsToExclude);
     if (idsToExclude.length > 0) {
       supabaseQuery = supabaseQuery.not('id', 'in', `(${idsToExclude.join(',')})`);
     }
