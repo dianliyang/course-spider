@@ -41,7 +41,6 @@ export default async function StudyPlanPage({ searchParams }: PageProps) {
     );
   }
 
-  const focusView = (params.focusView as string) || "track";
   const selectedSemester = (params.semester as string) || "all";
 
   return (
@@ -50,7 +49,6 @@ export default async function StudyPlanPage({ searchParams }: PageProps) {
         <Suspense fallback={<StudyPlanSkeleton />}>
           <StudyPlanContent
             userId={user.id}
-            focusView={focusView}
             selectedSemester={selectedSemester}
             dict={dict}
           />
@@ -61,10 +59,9 @@ export default async function StudyPlanPage({ searchParams }: PageProps) {
 }
 
 async function StudyPlanContent({
-  userId, focusView, selectedSemester, dict
+  userId, selectedSemester, dict
 }: {
   userId: string;
-  focusView: string;
   selectedSemester: string;
   dict: Dictionary;
 }) {
@@ -147,33 +144,12 @@ async function StudyPlanContent({
                 <h3 className="text-2xl font-black text-gray-900 tracking-tighter">{dict.dashboard.roadmap.phase_1_title}</h3>
               </div>
             </div>
-
-            <div className="flex bg-gray-50 p-1 rounded-lg gap-1 self-start md:self-auto ml-16 md:ml-0">
-              <a
-                href="?focusView=track"
-                className={`px-3 py-1.5 rounded-md text-[10px] font-black uppercase tracking-widest transition-all ${
-                  focusView === 'track' ? 'bg-white text-brand-blue shadow-sm' : 'text-gray-400 hover:text-gray-600'
-                }`}
-              >
-                <i className="fa-solid fa-list-ul mr-2"></i> {dict.dashboard.roadmap.view_tracking}
-              </a>
-              <a
-                href="?focusView=card"
-                className={`px-3 py-1.5 rounded-md text-[10px] font-black uppercase tracking-widest transition-all ${
-                  focusView === 'card' ? 'bg-white text-brand-blue shadow-sm' : 'text-gray-400 hover:text-gray-600'
-                }`}
-              >
-                <i className="fa-solid fa-border-all mr-2"></i> {dict.dashboard.roadmap.view_visual}
-              </a>
-            </div>
           </div>
 
-          <div className={focusView === 'track' ? "grid grid-cols-1 lg:grid-cols-2 gap-6 pl-0 md:pl-20" : "grid grid-cols-1 md:grid-cols-2 gap-8 pl-0 md:pl-20"}>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pl-0 md:pl-20">
             {inProgress.length > 0 ? (
               inProgress.map(course => (
-                focusView === 'track'
-                  ? <ActiveCourseTrack key={course.id} course={course} initialProgress={course.progress} dict={dict.dashboard.roadmap} />
-                  : <CourseCard key={course.id} course={course} isInitialEnrolled={true} progress={course.progress} dict={dict.dashboard.courses} />
+                <ActiveCourseTrack key={course.id} course={course} initialProgress={course.progress} dict={dict.dashboard.roadmap} />
               ))
             ) : (
               <p className="text-sm text-gray-400 font-mono italic">{dict.dashboard.roadmap.no_active}</p>
