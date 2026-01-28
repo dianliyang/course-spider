@@ -1,12 +1,6 @@
-"use client";
-
-import { useRef } from "react";
-
 export default function OrbitingCircles() {
-  const containerRef = useRef<HTMLDivElement>(null);
-
   return (
-    <div ref={containerRef} className="relative w-full h-full flex items-center justify-center">
+    <div className="relative w-full h-full flex items-center justify-center">
       {/* Orbits - High Visibility */}
       <div className="absolute w-[40%] h-[40%] border-2 border-slate-200 rounded-full opacity-80"></div>
       <div className="absolute w-[70%] h-[70%] border border-slate-200 rounded-full opacity-60"></div>

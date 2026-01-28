@@ -189,27 +189,21 @@ export default function ActiveCourseTrack({ course, initialProgress, onUpdate, d
         <div className="relative h-4 flex items-center">
           {/* Background Track */}
           <div className="absolute inset-0 bg-gray-50 rounded-full h-1.5 my-auto"></div>
-          {/* Visual Digital Ticks */}
-          <div className="flex gap-[2px] items-center w-full relative z-0">
-            {Array.from({ length: 50 }).map((_, i) => {
-              const isActive = (i / 50) < (progress / 100);
-              return (
-                <div 
-                  key={i} 
-                  className={`flex-grow h-1.5 rounded-full transition-all duration-500 ${
-                    isActive 
-                      ? 'bg-brand-blue shadow-[0_0_8px_rgba(59,130,246,0.4)]' 
-                      : 'bg-transparent'
-                  } ${isActive && isUpdating ? 'animate-pulse' : ''}`}
-                ></div>
-              );
-            })}
+          {/* Progress Fill */}
+          <div className="absolute inset-0 h-1.5 my-auto rounded-full overflow-hidden">
+            <div
+              className={`h-full bg-brand-blue rounded-full transition-all duration-500 ${isUpdating ? 'animate-pulse' : ''}`}
+              style={{
+                width: `${progress}%`,
+                boxShadow: progress > 0 ? '0 0 8px rgba(59,130,246,0.4)' : 'none'
+              }}
+            ></div>
           </div>
-          
-          <input 
-            type="range" 
-            min="0" 
-            max="100" 
+
+          <input
+            type="range"
+            min="0"
+            max="100"
             value={progress}
             onChange={(e) => setProgress(parseInt(e.target.value))}
             onMouseUp={(e) => handleProgressChange(parseInt((e.target as HTMLInputElement).value))}

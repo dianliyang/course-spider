@@ -14,10 +14,12 @@ interface PageProps {
 }
 
 export default async function CoursesPage({ searchParams }: PageProps) {
-  const user = await getUser();
-  const lang = await getLanguage();
+  const [user, lang, params] = await Promise.all([
+    getUser(),
+    getLanguage(),
+    searchParams,
+  ]);
   const dict = await getDictionary(lang);
-  const params = await searchParams;
 
   return (
     <div className="flex flex-col min-h-screen bg-white">

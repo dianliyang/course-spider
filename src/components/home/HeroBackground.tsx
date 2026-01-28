@@ -1,33 +1,38 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 
 export default function HeroBackground() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const rafRef = useRef<number>(0);
 
   useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
     const handleMouseMove = (e: MouseEvent) => {
-      if (containerRef.current) {
-        const rect = containerRef.current.getBoundingClientRect();
-        setMousePosition({
-          x: e.clientX - rect.left,
-          y: e.clientY - rect.top,
-        });
-      }
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = requestAnimationFrame(() => {
+        const rect = container.getBoundingClientRect();
+        container.style.setProperty("--mx", `${e.clientX - rect.left}px`);
+        container.style.setProperty("--my", `${e.clientY - rect.top}px`);
+      });
     };
 
-    window.addEventListener("mousemove", handleMouseMove);
-    return () => window.removeEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mousemove", handleMouseMove, { passive: true });
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      cancelAnimationFrame(rafRef.current);
+    };
   }, []);
 
   return (
-    <div ref={containerRef} className="absolute inset-0 overflow-hidden bg-slate-50">
+    <div ref={containerRef} className="absolute inset-0 overflow-hidden bg-slate-50" style={{ "--mx": "0px", "--my": "0px" } as React.CSSProperties}>
       {/* Dynamic Spotlight */}
-      <div 
+      <div
         className="absolute inset-0 pointer-events-none opacity-60"
         style={{
-          background: `radial-gradient(800px circle at ${mousePosition.x}px ${mousePosition.y}px, rgba(59, 130, 246, 0.08), transparent 40%)`
+          background: `radial-gradient(800px circle at var(--mx) var(--my), rgba(59, 130, 246, 0.08), transparent 40%)`
         }}
       />
 
@@ -41,21 +46,21 @@ export default function HeroBackground() {
         { bottom: '20%', left: '20%', text: 'Dijkstra', delay: '4s' },
         { top: '40%', left: '50%', text: 'O(n log n)', delay: '1s', blur: true },
       ].map((item, i) => (
-        <div 
+        <div
           key={i}
           className={`absolute bg-white/40 backdrop-blur-md border border-slate-200 shadow-sm px-4 py-2 rounded-lg text-xs font-mono text-brand-blue animate-[float-random_10s_ease-in-out_infinite] ${item.blur ? 'blur-[1px] opacity-40' : 'opacity-80'}`}
-          style={{ 
-            top: item.top, 
-            left: item.left, 
-            right: item.right, 
+          style={{
+            top: item.top,
+            left: item.left,
+            right: item.right,
             bottom: item.bottom,
-            animationDelay: item.delay 
+            animationDelay: item.delay
           }}
         >
           {item.text}
         </div>
       ))}
-      
+
       {/* Subtle Scanline Effect */}
       <div className="absolute inset-0 pointer-events-none bg-[linear-gradient(to_bottom,transparent_50%,rgba(255,255,255,0.5)_50%)] bg-[size:100%_4px] opacity-[0.03]"></div>
     </div>

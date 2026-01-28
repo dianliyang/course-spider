@@ -13,9 +13,8 @@ import { getUser } from "@/lib/supabase/server";
 export const revalidate = 60;
 
 export default async function Home() {
-  const lang = await getLanguage();
+  const [lang, user] = await Promise.all([getLanguage(), getUser()]);
   const dict = await getDictionary(lang);
-  const user = await getUser();
 
   return (
     <div className="flex flex-col bg-white">

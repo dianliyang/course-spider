@@ -14,8 +14,7 @@ interface PageProps {
 }
 
 export default async function CourseDetailPage({ params }: PageProps) {
-  const { id } = await params;
-  const lang = await getLanguage();
+  const [{ id }, lang] = await Promise.all([params, getLanguage()]);
   const dict = await getDictionary(lang);
 
   return (
@@ -38,10 +37,10 @@ export default async function CourseDetailPage({ params }: PageProps) {
 }
 
 async function CourseDetailData({ id, dict }: { id: string; dict: Dictionary['dashboard'] }) {
-  const supabase = await createClient();
-  const user = await getUser();
+  const [supabase, user] = await Promise.all([createClient(), getUser()]);
 
-  const { data, error } = await supabase
+  // Parallelize course fetch and enrollment check
+  const coursePromise = supabase
     .from("courses")
     .select(
       `
@@ -52,6 +51,20 @@ async function CourseDetailData({ id, dict }: { id: string; dict: Dictionary['da
     )
     .eq("id", id)
     .single();
+
+  const enrollmentPromise = user
+    ? supabase
+        .from("user_courses")
+        .select("progress")
+        .eq("user_id", user.id)
+        .eq("course_id", id)
+        .single()
+    : Promise.resolve({ data: null });
+
+  const [{ data, error }, { data: enrollment }] = await Promise.all([
+    coursePromise,
+    enrollmentPromise,
+  ]);
 
   if (error || !data) {
     notFound();
@@ -70,22 +83,8 @@ async function CourseDetailData({ id, dict }: { id: string; dict: Dictionary['da
     semesters: semesterNames,
   } as Course;
 
-  let isEnrolled = false;
-  let progress = 0;
-
-  if (user) {
-    const { data: enrollment } = await supabase
-      .from("user_courses")
-      .select("progress")
-      .eq("user_id", user.id)
-      .eq("course_id", id)
-      .single();
-
-    if (enrollment) {
-      isEnrolled = true;
-      progress = enrollment.progress || 0;
-    }
-  }
+  const isEnrolled = !!enrollment;
+  const progress = enrollment?.progress || 0;
 
   return (
     <div className="space-y-12">

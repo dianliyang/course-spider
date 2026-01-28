@@ -9,6 +9,7 @@ export default async function DashboardLayout({
 }) {
   const lang = await getLanguage();
   const dict = await getDictionary(lang);
+  // Note: getLanguage must resolve before getDictionary since dict depends on lang
 
   return (
     <>

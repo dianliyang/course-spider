@@ -7,8 +7,7 @@ import LogoutButton from "@/components/layout/LogoutButton";
 export const dynamic = "force-dynamic";
 
 export default async function ProfilePage() {
-  const user = await getUser();
-  const lang = await getLanguage();
+  const [user, lang] = await Promise.all([getUser(), getLanguage()]);
   const dict = await getDictionary(lang);
   
   if (!user) return <div className="p-10 text-center font-mono">{dict.dashboard.profile.user_not_found}</div>;
