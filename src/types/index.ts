@@ -33,7 +33,7 @@ export interface Field {
 
 export interface EnrollRequest {
   courseId: number;
-  action: 'enroll' | 'unenroll' | 'update_progress';
+  action: 'enroll' | 'unenroll' | 'update_progress' | 'hide';
   progress?: number;
   gpa?: number;
   score?: number;

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Course } from "@/types";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import UniversityIcon from "@/components/common/UniversityIcon";
 import { Dictionary } from "@/lib/dictionary";
 
@@ -20,6 +21,8 @@ export default function ActiveCourseTrack({ course, initialProgress, onUpdate, d
   const [showCompleteModal, setShowCompleteModal] = useState(false);
   const [gpa, setGpa] = useState("");
   const [score, setScore] = useState("");
+
+  const detailHref = `/courses/${course.id}`;
 
   const handleProgressChange = async (newProgress: number) => {
     if (newProgress === 100) {
@@ -162,7 +165,7 @@ export default function ActiveCourseTrack({ course, initialProgress, onUpdate, d
               <span className="text-[10px] font-bold text-gray-400 font-mono">{course.courseCode}</span>
             </div>
             <h3 className="text-lg font-black text-gray-900 tracking-tight leading-tight group-hover:text-brand-blue transition-colors line-clamp-1">
-              {course.title}
+              <Link href={detailHref}>{course.title}</Link>
             </h3>
           </div>
         </div>

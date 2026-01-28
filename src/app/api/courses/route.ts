@@ -83,6 +83,18 @@ async function fetchCourses(
     const ids = (enrolledIds || []).map(r => r.course_id);
     if (ids.length === 0) return { items: [], total: 0, pages: 0 };
     supabaseQuery = supabaseQuery.in('id', ids);
+  } else if (userId) {
+    // Exclude hidden courses for logged-in users when browsing all courses
+    const { data: hiddenIds } = await supabase
+      .from('user_courses')
+      .select('course_id')
+      .eq('user_id', userId)
+      .eq('status', 'hidden');
+    
+    const idsToExclude = (hiddenIds || []).map(r => r.course_id);
+    if (idsToExclude.length > 0) {
+      supabaseQuery = supabaseQuery.not('id', 'in', `(${idsToExclude.join(',')})`);
+    }
   }
 
   if (query) {

@@ -86,6 +86,21 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: true, message: "Progress updated" });
     }
 
+    if (action === 'hide') {
+      const { error } = await supabase
+        .from('user_courses')
+        .upsert({ 
+          user_id: userId, 
+          course_id: courseId, 
+          status: 'hidden', 
+          updated_at: new Date().toISOString()
+        });
+        
+      if (error) throw error;
+      revalidatePath('/courses');
+      return NextResponse.json({ success: true, message: "Course hidden" });
+    }
+
     return NextResponse.json({ error: "Invalid action" }, { status: 400 });
 
   } catch (error) {

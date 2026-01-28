@@ -56,6 +56,29 @@ export default function CourseCard({
     }
   };
 
+  const handleHide = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (loading) return;
+    setLoading(true);
+    try {
+      const response = await fetch("/api/courses/enroll", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          courseId: course.id,
+          action: "hide",
+        }),
+      });
+      if (response.ok) {
+        router.refresh();
+      }
+    } catch (e) {
+      console.error("Hide failed:", e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const displayProgress = progress ?? 0;
 
   if (viewMode === "list") {
@@ -154,13 +177,14 @@ export default function CourseCard({
                 </>
               )}
             </button>
-             <Link
-                href={detailHref}
-                className="text-gray-400 hover:text-brand-blue text-xs p-1.5 transition-colors"
-                title={dict?.details || "Details"}
+             <button
+                onClick={handleHide}
+                disabled={loading}
+                className="text-gray-400 hover:text-red-500 text-xs p-1.5 transition-colors"
+                title={dict?.hide || "Hide"}
               >
-                <i className="fa-solid fa-arrow-right"></i>
-              </Link>
+                <i className="fa-solid fa-eye-slash"></i>
+              </button>
         </div>
 
       </div>
@@ -243,12 +267,13 @@ export default function CourseCard({
             <i className="fa-solid fa-fire-flame-simple text-orange-400"></i>
             <span className="font-semibold text-gray-700">{course.popularity}</span>
           </div>
-          <Link
-            href={detailHref}
-            className="text-gray-400 hover:text-brand-blue text-[10px] font-bold uppercase tracking-wide flex items-center gap-1 transition-colors"
+          <button
+            onClick={handleHide}
+            disabled={loading}
+            className="text-gray-400 hover:text-red-500 text-[10px] font-bold uppercase tracking-wide flex items-center gap-1 transition-colors"
           >
-            {dict?.details || "Details"} <i className="fa-solid fa-arrow-right text-[8px]"></i>
-          </Link>
+            {dict?.hide || "Hide"} <i className="fa-solid fa-eye-slash text-[8px]"></i>
+          </button>
         </div>
       </div>
 
