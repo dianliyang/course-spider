@@ -37,8 +37,11 @@ export async function GET(request: Request) {
       pages: dbCourses.pages
     });
 
-    // Add Cache-Control: s-maxage=60 (Cache on edge for 60s), stale-while-revalidate
-    response.headers.set('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=30');
+    if (enrolledOnly) {
+      response.headers.set('Cache-Control', 'private, no-store');
+    } else {
+      response.headers.set('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=30');
+    }
     
     return response;
   } catch (error) {

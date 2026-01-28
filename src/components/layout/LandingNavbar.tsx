@@ -19,11 +19,12 @@ export default function LandingNavbar({ dict, user }: { dict: any, user?: any })
             {/* Logo Section */}
             <div className="flex items-center">
               <Link href="/" className="group flex items-center gap-4">
-                <Image 
-                  src="/code-campus-logo.svg" 
-                  alt="CodeCampus" 
-                  width={scrolled ? 32 : 40} 
-                  height={scrolled ? 32 : 40} 
+                <Image
+                  src="/code-campus-logo.svg"
+                  alt="CodeCampus"
+                  width={scrolled ? 32 : 40}
+                  height={scrolled ? 32 : 40}
+                  priority
                   className={`transition-all duration-500 group-hover:-rotate-6 ${scrolled ? 'w-8 h-8' : 'w-10 h-10'}`}
                 />
                 {!scrolled && (

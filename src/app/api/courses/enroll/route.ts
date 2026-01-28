@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { getUser, createClient, incrementPopularity } from '@/lib/supabase/server';
 import { EnrollRequest } from '@/types';
 
@@ -30,9 +31,11 @@ export async function POST(request: Request) {
         });
         
       if (error) throw error;
+      revalidatePath('/courses');
+      revalidatePath('/study-plan');
       return NextResponse.json({ success: true, message: "Enrolled successfully" });
-    } 
-    
+    }
+
     if (action === 'unenroll') {
       const { error } = await supabase
         .from('user_courses')
@@ -40,6 +43,8 @@ export async function POST(request: Request) {
         .match({ user_id: userId, course_id: courseId });
         
       if (error) throw error;
+      revalidatePath('/courses');
+      revalidatePath('/study-plan');
       return NextResponse.json({ success: true, message: "Unenrolled successfully" });
     }
 
@@ -76,6 +81,8 @@ export async function POST(request: Request) {
         await incrementPopularity(courseId);
       }
 
+      revalidatePath('/study-plan');
+      revalidatePath('/profile');
       return NextResponse.json({ success: true, message: "Progress updated" });
     }
 

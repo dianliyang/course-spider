@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
@@ -14,7 +15,7 @@ export async function getBaseUrl() {
   throw new Error("NEXT_PUBLIC_APP_URL is not defined");
 }
 
-export async function createClient() {
+export const createClient = cache(async () => {
   const cookieStore = await cookies();
 
   return createServerClient(
@@ -39,7 +40,7 @@ export async function createClient() {
       },
     }
   );
-}
+});
 
 export function createAdminClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -55,13 +56,13 @@ export function createAdminClient() {
   return createSupabaseClient(url, key);
 }
 
-export async function getUser() {
+export const getUser = cache(async () => {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
   return user;
-}
+});
 
 export class SupabaseDatabase {
   async saveCourses(courses: Course[]): Promise<void> {

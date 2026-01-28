@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import "@fortawesome/fontawesome-free/css/fontawesome.min.css";
@@ -16,9 +16,25 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#0f172a",
+};
+
 export const metadata: Metadata = {
-  title: "CodeCampus | CS Course Aggregator",
+  title: {
+    default: "CodeCampus | CS Course Aggregator",
+    template: "%s | CodeCampus",
+  },
   description: "Find the best computer science courses from top universities.",
+  robots: { index: true, follow: true },
+  openGraph: {
+    type: "website",
+    siteName: "CodeCampus",
+    title: "CodeCampus | CS Course Aggregator",
+    description: "Find the best computer science courses from top universities.",
+  },
 };
 
 export default function RootLayout({
@@ -28,7 +44,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <head></head>
+      <head>
+        <link rel="preconnect" href={process.env.NEXT_PUBLIC_SUPABASE_URL} crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href={process.env.NEXT_PUBLIC_SUPABASE_URL} />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >

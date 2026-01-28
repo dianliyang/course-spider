@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { createClient, mapCourseFromRow, getUser } from "@/lib/supabase/server";
@@ -11,6 +12,26 @@ export const dynamic = "force-dynamic";
 
 interface PageProps {
   params: Promise<{ id: string }>;
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { id } = await params;
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("courses")
+    .select("title, course_code, university")
+    .eq("id", id)
+    .single();
+
+  if (!data) {
+    return { title: "Course Not Found" };
+  }
+
+  const title = `${data.course_code}: ${data.title} - ${data.university}`;
+  return {
+    title,
+    openGraph: { title },
+  };
 }
 
 export default async function CourseDetailPage({ params }: PageProps) {

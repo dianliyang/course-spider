@@ -63,6 +63,7 @@ export default async function LoginPage({ searchParams }: PageProps) {
               alt="CodeCampus"
               width={48}
               height={48}
+              priority
               className="w-12 h-12 brightness-200"
             />
             <div className="flex flex-col -space-y-1.5">
@@ -111,6 +112,7 @@ export default async function LoginPage({ searchParams }: PageProps) {
               alt="CodeCampus"
               width={64}
               height={64}
+              priority
               className="w-16 h-16"
             />
           </div>

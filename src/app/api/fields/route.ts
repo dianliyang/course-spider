@@ -16,7 +16,9 @@ export async function GET() {
       count: (f.course_fields as { count: number }[] | null)?.[0]?.count || 0
     })).sort((a, b) => b.count - a.count);
 
-    return NextResponse.json({ fields: formattedFields });
+    const response = NextResponse.json({ fields: formattedFields });
+    response.headers.set('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=600');
+    return response;
   } catch (error) {
     console.error("Error fetching fields:", error);
     return NextResponse.json({ error: "Failed to fetch fields" }, { status: 500 });

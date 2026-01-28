@@ -63,8 +63,8 @@ export default function UniversityIcon({ name, size = 40, className = "" }: Univ
         width={size}
         height={size}
         className="object-contain w-full h-full"
+        sizes={`${size}px`}
         onError={handleError}
-        unoptimized // Optional: helps with external image changing rapidly, but not strictly required
       />
     </div>
   );

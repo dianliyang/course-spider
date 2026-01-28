@@ -1,11 +1,26 @@
 "use client";
 
 import { useState } from "react";
+import dynamic from "next/dynamic";
 import { Course } from "@/types";
 import UniversityIcon from "@/components/common/UniversityIcon";
-import EditCourseModal from "./EditCourseModal";
 import { deleteCourse } from "@/actions/courses";
 import { useRouter, useSearchParams } from "next/navigation";
+
+const EditCourseModal = dynamic(() => import("./EditCourseModal"), {
+  loading: () => (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+      <div className="bg-white rounded-2xl p-8 w-full max-w-lg animate-pulse">
+        <div className="h-6 bg-gray-200 rounded w-1/3 mb-6" />
+        <div className="space-y-4">
+          <div className="h-10 bg-gray-100 rounded" />
+          <div className="h-10 bg-gray-100 rounded" />
+          <div className="h-10 bg-gray-100 rounded" />
+        </div>
+      </div>
+    </div>
+  ),
+});
 
 interface CourseDetailHeaderProps {
   course: Course;

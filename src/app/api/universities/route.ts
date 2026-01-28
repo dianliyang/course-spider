@@ -21,7 +21,9 @@ export async function GET() {
       count
     })).sort((a, b) => b.count - a.count);
 
-    return NextResponse.json({ universities: rows });
+    const response = NextResponse.json({ universities: rows });
+    response.headers.set('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=600');
+    return response;
   } catch (error) {
     console.error("Error fetching universities:", error);
     return NextResponse.json({ error: "Failed to fetch universities" }, { status: 500 });
