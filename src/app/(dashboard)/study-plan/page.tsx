@@ -113,6 +113,7 @@ async function StudyPlanContent({
       start_time,
       end_time,
       location,
+      type,
       courses(id, title, course_code, university)
     `)
     .eq('user_id', userId);

@@ -24,6 +24,7 @@ async function main() {
       end_date,
       start_time,
       end_time,
+      type,
       courses(title)
     `)
     .eq('user_id', userId);
@@ -32,7 +33,7 @@ async function main() {
   console.log(`Current Date: ${new Date().toISOString()}`);
   plans?.forEach(p => {
     // @ts-expect-error: Supabase inference might return array or object depending on join
-    console.log(`- ${p.courses?.title}: Days [${p.days_of_week.join(', ')}] @ ${p.start_time}-${p.end_time} (${p.start_date} to ${p.end_date})`);
+    console.log(`- ${p.courses?.title} [${p.type}]: Days [${p.days_of_week.join(', ')}] @ ${p.start_time}-${p.end_time} (${p.start_date} to ${p.end_date})`);
   });
 }
 

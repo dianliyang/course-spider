@@ -21,6 +21,7 @@ interface StudyPlan {
   start_time: string;
   end_time: string;
   location: string | null;
+  type: string;
   courses: {
     id: number;
     title: string;
@@ -47,6 +48,8 @@ interface GeneratedEvent {
   title: string;
   courseCode: string;
   university: string;
+  location: string | null;
+  type: string;
 }
 
 interface StudyCalendarProps {
@@ -117,7 +120,9 @@ export default function StudyCalendar({ courses, plans, logs, dict }: StudyCalen
             isCompleted: log ? log.is_completed : false,
             title: plan.courses.title,
             courseCode: plan.courses.course_code,
-            university: plan.courses.university
+            university: plan.courses.university,
+            location: plan.location,
+            type: plan.type || 'lecture'
           };
 
           const existing = map.get(day) || [];
@@ -454,9 +459,18 @@ export default function StudyCalendar({ courses, plans, logs, dict }: StudyCalen
                             >
                               <div className="flex flex-col min-w-0 w-full">
                                 <div className="flex items-center justify-between gap-2">
-                                  <span className={`text-[10px] font-bold truncate ${event.isCompleted ? 'text-brand-green line-through' : 'text-white'}`}>
-                                    {event.title}
-                                  </span>
+                                  <div className="flex items-center gap-1.5 min-w-0">
+                                    <span className={`text-[10px] font-bold truncate ${event.isCompleted ? 'text-brand-green line-through' : 'text-white'}`}>
+                                      {event.title}
+                                    </span>
+                                    <span className={`text-[7px] font-black uppercase tracking-tighter px-1 rounded-sm flex-shrink-0 ${
+                                      event.isCompleted 
+                                        ? 'bg-brand-green/20 text-brand-green' 
+                                        : 'bg-white/20 text-white border border-white/30'
+                                    }`}>
+                                      {event.type}
+                                    </span>
+                                  </div>
                                   {event.isCompleted && <i className="fa-solid fa-check text-[8px] text-brand-green"></i>}
                                 </div>
                                 <span className={`text-[8px] truncate ${event.isCompleted ? 'text-brand-green/70' : 'text-white/80'}`}>
