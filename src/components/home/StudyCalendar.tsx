@@ -542,57 +542,7 @@ export default function StudyCalendar({ courses, plans, logs, dict }: StudyCalen
             </div>
           )}
         </div>
-              ) : selectedDayActivity.length > 0 ? (
-                <div className="space-y-2 max-h-40 overflow-y-auto">
-                  {selectedDayActivity.map(course => (
-                    <Link
-                      key={course.id}
-                      href={`/courses/${course.id}`}
-                      className="flex items-center gap-2 p-2 rounded-lg bg-gray-50 hover:bg-violet-50 transition-all group/item"
-                    >
-                      <div className={`w-1.5 h-6 rounded-full flex-shrink-0 ${
-                        course.status === 'completed' ? 'bg-brand-green' : 'bg-brand-blue'
-                      }`}></div>
-                      <div className="min-w-0 flex-grow">
-                        <p className="text-xs font-bold text-gray-900 truncate group-hover/item:text-violet-600 transition-colors">
-                          {course.title}
-                        </p>
-                        <p className="text-[9px] text-gray-400 font-mono uppercase tracking-wider">
-                          {course.university} • {course.courseCode}
-                        </p>
-                      </div>
-                      <span className={`text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded flex-shrink-0 ${
-                        course.status === 'completed' 
-                          ? 'bg-brand-green/10 text-brand-green' 
-                          : 'bg-brand-blue/10 text-brand-blue'
-                      }`}>
-                        {course.progress}%
-                      </span>
-                    </Link>
-                  ))}
-                </div>
-              ) : (
-                <div className="flex-grow flex flex-col items-center justify-center text-center">
-                  <p className="text-xs text-gray-400 font-mono italic">
-                    {dict.calendar_no_events}
-                  </p>
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="h-full flex flex-col items-center justify-center text-center py-4">
-              <i className="fa-regular fa-calendar-check text-gray-200 text-2xl mb-2"></i>
-              <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">
-                {dict.calendar_events}
-              </p>
-              {plans.length > 0 && (
-                <p className="text-[9px] text-violet-400 mt-1">
-                  {plans.length} {dict.calendar_courses_scheduled || "plans active"}
-                </p>
-              )}
-            </div>
-          )}
-        </div>
+
       </div>
     </div>
   );

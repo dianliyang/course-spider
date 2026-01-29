@@ -10,6 +10,8 @@ interface StudyReminderEmailData {
     courseCode: string;
     university: string;
     durationMinutes: number;
+    location?: string;
+    startTime?: string;
   }>;
   date: string;
 }
@@ -44,7 +46,7 @@ export async function sendStudyReminderEmail(data: StudyReminderEmailData) {
     .course-item:last-child { border-bottom: none; padding-bottom: 0; }
     .course-item:first-child { padding-top: 0; }
     .course-title { font-weight: 800; color: #111827; font-size: 14px; margin-bottom: 4px; }
-    .course-meta { color: #6b7280; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; }
+    .course-meta { color: #6b7280; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; display: flex; gap: 8px; align-items: center; }
     .date-banner { font-size: 11px; font-weight: 800; color: #3b82f6; text-transform: uppercase; letter-spacing: 0.2em; margin-bottom: 8px; }
   </style>
 </head>
@@ -61,7 +63,11 @@ export async function sendStudyReminderEmail(data: StudyReminderEmailData) {
         <div class="course-item">
           <div class="course-title">${c.title}</div>
           <div class="course-meta">
-            ${c.courseCode} // ${c.university} // ${c.durationMinutes}m
+            ${c.startTime ? `<span>${c.startTime}</span> // ` : ''}
+            <span>${c.courseCode}</span> // 
+            <span>${c.university}</span> // 
+            <span>${c.durationMinutes}m</span>
+            ${c.location ? ` // <span>${c.location}</span>` : ''}
           </div>
         </div>
         `).join('')}

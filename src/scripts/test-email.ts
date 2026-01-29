@@ -14,13 +14,17 @@ async function testEmail() {
         title: 'Introduction to Machine Learning',
         courseCode: 'CS229',
         university: 'Stanford',
-        durationMinutes: 120
+        durationMinutes: 120,
+        startTime: '09:00',
+        location: 'Gates Computer Science Building'
       },
       {
         title: 'Operating Systems',
         courseCode: 'CS162',
         university: 'Berkeley',
-        durationMinutes: 120
+        durationMinutes: 120,
+        startTime: '13:00',
+        location: 'Soda Hall'
       }
     ],
     date: 'Wednesday, January 29, 2026'
