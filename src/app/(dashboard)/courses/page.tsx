@@ -48,7 +48,7 @@ async function SidebarData({ userId, params, dict }: {
   // Parallelize static and dynamic fetches
   const [universitiesRes, fieldsRes, enrolledRes] = await Promise.all([
     supabase.from('courses').select('university').eq('is_hidden', false),
-    supabase.from('fields').select('name, course_fields(count)'),
+    supabase.from('course_fields').select('fields(name), courses!inner(id)').eq('courses.is_hidden', false),
     userId ? (async () => {
       // Extract filters for dynamic enrolled count
       const universitiesParam = ((params.universities as string) || "").split(",").filter(Boolean);
@@ -86,10 +86,14 @@ async function SidebarData({ userId, params, dict }: {
     .map(([name, count]) => ({ name, count }))
     .sort((a, b) => b.count - a.count);
 
-  const dbFields: Field[] = (fieldsRes.data || []).map((f: Record<string, unknown>) => ({
-    name: f.name as string,
-    count: (f.course_fields as { count: number }[] | null)?.[0]?.count || 0
-  })).sort((a, b) => b.count - a.count);
+  const fieldCounts: Record<string, number> = {};
+  fieldsRes.data?.forEach((cf: Record<string, unknown>) => {
+    const name = (cf.fields as { name: string } | null)?.name;
+    if (name) fieldCounts[name] = (fieldCounts[name] || 0) + 1;
+  });
+  const dbFields: Field[] = Object.entries(fieldCounts)
+    .map(([name, count]) => ({ name, count }))
+    .sort((a, b) => b.count - a.count);
 
   return <Sidebar universities={dbUniversities} fields={dbFields} enrolledCount={enrolledRes as number} dict={dict} />;
 }

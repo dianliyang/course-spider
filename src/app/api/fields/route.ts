@@ -6,16 +6,21 @@ export const runtime = 'edge';
 export async function GET() {
   try {
     const supabase = await createClient();
-    const { data: fields, error } = await supabase
-      .from('fields')
-      .select('name, course_fields(count)');
+    const { data: courseFields, error } = await supabase
+      .from('course_fields')
+      .select('fields(name), courses!inner(id)')
+      .eq('courses.is_hidden', false);
 
     if (error) throw error;
 
-    const formattedFields = (fields || []).map((f: any) => ({ // eslint-disable-line @typescript-eslint/no-explicit-any
-      name: f.name as string,
-      count: (f.course_fields as { count: number }[] | null)?.[0]?.count || 0
-    })).sort((a, b) => b.count - a.count);
+    const fieldCounts: Record<string, number> = {};
+    courseFields?.forEach((cf: Record<string, unknown>) => {
+      const name = (cf.fields as { name: string } | null)?.name;
+      if (name) fieldCounts[name] = (fieldCounts[name] || 0) + 1;
+    });
+    const formattedFields = Object.entries(fieldCounts)
+      .map(([name, count]) => ({ name, count }))
+      .sort((a, b) => b.count - a.count);
 
     const response = NextResponse.json({ fields: formattedFields });
     response.headers.set('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=600');

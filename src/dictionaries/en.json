@@ -133,7 +133,13 @@
       "learning_sequence": "Learning Sequence",
       "efficiency_desc": "Curriculum absorption rate across active tracks.",
       "mark_complete": "Complete",
-      "update_progress": "Update"
+      "update_progress": "Update",
+      "phase_3_label": "Phase 03",
+      "phase_3_title": "Study Calendar",
+      "calendar_title": "Study Schedule",
+      "calendar_today": "Today",
+      "calendar_no_events": "No activities scheduled",
+      "calendar_events": "Scheduled Activities"
     },
     "profile": {
       "user_level": "Expertise",

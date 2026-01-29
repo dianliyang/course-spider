@@ -8,7 +8,8 @@ export async function GET() {
     const supabase = await createClient();
     const { data: courses, error } = await supabase
       .from('courses')
-      .select('university');
+      .select('university')
+      .eq('is_hidden', false);
 
     if (error) throw error;
 

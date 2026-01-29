@@ -5,6 +5,7 @@ import AchievementCard from "@/components/home/AchievementCard";
 import ActiveCourseTrack from "@/components/home/ActiveCourseTrack";
 import StudyPlanHeader from "@/components/home/StudyPlanHeader";
 import SemesterFilter from "@/components/home/SemesterFilter";
+import StudyCalendar from "@/components/home/StudyCalendar";
 import Link from "next/link";
 import { getUser, createClient, mapCourseFromRow } from "@/lib/supabase/server";
 import { getLanguage } from "@/actions/language";
@@ -191,6 +192,25 @@ async function StudyPlanContent({
             ) : (
               <p className="text-sm text-gray-400 font-mono italic">{dict.dashboard.roadmap.peak_ahead}</p>
             )}
+          </div>
+        </section>
+
+        {/* Calendar Section */}
+        <section className="relative">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+            <div className="flex items-center gap-6">
+              <div className="w-11 h-11 bg-violet-500 rounded-full flex items-center justify-center text-white z-10 shadow-xl shadow-violet-500/20 ring-8 ring-white">
+                <i className="fa-solid fa-calendar-days text-sm"></i>
+              </div>
+              <div>
+                <h2 className="text-xs font-black text-gray-400 uppercase tracking-[0.3em]">{dict.dashboard.roadmap.phase_3_label || "Phase 03"}</h2>
+                <h3 className="text-2xl font-black text-gray-900 tracking-tighter">{dict.dashboard.roadmap.phase_3_title || "Study Calendar"}</h3>
+              </div>
+            </div>
+          </div>
+
+          <div className="pl-0 md:pl-20">
+            <StudyCalendar courses={enrolledCourses} dict={dict.dashboard.roadmap} />
           </div>
         </section>
       </div>

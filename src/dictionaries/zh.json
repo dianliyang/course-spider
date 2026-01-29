@@ -143,7 +143,13 @@
       "learning_sequence": "学习序列",
       "efficiency_desc": "活跃课程的课程吸收率。",
       "mark_complete": "完成",
-      "update_progress": "更新"
+      "update_progress": "更新",
+      "phase_3_label": "阶段 03",
+      "phase_3_title": "学习日历",
+      "calendar_title": "学习日程",
+      "calendar_today": "今天",
+      "calendar_no_events": "暂无活动安排",
+      "calendar_events": "计划活动"
     },
     "profile": {
       "user_level": "专业度",
