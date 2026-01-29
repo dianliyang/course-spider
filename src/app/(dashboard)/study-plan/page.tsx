@@ -102,6 +102,34 @@ async function StudyPlanContent({
     } as EnrolledCourse;
   });
 
+  // Fetch study schedules from database
+  const { data: scheduleRows } = await supabase
+    .from('study_schedules')
+    .select(`
+      id,
+      course_id,
+      scheduled_date,
+      is_completed,
+      duration_minutes,
+      courses(id, title, course_code, university)
+    `)
+    .eq('user_id', userId)
+    .order('scheduled_date', { ascending: true });
+
+  // Map schedules to a format the calendar can use
+  const schedules = (scheduleRows || []).map((row: any) => ({ // eslint-disable-line @typescript-eslint/no-explicit-any
+    courseId: row.course_id,
+    date: row.scheduled_date,
+    isCompleted: row.is_completed,
+    durationMinutes: row.duration_minutes,
+    course: row.courses ? {
+      id: row.courses.id,
+      title: row.courses.title,
+      courseCode: row.courses.course_code,
+      university: row.courses.university,
+    } : null
+  }));
+
   const inProgress = enrolledCourses.filter(c => c.status === 'in_progress');
   const completed = enrolledCourses.filter(c => c.status === 'completed');
 
@@ -133,6 +161,22 @@ async function StudyPlanContent({
       <div className="relative space-y-32">
         <div className="absolute left-[21px] top-0 bottom-0 w-0.5 bg-gray-100 hidden md:block"></div>
 
+        {/* Calendar Section - At Top */}
+        <section className="relative">
+          <div className="flex items-center gap-6 mb-6">
+            <div className="w-11 h-11 bg-violet-500 rounded-full flex items-center justify-center text-white z-10 shadow-xl shadow-violet-500/20 ring-8 ring-white">
+              <i className="fa-solid fa-calendar-days text-sm"></i>
+            </div>
+            <div>
+              <h3 className="text-2xl font-black text-gray-900 tracking-tighter">{dict.dashboard.roadmap.calendar_title}</h3>
+            </div>
+          </div>
+
+          <div className="pl-0 md:pl-20">
+            <StudyCalendar courses={enrolledCourses} schedules={schedules} dict={dict.dashboard.roadmap} />
+          </div>
+        </section>
+
         {/* Current Focus Section */}
         <section className="relative">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
@@ -141,7 +185,6 @@ async function StudyPlanContent({
                 <i className="fa-solid fa-bolt-lightning text-sm"></i>
               </div>
               <div>
-                <h2 className="text-xs font-black text-gray-400 uppercase tracking-[0.3em]">{dict.dashboard.roadmap.phase_1_label}</h2>
                 <h3 className="text-2xl font-black text-gray-900 tracking-tighter">{dict.dashboard.roadmap.phase_1_title}</h3>
               </div>
             </div>
@@ -166,7 +209,6 @@ async function StudyPlanContent({
                 <i className="fa-solid fa-trophy text-sm"></i>
               </div>
               <div>
-                <h2 className="text-xs font-black text-gray-400 uppercase tracking-[0.3em]">{dict.dashboard.roadmap.phase_2_label}</h2>
                 <h3 className="text-2xl font-black text-gray-900 tracking-tighter">{dict.dashboard.roadmap.phase_2_title}</h3>
               </div>
             </div>
@@ -192,25 +234,6 @@ async function StudyPlanContent({
             ) : (
               <p className="text-sm text-gray-400 font-mono italic">{dict.dashboard.roadmap.peak_ahead}</p>
             )}
-          </div>
-        </section>
-
-        {/* Calendar Section */}
-        <section className="relative">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
-            <div className="flex items-center gap-6">
-              <div className="w-11 h-11 bg-violet-500 rounded-full flex items-center justify-center text-white z-10 shadow-xl shadow-violet-500/20 ring-8 ring-white">
-                <i className="fa-solid fa-calendar-days text-sm"></i>
-              </div>
-              <div>
-                <h2 className="text-xs font-black text-gray-400 uppercase tracking-[0.3em]">{dict.dashboard.roadmap.phase_3_label || "Phase 03"}</h2>
-                <h3 className="text-2xl font-black text-gray-900 tracking-tighter">{dict.dashboard.roadmap.phase_3_title || "Study Calendar"}</h3>
-              </div>
-            </div>
-          </div>
-
-          <div className="pl-0 md:pl-20">
-            <StudyCalendar courses={enrolledCourses} dict={dict.dashboard.roadmap} />
           </div>
         </section>
       </div>

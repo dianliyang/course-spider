@@ -148,8 +148,18 @@
       "phase_3_title": "学习日历",
       "calendar_title": "学习日程",
       "calendar_today": "今天",
-      "calendar_no_events": "暂无活动安排",
-      "calendar_events": "计划活动"
+      "calendar_no_events": "暂无活动",
+      "calendar_events": "选择日期",
+      "calendar_study": "学习",
+      "calendar_rest": "休息",
+      "calendar_study_day": "学习日",
+      "calendar_rest_day": "休息日",
+      "calendar_rest_message": "今天休息，明天继续",
+      "calendar_generating": "生成中...",
+      "calendar_generate_plan": "生成学习计划",
+      "calendar_courses_scheduled": "个学习安排",
+      "calendar_weekdays": ["日", "一", "二", "三", "四", "五", "六"],
+      "calendar_months": ["一月", "二月", "三月", "四月", "五月", "六月", "七月", "八月", "九月", "十月", "十一月", "十二月"]
     },
     "profile": {
       "user_level": "专业度",

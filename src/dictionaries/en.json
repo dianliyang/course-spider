@@ -138,8 +138,18 @@
       "phase_3_title": "Study Calendar",
       "calendar_title": "Study Schedule",
       "calendar_today": "Today",
-      "calendar_no_events": "No activities scheduled",
-      "calendar_events": "Scheduled Activities"
+      "calendar_no_events": "No activities",
+      "calendar_events": "Select a day",
+      "calendar_study": "Study",
+      "calendar_rest": "Rest",
+      "calendar_study_day": "Study Day",
+      "calendar_rest_day": "Rest Day",
+      "calendar_rest_message": "Rest today, study tomorrow",
+      "calendar_generating": "Generating...",
+      "calendar_generate_plan": "Generate Plan",
+      "calendar_courses_scheduled": "scheduled",
+      "calendar_weekdays": ["S", "M", "T", "W", "T", "F", "S"],
+      "calendar_months": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
     },
     "profile": {
       "user_level": "Expertise",
