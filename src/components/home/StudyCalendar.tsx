@@ -372,7 +372,7 @@ export default function StudyCalendar({ courses, plans, logs, dict }: StudyCalen
         </div>
 
         {/* Right: Selected Day Details */}
-        <div className="flex-grow border-l border-gray-100 pl-4 min-w-0 flex flex-col">
+        <div className="flex-grow border-l border-gray-100 pl-4 min-w-0 flex flex-col h-[400px]">
           {selectedDay ? (
             <div className="animate-in fade-in duration-200 h-full flex flex-col">
               <div className="flex items-center justify-between mb-4">
@@ -394,96 +394,154 @@ export default function StudyCalendar({ courses, plans, logs, dict }: StudyCalen
               </div>
               
               {isSelectedDayRest ? (
-                <div className="text-center py-6">
+                <div className="text-center py-6 flex-grow flex flex-col items-center justify-center">
                   <i className="fa-solid fa-spa text-gray-200 text-3xl mb-2"></i>
                   <p className="text-xs text-gray-400 font-bold uppercase tracking-widest">
                     {dict.calendar_rest_message}
                   </p>
                 </div>
               ) : isSelectedDayScheduled ? (
-                <div className="flex-grow flex flex-col min-h-0">
-                  {/* Timeline Header */}
-                  <div className="flex border-b border-gray-100 pb-2 mb-2 select-none relative h-6">
-                    {Array.from({ length: 16 }, (_, i) => i + 7).map((h) => ( // 7:00 to 22:00
-                      <div 
-                        key={h} 
-                        className="absolute text-[8px] text-gray-300 font-mono transform -translate-x-1/2"
-                        style={{ left: `${((h - 7) / 15) * 100}%` }}
-                      >
-                        {h}:00
-                      </div>
-                    ))}
-                  </div>
+                <div className="flex-grow overflow-y-auto relative border border-gray-50 rounded-xl">
+                  {/* Vertical Timeline Container - Slimmer height */}
+                  <div className="relative min-h-[500px] bg-white">
+                    {/* Time Scale (Left) */}
+                    <div className="absolute left-0 top-0 bottom-0 w-10 border-r border-gray-50 bg-gray-50/30">
+                      {Array.from({ length: 16 }, (_, i) => i + 7).map((h) => ( // 7:00 to 22:00
+                        <div 
+                          key={h} 
+                          className="absolute w-full text-[7px] text-gray-400 font-mono text-center"
+                          style={{ top: `${((h - 7) / 15) * 100}%`, marginTop: '-3.5px' }}
+                        >
+                          {String(h).padStart(2, '0')}:00
+                        </div>
+                      ))}
+                    </div>
 
-                  {/* Timeline Rows */}
-                  <div className="overflow-y-auto pr-2 space-y-3 flex-grow">
-                    {selectedDayEvents.sort((a, b) => a.startTime.localeCompare(b.startTime)).map((event, idx) => {
-                      // Calculate position and width
-                      const getMinutes = (t: string) => {
-                        const [h, m] = t.split(':').map(Number);
-                        return h * 60 + m;
-                      };
-                      const startMin = getMinutes(event.startTime);
-                      const endMin = getMinutes(event.endTime);
-                      const dayStartMin = 7 * 60; // 7:00
-                      const dayEndMin = 22 * 60; // 22:00
-                      const totalMin = dayEndMin - dayStartMin;
-                      
-                      const leftPercent = Math.max(0, ((startMin - dayStartMin) / totalMin) * 100);
-                      const widthPercent = Math.min(100 - leftPercent, ((endMin - startMin) / totalMin) * 100);
+                    {/* Grid Lines */}
+                    <div className="absolute left-10 right-0 top-0 bottom-0">
+                      {Array.from({ length: 16 }, (_, i) => i + 7).map((h) => (
+                        <div 
+                          key={h} 
+                          className="absolute w-full border-t border-gray-100/30"
+                          style={{ top: `${((h - 7) / 15) * 100}%` }}
+                        ></div>
+                      ))}
+                    </div>
 
-                      return (
-                        <div key={`${event.planId}-${idx}`} className="group/item">
-                          {/* Event Bar Container */}
-                          <div className="relative h-14 w-full bg-gray-50/50 rounded-lg border border-gray-100 overflow-hidden hover:border-violet-200 transition-colors">
-                            {/* Grid Lines for reference */}
-                            <div className="absolute inset-0 flex pointer-events-none">
-                              {Array.from({ length: 15 }, (_, i) => (
-                                <div key={i} className="flex-1 border-r border-gray-100/50 last:border-0"></div>
-                              ))}
-                            </div>
+                    {/* Course Blocks */}
+                    <div className="absolute left-11 right-1 top-0 bottom-0">
+                      {selectedDayEvents.map((event, idx) => {
+                        const getMinutes = (t: string) => {
+                          const [h, m] = t.split(':').map(Number);
+                          return h * 60 + m;
+                        };
+                        const startMin = getMinutes(event.startTime);
+                        const endMin = getMinutes(event.endTime);
+                        const dayStartMin = 7 * 60; // 7:00
+                        const dayEndMin = 22 * 60; // 22:00
+                        const totalMin = dayEndMin - dayStartMin;
+                        
+                        const topPercent = Math.max(0, ((startMin - dayStartMin) / totalMin) * 100);
+                        const heightPercent = Math.min(100 - topPercent, ((endMin - startMin) / totalMin) * 100);
 
-                            {/* The Event Bar */}
-                            <div 
-                              className={`absolute top-1 bottom-1 rounded-md shadow-sm cursor-pointer transition-all flex items-center px-2 overflow-hidden ${
-                                event.isCompleted 
-                                  ? 'bg-brand-green/20 border border-brand-green/30 hover:bg-brand-green/30' 
-                                  : 'bg-violet-500 text-white hover:bg-violet-600 shadow-violet-500/20'
-                              }`}
-                              style={{ 
-                                left: `${leftPercent}%`, 
-                                width: `${widthPercent}%` 
-                              }}
-                              onClick={() => toggleComplete(event.planId, event.date)}
-                              title={`${event.title} (${event.startTime.slice(0, 5)} - ${event.endTime.slice(0, 5)})`}
-                            >
-                              <div className="flex flex-col min-w-0 w-full">
-                                <div className="flex items-center justify-between gap-2">
-                                  <div className="flex items-center gap-1.5 min-w-0">
-                                    <span className={`text-[10px] font-bold truncate ${event.isCompleted ? 'text-brand-green line-through' : 'text-white'}`}>
-                                      {event.title}
-                                    </span>
-                                    <span className={`text-[7px] font-black uppercase tracking-tighter px-1 rounded-sm flex-shrink-0 ${
-                                      event.isCompleted 
-                                        ? 'bg-brand-green/20 text-brand-green' 
-                                        : 'bg-white/20 text-white border border-white/30'
-                                    }`}>
-                                      {event.type}
-                                    </span>
-                                  </div>
-                                  {event.isCompleted && <i className="fa-solid fa-check text-[8px] text-brand-green"></i>}
-                                </div>
-                                <span className={`text-[8px] truncate ${event.isCompleted ? 'text-brand-green/70' : 'text-white/80'}`}>
-                                  {event.location || event.startTime.slice(0, 5)}
+                        return (
+                          <div 
+                            key={`${event.planId}-${idx}`}
+                            className={`absolute left-0 right-0 rounded-md border shadow-sm cursor-pointer transition-all flex flex-col px-2 py-1 overflow-hidden group/item ${
+                              event.isCompleted 
+                                ? 'bg-brand-green/5 border-brand-green/10 hover:bg-brand-green/10' 
+                                : 'bg-violet-500 border-violet-600 text-white hover:bg-violet-600 shadow-sm shadow-violet-500/10'
+                            }`}
+                            style={{ 
+                              top: `${topPercent}%`, 
+                              height: `${heightPercent}%`,
+                              minHeight: '32px'
+                            }}
+                            onClick={() => toggleComplete(event.planId, event.date)}
+                          >
+                            <div className="flex items-center justify-between mb-0.5">
+                              <div className="flex items-center gap-1.5 min-w-0">
+                                <span className={`text-[9px] font-black truncate uppercase tracking-tighter ${event.isCompleted ? 'text-brand-green line-through' : 'text-white'}`}>
+                                  {event.title}
+                                </span>
+                                <span className={`text-[6px] font-black uppercase tracking-tighter px-0.5 rounded-[2px] flex-shrink-0 ${
+                                  event.isCompleted 
+                                    ? 'bg-brand-green/20 text-brand-green' 
+                                    : 'bg-white/20 text-white border border-white/20'
+                                }`}>
+                                  {event.type.slice(0, 3)}
                                 </span>
                               </div>
+                              {event.isCompleted && <i className="fa-solid fa-check-circle text-[8px] text-brand-green"></i>}
+                            </div>
+                            
+                            <div className={`flex items-center gap-2 ${event.isCompleted ? 'text-gray-400' : 'text-white/90'}`}>
+                              <p className="text-[8px] font-bold flex items-center gap-1 min-w-0">
+                                <i className="fa-solid fa-location-dot text-[7px] opacity-70"></i>
+                                <span className="truncate">{event.location || 'Campus'}</span>
+                              </p>
+                              <span className="text-[7px] font-mono opacity-70 ml-auto flex-shrink-0">
+                                {event.startTime.slice(0, 5)}-{event.endTime.slice(0, 5)}
+                              </span>
                             </div>
                           </div>
-                        </div>
-                      );
-                    })}
+                        );
+                      })}
+                    </div>
                   </div>
                 </div>
+              ) : selectedDayActivity.length > 0 ? (
+                <div className="space-y-2 overflow-y-auto pr-1">
+                  {selectedDayActivity.map(course => (
+                    <Link
+                      key={course.id}
+                      href={`/courses/${course.id}`}
+                      className="flex items-center gap-2 p-2 rounded-lg bg-gray-50 hover:bg-violet-50 transition-all group/item"
+                    >
+                      <div className={`w-1.5 h-6 rounded-full flex-shrink-0 ${
+                        course.status === 'completed' ? 'bg-brand-green' : 'bg-brand-blue'
+                      }`}></div>
+                      <div className="min-w-0 flex-grow">
+                        <p className="text-xs font-bold text-gray-900 truncate group-hover/item:text-violet-600 transition-colors">
+                          {course.title}
+                        </p>
+                        <p className="text-[9px] text-gray-400 font-mono uppercase tracking-wider">
+                          {course.university} • {course.courseCode}
+                        </p>
+                      </div>
+                      <span className={`text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded flex-shrink-0 ${
+                        course.status === 'completed' 
+                          ? 'bg-brand-green/10 text-brand-green' 
+                          : 'bg-brand-blue/10 text-brand-blue'
+                      }`}>
+                        {course.progress}%
+                      </span>
+                    </Link>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex-grow flex flex-col items-center justify-center text-center">
+                  <i className="fa-solid fa-calendar-day text-gray-100 text-4xl mb-4"></i>
+                  <p className="text-xs text-gray-400 font-mono italic">
+                    {dict.calendar_no_events}
+                  </p>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="h-full flex flex-col items-center justify-center text-center py-4">
+              <i className="fa-regular fa-calendar-check text-gray-200 text-3xl mb-4"></i>
+              <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">
+                {dict.calendar_events}
+              </p>
+              {plans.length > 0 && (
+                <p className="text-[9px] text-violet-400 mt-2 font-black">
+                  {plans.length} {dict.calendar_courses_scheduled || "plans active"}
+                </p>
+              )}
+            </div>
+          )}
+        </div>
               ) : selectedDayActivity.length > 0 ? (
                 <div className="space-y-2 max-h-40 overflow-y-auto">
                   {selectedDayActivity.map(course => (
