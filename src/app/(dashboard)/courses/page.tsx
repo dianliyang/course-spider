@@ -164,20 +164,28 @@ async function fetchCourses(
     .select(selectString, { count: 'exact' })
     .eq('is_hidden', false);
 
+  // Parallelize hidden course and field filter queries
+  const needsHiddenFilter = !enrolledOnly && !!userId;
+  const needsFieldFilter = fields.length > 0;
+
+  const [hiddenResult, fieldFilterResult] = await Promise.all([
+    needsHiddenFilter
+      ? supabase.from('user_courses').select('course_id').eq('user_id', userId!).eq('status', 'hidden')
+      : Promise.resolve({ data: null }),
+    needsFieldFilter
+      ? supabase.from('fields').select('course_fields(course_id)').in('name', fields)
+      : Promise.resolve({ data: null }),
+  ]);
+
   if (enrolledOnly) {
     if (!userId) return { items: [], total: 0, pages: 0 };
     supabaseQuery = supabaseQuery.eq('user_courses.user_id', userId);
     supabaseQuery = supabaseQuery.neq('user_courses.status', 'hidden');
-  } else if (userId) {
-     const { data: hiddenData } = await supabase
-       .from('user_courses')
-       .select('course_id')
-       .eq('user_id', userId)
-       .eq('status', 'hidden');
-     const hiddenIds = hiddenData?.map(h => h.course_id) || [];
-     if (hiddenIds.length > 0) {
-        supabaseQuery = supabaseQuery.not('id', 'in', `(${hiddenIds.join(',')})`);
-     }
+  } else if (needsHiddenFilter) {
+    const hiddenIds = hiddenResult.data?.map(h => h.course_id) || [];
+    if (hiddenIds.length > 0) {
+      supabaseQuery = supabaseQuery.not('id', 'in', `(${hiddenIds.join(',')})`);
+    }
   }
 
   if (query) {
@@ -188,16 +196,10 @@ async function fetchCourses(
     supabaseQuery = supabaseQuery.in('university', universities);
   }
 
-  if (fields.length > 0) {
-    // Keep this as is for now as it's efficient enough with a small set of IDs
-    const { data: fieldData } = await supabase
-      .from('fields')
-      .select('course_fields(course_id)')
-      .in('name', fields);
-    
-    const fieldCourseIds = (fieldData || [])
+  if (needsFieldFilter) {
+    const fieldCourseIds = (fieldFilterResult.data || [])
       .flatMap(f => (f.course_fields as { course_id: number }[] | null || []).map(cf => cf.course_id));
-    
+
     if (fieldCourseIds.length === 0) return { items: [], total: 0, pages: 0 };
     supabaseQuery = supabaseQuery.in('id', fieldCourseIds);
   }

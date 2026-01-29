@@ -72,55 +72,79 @@ export async function POST(request: Request) {
       }
     }
 
-    // Process semesters and enrollments
+    // Collect all semesters, course-semester links, and enrollments for batch processing
+    const courseMap = new Map(
+      (upsertedCourses || []).map(c => [`${c.university}-${c.course_code}`, c])
+    );
+
+    const uniqueSemesters = new Map<string, { year: number; term: string }>();
+    const semesterCourseLinks: { semKey: string; courseId: number }[] = [];
+    const enrollments: Record<string, unknown>[] = [];
+    const now = new Date().toISOString();
+
     for (const course of courses) {
-      const dbCourse = upsertedCourses?.find(c => c.university === course.university && c.course_code === course.courseCode);
+      const dbCourse = courseMap.get(`${course.university}-${course.courseCode}`);
       if (!dbCourse) continue;
 
       const c = course as ImportRequest & { semester?: string; score?: number | string };
 
-      // 1. Connect Semester
-      const semesterStr = c.semester;
-      if (semesterStr) {
-        const parts = semesterStr.split(' ');
+      // Collect semester data
+      if (c.semester) {
+        const parts = c.semester.split(' ');
         if (parts.length >= 2) {
-          const yearRange = parts[0];
+          const year = parseInt(parts[0].split('-')[0]);
           const term = parts[1];
-          const year = parseInt(yearRange.split('-')[0]); 
-
-          // Upsert semester
-          const { data: semData } = await adminSupabase
-            .from('semesters')
-            .upsert({ year, term }, { onConflict: 'year,term' })
-            .select('id')
-            .single();
-
-          if (semData) {
-            await adminSupabase
-              .from('course_semesters')
-              .upsert({ course_id: dbCourse.id, semester_id: semData.id }, { onConflict: 'course_id,semester_id' });
-          }
+          const semKey = `${year}-${term}`;
+          uniqueSemesters.set(semKey, { year, term });
+          semesterCourseLinks.push({ semKey, courseId: dbCourse.id });
         }
       }
 
-      // 2. Automatic Enrollment if score exists
-      const scoreValue = c.score;
-      if (scoreValue !== undefined) {
-        const score = typeof scoreValue === 'string' ? parseFloat(scoreValue) : scoreValue;
-        const gpa = score >= 60 ? (score / 20).toFixed(2) : "0.00";
-        
-        await adminSupabase
-          .from('user_courses')
-          .upsert({
-            user_id: user.id,
-            course_id: dbCourse.id,
-            status: 'completed',
-            progress: 100,
-            score: score,
-            gpa: parseFloat(gpa),
-            updated_at: new Date().toISOString()
-          }, { onConflict: 'user_id,course_id' });
+      // Collect enrollment data
+      if (c.score !== undefined) {
+        const score = typeof c.score === 'string' ? parseFloat(c.score) : c.score;
+        enrollments.push({
+          user_id: user.id,
+          course_id: dbCourse.id,
+          status: 'completed',
+          progress: 100,
+          score,
+          gpa: parseFloat(score >= 60 ? (score / 20).toFixed(2) : "0.00"),
+          updated_at: now
+        });
       }
+    }
+
+    // Batch upsert semesters
+    if (uniqueSemesters.size > 0) {
+      const { data: semData } = await adminSupabase
+        .from('semesters')
+        .upsert(Array.from(uniqueSemesters.values()), { onConflict: 'year,term' })
+        .select('id, year, term');
+
+      // Batch upsert course-semester links
+      if (semData && semesterCourseLinks.length > 0) {
+        const semIdMap = new Map(semData.map(s => [`${s.year}-${s.term}`, s.id]));
+        const links = semesterCourseLinks
+          .map(({ semKey, courseId }) => {
+            const semesterId = semIdMap.get(semKey);
+            return semesterId ? { course_id: courseId, semester_id: semesterId } : null;
+          })
+          .filter((l): l is { course_id: number; semester_id: number } => l !== null);
+
+        if (links.length > 0) {
+          await adminSupabase
+            .from('course_semesters')
+            .upsert(links, { onConflict: 'course_id,semester_id' });
+        }
+      }
+    }
+
+    // Batch upsert enrollments
+    if (enrollments.length > 0) {
+      await adminSupabase
+        .from('user_courses')
+        .upsert(enrollments, { onConflict: 'user_id,course_id' });
     }
 
     return NextResponse.json({ 

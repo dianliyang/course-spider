@@ -7,21 +7,20 @@ import LogoutButton from "@/components/layout/LogoutButton";
 export const dynamic = "force-dynamic";
 
 export default async function ProfilePage() {
-  const [user, lang] = await Promise.all([getUser(), getLanguage()]);
-  const dict = await getDictionary(lang);
-  
+  const [user, lang, supabase] = await Promise.all([getUser(), getLanguage(), createClient()]);
+
+  // Parallelize dictionary loading with initial DB query
+  const [dict, { data: enrolledData }] = await Promise.all([
+    getDictionary(lang),
+    user
+      ? supabase.from('user_courses').select('course_id, status, updated_at').eq('user_id', user.id).neq('status', 'hidden')
+      : Promise.resolve({ data: null }),
+  ]);
+
   if (!user) return <div className="p-10 text-center font-mono">{dict.dashboard.profile.user_not_found}</div>;
 
   const email = user.email;
   const name = user.user_metadata?.full_name || email?.split('@')[0] || "User";
-  const supabase = await createClient();
-
-  // 1. Fetch user's enrolled courses basic info
-  const { data: enrolledData } = await supabase
-    .from('user_courses')
-    .select('course_id, status, updated_at')
-    .eq('user_id', user.id)
-    .neq('status', 'hidden');
     
   const enrolledIds = enrolledData?.map(r => r.course_id) || [];
   const statusCounts: Record<string, number> = {};
@@ -86,7 +85,7 @@ export default async function ProfilePage() {
             <p className="text-xl text-gray-400 font-medium tracking-tight">{email}</p>
             <div className="flex items-center gap-6 mt-4 pt-4">
               <div className="flex items-center gap-2 text-sm font-bold text-gray-600">
-                <i className="fa-regular fa-clock text-brand-blue"></i>
+                <i className="fa-solid fa-clock text-brand-blue"></i>
                 {dict.dashboard.profile.last_active} {lastActiveDate ? lastActiveDate.toLocaleDateString(lang, { month: 'short', day: 'numeric' }) : dict.dashboard.profile.never}
               </div>
               <div className="flex items-center gap-2 text-sm font-bold text-gray-600">

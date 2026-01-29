@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 interface PaginationProps {
@@ -11,16 +12,19 @@ export default function Pagination({ totalPages, currentPage }: PaginationProps)
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  if (totalPages <= 1) return null;
-
-  const updatePage = (page: number) => {
+  const updatePage = useCallback((page: number) => {
     const params = new URLSearchParams(searchParams.toString());
     params.set("page", page.toString());
     router.push(`?${params.toString()}`, { scroll: true });
-  };
+  }, [searchParams, router]);
 
-  const pages = Array.from({ length: totalPages }, (_, i) => i + 1)
-    .filter(p => p === 1 || p === totalPages || Math.abs(p - currentPage) <= 2);
+  const pages = useMemo(() =>
+    Array.from({ length: totalPages }, (_, i) => i + 1)
+      .filter(p => p === 1 || p === totalPages || Math.abs(p - currentPage) <= 2),
+    [totalPages, currentPage]
+  );
+
+  if (totalPages <= 1) return null;
 
   return (
     <div className="flex justify-center items-center gap-2 mt-12 flex-wrap">

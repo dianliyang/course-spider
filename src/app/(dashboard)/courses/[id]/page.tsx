@@ -65,7 +65,7 @@ async function CourseDetailData({ id, dict }: { id: string; dict: Dictionary['da
     .from("courses")
     .select(
       `
-      *,
+      id, university, course_code, title, units, url, description, details, department, corequisites, level, difficulty, popularity, workload, is_hidden, is_internal,
       fields:course_fields(fields(name)),
       semesters:course_semesters(semesters(term, year))
     `

@@ -218,13 +218,14 @@ export async function incrementPopularity(courseId: number): Promise<void> {
 }
 
 export function formatUniversityName(name: string): string {
-  const n = name.toLowerCase();
-  if (n === 'mit') return 'MIT';
-  if (n === 'stanford') return 'Stanford';
-  if (n === 'cmu') return 'CMU';
-  if (n === 'ucb') return 'UC Berkeley';
-  if (n === 'cau') return 'CAU Kiel';
+  const n = name.toLowerCase().trim();
+  if (n === 'mit' || n === 'massachusetts institute of technology') return 'MIT';
+  if (n === 'stanford' || n === 'stanford university') return 'Stanford';
+  if (n === 'cmu' || n === 'carnegie mellon' || n === 'carnegie mellon university' || n === 'carnegie-mellon') return 'CMU';
+  if (n === 'ucb' || n === 'uc berkeley' || n === 'university of california berkeley' || n === 'university of california, berkeley') return 'UC Berkeley';
+  if (n === 'cau' || n === 'cau kiel' || n === 'christian-albrechts-universität') return 'CAU Kiel';
   if (n === 'ncu') return 'NCU';
+  if (n === 'nju') return 'NJU';
   return name.charAt(0).toUpperCase() + name.slice(1);
 }
 

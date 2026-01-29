@@ -73,29 +73,32 @@ async function fetchCourses(
     `, { count: 'exact' })
     .eq('is_hidden', false);
 
+  // Parallelize user course status and field filter queries
+  const needsUserCourses = userId && (enrolledOnly || true); // always need hidden filter for logged-in users
+  const needsFieldFilter = fields.length > 0;
+
+  const [userCoursesResult, fieldFilterResult] = await Promise.all([
+    needsUserCourses
+      ? supabase.from('user_courses').select('course_id, status').eq('user_id', userId)
+      : Promise.resolve({ data: null }),
+    needsFieldFilter
+      ? supabase.from('fields').select('course_fields(course_id)').in('name', fields)
+      : Promise.resolve({ data: null }),
+  ]);
+
   if (enrolledOnly) {
     if (!userId) return { items: [], total: 0, pages: 0 };
-    const { data: enrolledIds } = await supabase
-      .from('user_courses')
-      .select('course_id')
-      .eq('user_id', userId)
-      .neq('status', 'hidden');
-    
-    const ids = (enrolledIds || []).map(r => r.course_id);
-    if (ids.length === 0) return { items: [], total: 0, pages: 0 };
-    supabaseQuery = supabaseQuery.in('id', ids);
+    const enrolledIds = (userCoursesResult.data || [])
+      .filter(r => r.status !== 'hidden')
+      .map(r => r.course_id);
+    if (enrolledIds.length === 0) return { items: [], total: 0, pages: 0 };
+    supabaseQuery = supabaseQuery.in('id', enrolledIds);
   } else if (userId) {
-    // Exclude hidden courses for logged-in users when browsing all courses
-    const { data: hiddenIds } = await supabase
-      .from('user_courses')
-      .select('course_id')
-      .eq('user_id', userId)
-      .eq('status', 'hidden');
-    
-    const idsToExclude = (hiddenIds || []).map(r => r.course_id);
-    console.log(`[Courses API] User ${userId} has hidden courses:`, idsToExclude);
-    if (idsToExclude.length > 0) {
-      supabaseQuery = supabaseQuery.not('id', 'in', `(${idsToExclude.join(',')})`);
+    const hiddenIds = (userCoursesResult.data || [])
+      .filter(r => r.status === 'hidden')
+      .map(r => r.course_id);
+    if (hiddenIds.length > 0) {
+      supabaseQuery = supabaseQuery.not('id', 'in', `(${hiddenIds.join(',')})`);
     }
   }
 
@@ -107,16 +110,10 @@ async function fetchCourses(
     supabaseQuery = supabaseQuery.in('university', universities);
   }
 
-  if (fields.length > 0) {
-    // Filter courses that have at least one of the selected fields
-    const { data: fieldData } = await supabase
-      .from('fields')
-      .select('course_fields(course_id)')
-      .in('name', fields);
-    
-    const fieldCourseIds = (fieldData || [])
+  if (needsFieldFilter) {
+    const fieldCourseIds = (fieldFilterResult.data || [])
       .flatMap(f => (f.course_fields as { course_id: number }[] | null || []).map(cf => cf.course_id));
-    
+
     if (fieldCourseIds.length === 0) return { items: [], total: 0, pages: 0 };
     supabaseQuery = supabaseQuery.in('id', fieldCourseIds);
   }

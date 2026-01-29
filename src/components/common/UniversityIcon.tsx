@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback, useMemo, memo } from "react";
 import Image from "next/image";
-import { getUniversityLogoBase } from "@/lib/supabase/storage";
+import { getUniversityLogoUrl, getUniversityLogoBase } from "@/lib/supabase/storage";
 
 interface UniversityIconProps {
   name: string;
@@ -10,41 +10,49 @@ interface UniversityIconProps {
   className?: string;
 }
 
-export default function UniversityIcon({ name, size = 40, className = "" }: UniversityIconProps) {
+const EXTENSIONS = ['.png', '.jpg', '.jpeg', '.svg', '.webp'] as const;
+
+function getInitials(str: string) {
+  if (str === str.toUpperCase() && str.length <= 4) return str;
+  const words = str.split(' ').filter(w => w.length > 0);
+  if (words.length === 1) return words[0].substring(0, 3).toUpperCase();
+  return words.slice(0, 2).map(w => w[0]).join('').toUpperCase();
+}
+
+export default memo(function UniversityIcon({ name, size = 40, className = "" }: UniversityIconProps) {
   const [error, setError] = useState(false);
   const [extIndex, setExtIndex] = useState(0);
   const [prevName, setPrevName] = useState(name);
 
-  // Reset state when name changes - during render as recommended by React docs
   if (name !== prevName) {
     setPrevName(name);
     setError(false);
     setExtIndex(0);
   }
 
-  const extensions = ['.png', '.jpg', '.jpeg', '.svg', '.webp'];
-  const baseLogoUrl = getUniversityLogoBase(name);
-  const currentSrc = `${baseLogoUrl}${extensions[extIndex]}`;
+  // Use known logo URL directly (no probing needed), fall back to extension probing
+  const knownUrl = useMemo(() => getUniversityLogoUrl(name), [name]);
 
-  const handleError = () => {
-    if (extIndex < extensions.length - 1) {
+  const currentSrc = useMemo(() => {
+    if (knownUrl) return knownUrl;
+    const baseLogoUrl = getUniversityLogoBase(name);
+    return `${baseLogoUrl}${EXTENSIONS[extIndex]}`;
+  }, [knownUrl, name, extIndex]);
+
+  const handleError = useCallback(() => {
+    if (knownUrl) {
+      // Known URL failed — skip probing, show fallback directly
+      setError(true);
+    } else if (extIndex < EXTENSIONS.length - 1) {
       setExtIndex(prev => prev + 1);
     } else {
       setError(true);
     }
-  };
-
-  // Generate initials for fallback
-  const getInitials = (str: string) => {
-    if (str === str.toUpperCase() && str.length <= 4) return str;
-    const words = str.split(' ').filter(w => w.length > 0);
-    if (words.length === 1) return words[0].substring(0, 3).toUpperCase();
-    return words.slice(0, 2).map(w => w[0]).join('').toUpperCase();
-  };
+  }, [knownUrl, extIndex]);
 
   if (error) {
     return (
-      <div 
+      <div
         className={`bg-gray-100 text-gray-500 font-black flex items-center justify-center uppercase select-none rounded ${className}`}
         style={{ width: size, height: size, fontSize: Math.max(8, size * 0.35) }}
         title={name}
@@ -57,7 +65,7 @@ export default function UniversityIcon({ name, size = 40, className = "" }: Univ
   return (
     <div className={`relative overflow-hidden rounded ${className}`} style={{ width: size, height: size }}>
       <Image
-        key={currentSrc} // Force re-render on src change
+        key={currentSrc}
         src={currentSrc}
         alt={`${name} logo`}
         width={size}
@@ -68,4 +76,4 @@ export default function UniversityIcon({ name, size = 40, className = "" }: Univ
       />
     </div>
   );
-}
+});
