@@ -102,33 +102,27 @@ async function StudyPlanContent({
     } as EnrolledCourse;
   });
 
-  // Fetch study schedules from database
-  const { data: scheduleRows } = await supabase
-    .from('study_schedules')
+  // Fetch study plans
+  const { data: plans } = await supabase
+    .from('study_plans')
     .select(`
       id,
       course_id,
-      scheduled_date,
-      is_completed,
-      duration_minutes,
+      start_date,
+      end_date,
+      days_of_week,
+      start_time,
+      end_time,
+      location,
       courses(id, title, course_code, university)
     `)
-    .eq('user_id', userId)
-    .order('scheduled_date', { ascending: true });
+    .eq('user_id', userId);
 
-  // Map schedules to a format the calendar can use
-  const schedules = (scheduleRows || []).map((row: any) => ({ // eslint-disable-line @typescript-eslint/no-explicit-any
-    courseId: row.course_id,
-    date: row.scheduled_date,
-    isCompleted: row.is_completed,
-    durationMinutes: row.duration_minutes,
-    course: row.courses ? {
-      id: row.courses.id,
-      title: row.courses.title,
-      courseCode: row.courses.course_code,
-      university: row.courses.university,
-    } : null
-  }));
+  // Fetch study logs (exceptions/completions)
+  const { data: logs } = await supabase
+    .from('study_logs')
+    .select('*')
+    .eq('user_id', userId);
 
   const inProgress = enrolledCourses.filter(c => c.status === 'in_progress');
   const completed = enrolledCourses.filter(c => c.status === 'completed');
@@ -173,7 +167,12 @@ async function StudyPlanContent({
           </div>
 
           <div className="pl-0 md:pl-20">
-            <StudyCalendar courses={enrolledCourses} schedules={schedules} dict={dict.dashboard.roadmap} />
+            <StudyCalendar 
+              courses={enrolledCourses} 
+              plans={plans || []} 
+              logs={logs || []} 
+              dict={dict.dashboard.roadmap} 
+            />
           </div>
         </section>
 

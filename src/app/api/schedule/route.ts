@@ -3,19 +3,20 @@ import { revalidatePath } from 'next/cache';
 import { getUser, createClient } from '@/lib/supabase/server';
 
 interface ScheduleRequest {
-  action: 'generate' | 'add' | 'remove' | 'toggle_complete' | 'get';
+  action: 'generate' | 'add_plan' | 'remove_plan' | 'toggle_complete' | 'get';
+  // For add_plan
   courseId?: number;
-  date?: string; // ISO date string
-  durationMinutes?: number;
+  startDate?: string;
+  endDate?: string;
+  daysOfWeek?: number[];
+  startTime?: string;
+  endTime?: string;
+  location?: string;
+  // For remove_plan
+  planId?: number;
+  // For toggle_complete
+  date?: string; // The specific date of the instance
   notes?: string;
-}
-
-interface ScheduleEntry {
-  course_id: number;
-  scheduled_date: string;
-  is_completed: boolean;
-  duration_minutes: number;
-  notes: string | null;
 }
 
 export async function POST(request: Request) {
@@ -35,9 +36,9 @@ export async function POST(request: Request) {
 
     const supabase = await createClient();
 
-    // Generate study plan for in-progress courses
+    // Generate default study plans for in-progress courses
     if (action === 'generate') {
-      // Get all in-progress courses with their workload from courses table
+      // Get all in-progress courses
       const { data: userCourses, error: fetchError } = await supabase
         .from('user_courses')
         .select(`
@@ -50,213 +51,156 @@ export async function POST(request: Request) {
       if (fetchError) throw fetchError;
 
       if (!userCourses || userCourses.length === 0) {
-        return NextResponse.json({ success: true, message: "No in-progress courses to schedule", count: 0 });
+        return NextResponse.json({ success: true, message: "No in-progress courses to schedule" });
       }
 
-      // Delete existing future schedules for this user
+      // Clear existing plans
+      await supabase.from('study_plans').delete().eq('user_id', userId);
+      await supabase.from('study_logs').delete().eq('user_id', userId);
+
+      // Simple heuristic: Distribute courses across the week
+      // Pattern A: Mon, Wed, Fri
+      // Pattern B: Tue, Thu, Sat
+      // Pattern C: Sun (or stacked on other days)
+      
       const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const todayStr = today.toISOString().split('T')[0];
+      const startDate = today.toISOString().split('T')[0];
+      const endDateDate = new Date(today);
+      endDateDate.setMonth(today.getMonth() + 4); // 4 months duration
+      const endDate = endDateDate.toISOString().split('T')[0];
 
-      await supabase
-        .from('study_schedules')
-        .delete()
-        .eq('user_id', userId)
-        .gte('scheduled_date', todayStr);
+      const patterns = [
+        { days: [1, 3, 5], start: '19:00:00', end: '21:00:00' }, // MWF Evening
+        { days: [2, 4, 6], start: '19:00:00', end: '21:00:00' }, // TTS Evening
+        { days: [1, 3, 5], start: '07:00:00', end: '09:00:00' }, // MWF Morning
+        { days: [2, 4, 6], start: '07:00:00', end: '09:00:00' }, // TTS Morning
+        { days: [0],       start: '14:00:00', end: '17:00:00' }, // Sun Afternoon
+      ];
 
-      // Constants for schedule generation
-      const DEFAULT_SESSIONS = 20; // Default if workload not specified
-      const SESSION_DURATION_MINUTES = 120; // Each study session is 2 hours
-      const MAX_COURSES_PER_DAY = 2;
-      const MAX_SESSIONS_PER_COURSE_PER_WEEK = 2; // Each course at most 2 times per week
-      const MAX_SCHEDULE_DAYS = 365;
-
-      // Create sessions for each course based on workload field
-      interface CourseSession {
-        courseId: number;
-        sessionsRemaining: number;
-        sessionsThisWeek: number;
-      }
-
-      const courseSessions: CourseSession[] = userCourses.map((uc: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
-        // Get sessions from course workload field (workload = number of sessions)
-        let sessions = DEFAULT_SESSIONS;
-        const course = uc.courses as { workload?: string } | null;
-        if (course?.workload) {
-          const parsed = parseInt(course.workload);
-          if (!isNaN(parsed) && parsed > 0) {
-            sessions = parsed;
-          }
-        }
+      const newPlans = userCourses.map((uc, index) => {
+        const pattern = patterns[index % patterns.length];
         return {
-          courseId: uc.course_id,
-          sessionsRemaining: sessions,
-          sessionsThisWeek: 0
+          user_id: userId,
+          course_id: uc.course_id,
+          start_date: startDate,
+          end_date: endDate,
+          days_of_week: pattern.days,
+          start_time: pattern.start,
+          end_time: pattern.end,
+          location: 'Home',
         };
       });
 
-      const scheduleEntries: ScheduleEntry[] = [];
-      let dayOffset = 0;
-      let currentCourseIndex = 0; // For round-robin rotation
-      let currentWeekStart = 0; // Track week boundaries
-
-      while (courseSessions.some(cs => cs.sessionsRemaining > 0) && dayOffset < MAX_SCHEDULE_DAYS) {
-        const studyDate = new Date(today);
-        studyDate.setDate(today.getDate() + dayOffset);
-        const dateStr = studyDate.toISOString().split('T')[0];
-
-        // Check if we've entered a new week (every 7 days from start)
-        if (dayOffset >= currentWeekStart + 7) {
-          currentWeekStart = dayOffset;
-          // Reset weekly counters
-          courseSessions.forEach(cs => cs.sessionsThisWeek = 0);
-        }
-
-        let coursesScheduledToday = 0;
-
-        // Round-robin through courses
-        const startIndex = currentCourseIndex;
-        let checkedAll = false;
-
-        while (coursesScheduledToday < MAX_COURSES_PER_DAY && !checkedAll) {
-          const course = courseSessions[currentCourseIndex];
-
-          // Check if this course can be scheduled
-          if (course.sessionsRemaining > 0 && course.sessionsThisWeek < MAX_SESSIONS_PER_COURSE_PER_WEEK) {
-            scheduleEntries.push({
-              course_id: course.courseId,
-              scheduled_date: dateStr,
-              is_completed: false,
-              duration_minutes: SESSION_DURATION_MINUTES,
-              notes: null
-            });
-            course.sessionsRemaining--;
-            course.sessionsThisWeek++;
-            coursesScheduledToday++;
-          }
-
-          // Move to next course (round-robin)
-          currentCourseIndex = (currentCourseIndex + 1) % courseSessions.length;
-
-          // Check if we've gone through all courses
-          if (currentCourseIndex === startIndex) {
-            checkedAll = true;
-          }
-        }
-
-        // Skip next day (rest day) - alternating pattern
-        dayOffset += 2;
-      }
-
-      // Insert all schedule entries
-      if (scheduleEntries.length > 0) {
+      if (newPlans.length > 0) {
         const { error: insertError } = await supabase
-          .from('study_schedules')
-          .insert(scheduleEntries.map(entry => ({
-            user_id: userId,
-            ...entry
-          })));
-
+          .from('study_plans')
+          .insert(newPlans);
+        
         if (insertError) throw insertError;
       }
 
       revalidatePath('/study-plan');
-      return NextResponse.json({ 
-        success: true, 
-        message: `Generated schedule for ${userCourses.length} courses`,
-        count: scheduleEntries.length
-      });
+      return NextResponse.json({ success: true, message: `Generated plans for ${userCourses.length} courses` });
     }
 
-    // Get all schedules for user
+    // Get plans and logs
     if (action === 'get') {
-      const { data: schedules, error: fetchError } = await supabase
-        .from('study_schedules')
+      const { data: plans, error: plansError } = await supabase
+        .from('study_plans')
         .select(`
-          id,
-          course_id,
-          scheduled_date,
-          is_completed,
-          duration_minutes,
-          notes,
+          *,
           courses(id, title, course_code, university)
         `)
-        .eq('user_id', userId)
-        .order('scheduled_date', { ascending: true });
+        .eq('user_id', userId);
 
-      if (fetchError) throw fetchError;
+      if (plansError) throw plansError;
 
-      return NextResponse.json({ success: true, schedules: schedules || [] });
+      const { data: logs, error: logsError } = await supabase
+        .from('study_logs')
+        .select('*')
+        .eq('user_id', userId);
+
+      if (logsError) throw logsError;
+
+      return NextResponse.json({ success: true, plans: plans || [], logs: logs || [] });
     }
 
-    // Add a single schedule entry
-    if (action === 'add') {
-      const { courseId, date, durationMinutes = 60, notes } = body;
+    // Add a manual plan
+    if (action === 'add_plan') {
+      const { courseId, startDate, endDate, daysOfWeek, startTime, endTime, location } = body;
       
-      if (!courseId || !date) {
-        return NextResponse.json({ error: "courseId and date are required" }, { status: 400 });
+      if (!courseId || !startDate || !endDate || !daysOfWeek) {
+        return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
       }
 
       const { error } = await supabase
-        .from('study_schedules')
-        .upsert({
+        .from('study_plans')
+        .insert({
           user_id: userId,
           course_id: courseId,
-          scheduled_date: date,
-          duration_minutes: durationMinutes,
-          notes: notes || null,
-          updated_at: new Date().toISOString()
+          start_date: startDate,
+          end_date: endDate,
+          days_of_week: daysOfWeek,
+          start_time: startTime || '09:00:00',
+          end_time: endTime || '11:00:00',
+          location: location || 'Home'
         });
 
       if (error) throw error;
       revalidatePath('/study-plan');
-      return NextResponse.json({ success: true, message: "Schedule added" });
+      return NextResponse.json({ success: true, message: "Plan created" });
     }
 
-    // Remove a schedule entry
-    if (action === 'remove') {
-      const { courseId, date } = body;
-      
-      if (!courseId || !date) {
-        return NextResponse.json({ error: "courseId and date are required" }, { status: 400 });
-      }
+    // Remove a plan
+    if (action === 'remove_plan') {
+      const { planId } = body;
+      if (!planId) return NextResponse.json({ error: "planId required" }, { status: 400 });
 
       const { error } = await supabase
-        .from('study_schedules')
+        .from('study_plans')
         .delete()
-        .match({ user_id: userId, course_id: courseId, scheduled_date: date });
+        .eq('id', planId)
+        .eq('user_id', userId);
 
       if (error) throw error;
       revalidatePath('/study-plan');
-      return NextResponse.json({ success: true, message: "Schedule removed" });
+      return NextResponse.json({ success: true, message: "Plan removed" });
     }
 
-    // Toggle completion status
+    // Toggle completion (Log entry)
     if (action === 'toggle_complete') {
-      const { courseId, date } = body;
-      
-      if (!courseId || !date) {
-        return NextResponse.json({ error: "courseId and date are required" }, { status: 400 });
-      }
+      const { planId, date } = body;
+      if (!planId || !date) return NextResponse.json({ error: "planId and date required" }, { status: 400 });
 
-      // First get current status
-      const { data: current, error: fetchError } = await supabase
-        .from('study_schedules')
-        .select('is_completed')
-        .match({ user_id: userId, course_id: courseId, scheduled_date: date })
+      // Check if log exists
+      const { data: existingLog, error: fetchError } = await supabase
+        .from('study_logs')
+        .select('id, is_completed')
+        .match({ user_id: userId, plan_id: planId, log_date: date })
         .single();
 
-      if (fetchError) throw fetchError;
+      if (fetchError && fetchError.code !== 'PGRST116') throw fetchError; // Ignore not found error
 
-      const { error } = await supabase
-        .from('study_schedules')
-        .update({ 
-          is_completed: !current?.is_completed,
-          updated_at: new Date().toISOString()
-        })
-        .match({ user_id: userId, course_id: courseId, scheduled_date: date });
+      if (existingLog) {
+        // Toggle
+        const { error } = await supabase
+          .from('study_logs')
+          .update({ is_completed: !existingLog.is_completed, updated_at: new Date().toISOString() })
+          .eq('id', existingLog.id);
+        if (error) throw error;
+      } else {
+        // Create new log as completed
+        const { error } = await supabase
+          .from('study_logs')
+          .insert({
+            user_id: userId,
+            plan_id: planId,
+            log_date: date,
+            is_completed: true
+          });
+        if (error) throw error;
+      }
 
-      if (error) throw error;
       revalidatePath('/study-plan');
       return NextResponse.json({ success: true, message: "Completion toggled" });
     }
@@ -269,36 +213,22 @@ export async function POST(request: Request) {
   }
 }
 
-// GET method for fetching schedules
 export async function GET() {
   const user = await getUser();
-  
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  try {
-    const supabase = await createClient();
-    
-    const { data: schedules, error } = await supabase
-      .from('study_schedules')
-      .select(`
-        id,
-        course_id,
-        scheduled_date,
-        is_completed,
-        duration_minutes,
-        notes,
-        courses(id, title, course_code, university)
-      `)
-      .eq('user_id', user.id)
-      .order('scheduled_date', { ascending: true });
+  const supabase = await createClient();
+  const userId = user.id;
 
-    if (error) throw error;
+  const { data: plans } = await supabase
+    .from('study_plans')
+    .select(`*, courses(id, title, course_code, university)`)
+    .eq('user_id', userId);
 
-    return NextResponse.json({ success: true, schedules: schedules || [] });
-  } catch (error) {
-    console.error("Schedule fetch error:", error);
-    return NextResponse.json({ error: "Failed to fetch schedules" }, { status: 500 });
-  }
+  const { data: logs } = await supabase
+    .from('study_logs')
+    .select('*')
+    .eq('user_id', userId);
+
+  return NextResponse.json({ success: true, plans: plans || [], logs: logs || [] });
 }

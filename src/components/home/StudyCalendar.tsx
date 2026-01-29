@@ -12,26 +12,51 @@ interface EnrolledCourse extends Course {
   updated_at: string;
 }
 
-interface ScheduleEntry {
-  courseId: number;
-  date: string;
-  isCompleted: boolean;
-  durationMinutes: number;
-  course: {
+interface StudyPlan {
+  id: number;
+  course_id: number;
+  start_date: string;
+  end_date: string;
+  days_of_week: number[];
+  start_time: string;
+  end_time: string;
+  location: string | null;
+  courses: {
     id: number;
     title: string;
-    courseCode: string;
+    course_code: string;
     university: string;
   } | null;
 }
 
+interface StudyLog {
+  id: number;
+  plan_id: number;
+  log_date: string;
+  is_completed: boolean;
+  notes: string | null;
+}
+
+interface GeneratedEvent {
+  planId: number;
+  courseId: number;
+  date: string;
+  startTime: string;
+  endTime: string;
+  isCompleted: boolean;
+  title: string;
+  courseCode: string;
+  university: string;
+}
+
 interface StudyCalendarProps {
   courses: EnrolledCourse[];
-  schedules: ScheduleEntry[];
+  plans: StudyPlan[];
+  logs: StudyLog[];
   dict: Dictionary['dashboard']['roadmap'];
 }
 
-export default function StudyCalendar({ courses, schedules, dict }: StudyCalendarProps) {
+export default function StudyCalendar({ courses, plans, logs, dict }: StudyCalendarProps) {
   const router = useRouter();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
@@ -58,24 +83,53 @@ export default function StudyCalendar({ courses, schedules, dict }: StudyCalenda
     };
   }, [currentDate]);
 
-  // Group schedules by date (from database)
-  const schedulesByDate = useMemo(() => {
-    const map = new Map<number, ScheduleEntry[]>();
+  // Generate events based on plans for the current month
+  const eventsByDate = useMemo(() => {
+    const map = new Map<number, GeneratedEvent[]>();
     
-    schedules.forEach(schedule => {
-      const date = new Date(schedule.date);
-      if (date.getFullYear() === year && date.getMonth() === month) {
-        const day = date.getDate();
-        const existing = map.get(day) || [];
-        existing.push(schedule);
-        map.set(day, existing);
-      }
-    });
+    // Helper to check if a date is within range [start, end]
+    const isWithin = (dateStr: string, start: string, end: string) => {
+      return dateStr >= start && dateStr <= end;
+    };
+
+    // Iterate through all days in the month
+    for (let day = 1; day <= daysInMonth; day++) {
+      const date = new Date(year, month, day);
+      const dateStr = date.toISOString().split('T')[0]; // YYYY-MM-DD
+      const dayOfWeek = date.getDay(); // 0-6
+
+      plans.forEach(plan => {
+        if (
+          plan.courses &&
+          isWithin(dateStr, plan.start_date, plan.end_date) &&
+          plan.days_of_week.includes(dayOfWeek)
+        ) {
+          // Check for log override
+          const log = logs.find(l => l.plan_id === plan.id && l.log_date === dateStr);
+          
+          const event: GeneratedEvent = {
+            planId: plan.id,
+            courseId: plan.course_id,
+            date: dateStr,
+            startTime: plan.start_time,
+            endTime: plan.end_time,
+            isCompleted: log ? log.is_completed : false,
+            title: plan.courses.title,
+            courseCode: plan.courses.course_code,
+            university: plan.courses.university
+          };
+
+          const existing = map.get(day) || [];
+          existing.push(event);
+          map.set(day, existing);
+        }
+      });
+    }
     
     return map;
-  }, [schedules, year, month]);
+  }, [plans, logs, year, month, daysInMonth]);
 
-  // Group past activity by date (from enrolled courses)
+  // Group past activity by date (from enrolled courses updated_at) - optional context
   const activityByDate = useMemo(() => {
     const map = new Map<number, EnrolledCourse[]>();
     
@@ -117,17 +171,36 @@ export default function StudyCalendar({ courses, schedules, dict }: StudyCalenda
     }
   };
 
-  // Get data for selected day
-  const selectedDaySchedules = selectedDay ? schedulesByDate.get(selectedDay) || [] : [];
-  const selectedDayActivity = selectedDay ? activityByDate.get(selectedDay) || [] : [];
-  const isSelectedDayScheduled = selectedDay && selectedDaySchedules.length > 0;
-  const isSelectedDayFuture = selectedDay && today ? selectedDay >= today : false;
-  const isSelectedDayRest = isSelectedDayFuture && selectedDaySchedules.length === 0;
+  const toggleComplete = async (planId: number, date: string) => {
+    try {
+      const res = await fetch('/api/schedule', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          action: 'toggle_complete',
+          planId,
+          date
+        })
+      });
+      if (res.ok) {
+        router.refresh();
+      }
+    } catch (e) {
+      console.error('Failed to toggle completion:', e);
+    }
+  };
 
-  // Check if there are in-progress courses but no schedules
+  // Get data for selected day
+  const selectedDayEvents = selectedDay ? eventsByDate.get(selectedDay) || [] : [];
+  const selectedDayActivity = selectedDay ? activityByDate.get(selectedDay) || [] : [];
+  const isSelectedDayScheduled = selectedDay && selectedDayEvents.length > 0;
+  const isSelectedDayFuture = selectedDay && today ? selectedDay >= today : false;
+  const isSelectedDayRest = isSelectedDayFuture && selectedDayEvents.length === 0;
+
+  // Check if there are in-progress courses but no plans
   const inProgressCourses = courses.filter(c => c.status === 'in_progress');
-  const hasSchedules = schedules.length > 0;
-  const needsScheduleGeneration = inProgressCourses.length > 0 && !hasSchedules;
+  const hasPlans = plans.length > 0;
+  const needsScheduleGeneration = inProgressCourses.length > 0 && !hasPlans;
 
   // Generate calendar grid
   const calendarDays = [];
@@ -233,8 +306,9 @@ export default function StudyCalendar({ courses, schedules, dict }: StudyCalenda
               const isSelected = day === selectedDay;
               const isWeekend = (index % 7 === 0) || (index % 7 === 6);
               const isFuture = today ? day >= today : false;
-              const daySchedules = schedulesByDate.get(day) || [];
-              const isScheduledStudyDay = daySchedules.length > 0;
+              
+              const dayEvents = eventsByDate.get(day) || [];
+              const isScheduledStudyDay = dayEvents.length > 0;
               const isRestDay = isFuture && !isScheduledStudyDay && day !== today;
               const pastCourses = activityByDate.get(day) || [];
               const hasPastActivity = pastCourses.length > 0;
@@ -266,7 +340,7 @@ export default function StudyCalendar({ courses, schedules, dict }: StudyCalenda
                   {/* Scheduled study day indicator */}
                   {isScheduledStudyDay && !isSelected && (
                     <div className="absolute bottom-0.5 flex gap-0.5">
-                      {daySchedules.slice(0, 2).map((_, i) => (
+                      {dayEvents.slice(0, 2).map((_, i) => (
                         <div key={i} className="w-1 h-1 rounded-full bg-violet-400"></div>
                       ))}
                     </div>
@@ -322,33 +396,33 @@ export default function StudyCalendar({ courses, schedules, dict }: StudyCalenda
                 </div>
               ) : isSelectedDayScheduled ? (
                 <div className="space-y-2 max-h-40 overflow-y-auto">
-                  {selectedDaySchedules.map((schedule, idx) => (
-                    schedule.course && (
-                      <Link
-                        key={`${schedule.courseId}-${idx}`}
-                        href={`/courses/${schedule.course.id}`}
-                        className="flex items-center gap-2 p-2 rounded-lg bg-gray-50 hover:bg-violet-50 transition-all group/item"
-                      >
-                        <div className={`w-1.5 h-6 rounded-full flex-shrink-0 ${
-                          schedule.isCompleted ? 'bg-brand-green' : 'bg-violet-400'
-                        }`}></div>
-                        <div className="min-w-0 flex-grow">
-                          <p className="text-xs font-bold text-gray-900 truncate group-hover/item:text-violet-600 transition-colors">
-                            {schedule.course.title}
-                          </p>
-                          <p className="text-[9px] text-gray-400 font-mono uppercase tracking-wider">
-                            {schedule.course.university} • {schedule.course.courseCode}
-                          </p>
-                        </div>
-                        <span className={`text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded flex-shrink-0 ${
-                          schedule.isCompleted 
-                            ? 'bg-brand-green/10 text-brand-green' 
-                            : 'bg-violet-100 text-violet-600'
+                  {selectedDayEvents.map((event, idx) => (
+                    <div
+                      key={`${event.planId}-${idx}`}
+                      className="flex items-center gap-2 p-2 rounded-lg bg-gray-50 hover:bg-violet-50 transition-all group/item cursor-pointer"
+                      onClick={() => toggleComplete(event.planId, event.date)}
+                    >
+                      <div className={`w-1.5 h-6 rounded-full flex-shrink-0 transition-colors ${
+                        event.isCompleted ? 'bg-brand-green' : 'bg-violet-400 group-hover/item:bg-violet-500'
+                      }`}></div>
+                      <div className="min-w-0 flex-grow">
+                        <p className={`text-xs font-bold truncate transition-colors ${
+                          event.isCompleted ? 'text-gray-500 line-through' : 'text-gray-900 group-hover/item:text-violet-600'
                         }`}>
-                          {schedule.durationMinutes}m
-                        </span>
-                      </Link>
-                    )
+                          {event.title}
+                        </p>
+                        <p className="text-[9px] text-gray-400 font-mono uppercase tracking-wider">
+                          {event.startTime.slice(0, 5)} - {event.endTime.slice(0, 5)}
+                        </p>
+                      </div>
+                      <div className="flex-shrink-0">
+                        {event.isCompleted ? (
+                          <i className="fa-solid fa-check-circle text-brand-green text-xs"></i>
+                        ) : (
+                          <i className="fa-regular fa-circle text-gray-300 group-hover/item:text-violet-400 text-xs"></i>
+                        )}
+                      </div>
+                    </div>
                   ))}
                 </div>
               ) : selectedDayActivity.length > 0 ? (
@@ -392,9 +466,9 @@ export default function StudyCalendar({ courses, schedules, dict }: StudyCalenda
               <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">
                 {dict.calendar_events}
               </p>
-              {schedules.length > 0 && (
+              {plans.length > 0 && (
                 <p className="text-[9px] text-violet-400 mt-1">
-                  {schedules.length} {dict.calendar_courses_scheduled}
+                  {plans.length} {dict.calendar_courses_scheduled || "plans active"}
                 </p>
               )}
             </div>
