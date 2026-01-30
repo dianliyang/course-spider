@@ -372,7 +372,7 @@ export default function StudyCalendar({ courses, plans, logs, dict }: StudyCalen
         </div>
 
         {/* Right: Selected Day Details */}
-        <div className="flex-grow border-l border-gray-100 pl-4 min-w-0 flex flex-col h-[400px]">
+        <div className="flex-grow border-l border-gray-100 pl-4 min-w-0 flex flex-col">
           {selectedDay ? (
             <div className="animate-in fade-in duration-200 h-full flex flex-col">
               <div className="flex items-center justify-between mb-4">
@@ -380,19 +380,19 @@ export default function StudyCalendar({ courses, plans, logs, dict }: StudyCalen
                   {monthNames[month]} {selectedDay}
                 </span>
                 {isSelectedDayScheduled && (
-                  <span className="text-[9px] font-bold text-violet-600 bg-violet-100 px-2 py-0.5 rounded-full">
+                  <span className="text-[9px] font-bold text-violet-600 bg-violet-50 px-2 py-0.5 rounded-full">
                     <i className="fa-solid fa-clock mr-1"></i>
                     {dict.calendar_study_day}
                   </span>
                 )}
                 {isSelectedDayRest && (
-                  <span className="text-[9px] font-bold text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">
+                  <span className="text-[9px] font-bold text-gray-400 bg-gray-50 px-2 py-0.5 rounded-full">
                     <i className="fa-solid fa-moon mr-1"></i>
                     {dict.calendar_rest_day}
                   </span>
                 )}
               </div>
-              
+
               {isSelectedDayRest ? (
                 <div className="text-center py-6 flex-grow flex flex-col items-center justify-center">
                   <i className="fa-solid fa-spa text-gray-200 text-3xl mb-2"></i>
@@ -401,97 +401,47 @@ export default function StudyCalendar({ courses, plans, logs, dict }: StudyCalen
                   </p>
                 </div>
               ) : isSelectedDayScheduled ? (
-                <div className="flex-grow overflow-y-auto relative border border-gray-50 rounded-xl">
-                  {/* Vertical Timeline Container - Slimmer height */}
-                  <div className="relative min-h-[500px] bg-white">
-                    {/* Time Scale (Left) */}
-                    <div className="absolute left-0 top-0 bottom-0 w-10 border-r border-gray-50 bg-gray-50/30">
-                      {Array.from({ length: 16 }, (_, i) => i + 7).map((h) => ( // 7:00 to 22:00
-                        <div 
-                          key={h} 
-                          className="absolute w-full text-[7px] text-gray-400 font-mono text-center"
-                          style={{ top: `${((h - 7) / 15) * 100}%`, marginTop: '-3.5px' }}
+                <div className="flex-grow overflow-y-auto pr-2">
+                  <div className="space-y-2">
+                    {selectedDayEvents
+                      .slice()
+                      .sort((a, b) => a.startTime.localeCompare(b.startTime))
+                      .map((event, idx) => (
+                        <div
+                          key={`${event.planId}-${idx}`}
+                          className={`rounded-lg border cursor-pointer transition-all flex flex-col p-3 group/item ${
+                            event.isCompleted
+                              ? 'bg-brand-green/5 border-brand-green/10 hover:bg-brand-green/8'
+                              : 'bg-violet-50 border-violet-200 hover:bg-violet-100'
+                          }`}
+                          onClick={() => toggleComplete(event.planId, event.date)}
                         >
-                          {String(h).padStart(2, '0')}:00
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* Grid Lines */}
-                    <div className="absolute left-10 right-0 top-0 bottom-0">
-                      {Array.from({ length: 16 }, (_, i) => i + 7).map((h) => (
-                        <div 
-                          key={h} 
-                          className="absolute w-full border-t border-gray-100/30"
-                          style={{ top: `${((h - 7) / 15) * 100}%` }}
-                        ></div>
-                      ))}
-                    </div>
-
-                    {/* Course Blocks */}
-                    <div className="absolute left-11 right-1 top-0 bottom-0">
-                      {selectedDayEvents.map((event, idx) => {
-                        const getMinutes = (t: string) => {
-                          const [h, m] = t.split(':').map(Number);
-                          return h * 60 + m;
-                        };
-                        const startMin = getMinutes(event.startTime);
-                        const endMin = getMinutes(event.endTime);
-                        const dayStartMin = 7 * 60; // 7:00
-                        const dayEndMin = 22 * 60; // 22:00
-                        const totalMin = dayEndMin - dayStartMin;
-                        
-                        const topPercent = Math.max(0, ((startMin - dayStartMin) / totalMin) * 100);
-                        const heightPercent = Math.min(100 - topPercent, ((endMin - startMin) / totalMin) * 100);
-
-                        return (
-                          <div 
-                            key={`${event.planId}-${idx}`}
-                            className={`absolute left-0 right-0 rounded-md border shadow-sm cursor-pointer transition-all flex flex-col px-2 py-1 overflow-hidden group/item ${
-                              event.isCompleted 
-                                ? 'bg-brand-green/5 border-brand-green/10 hover:bg-brand-green/10' 
-                                : 'bg-violet-500 border-violet-600 text-white hover:bg-violet-600 shadow-sm shadow-violet-500/10'
-                            }`}
-                            style={{ 
-                              top: `${topPercent}%`, 
-                              height: `${heightPercent}%`,
-                              minHeight: '32px'
-                            }}
-                            onClick={() => toggleComplete(event.planId, event.date)}
-                          >
-                            <div className="flex items-center justify-between mb-0.5">
-                              <div className="flex items-center gap-1.5 min-w-0">
-                                <span className={`text-[9px] font-black truncate uppercase tracking-tighter ${event.isCompleted ? 'text-brand-green line-through' : 'text-white'}`}>
-                                  {event.title}
-                                </span>
-                                <span className={`text-[6px] font-black uppercase tracking-tighter px-0.5 rounded-[2px] flex-shrink-0 ${
-                                  event.isCompleted 
-                                    ? 'bg-brand-green/20 text-brand-green' 
-                                    : 'bg-white/20 text-white border border-white/20'
-                                }`}>
-                                  {event.type.slice(0, 3)}
-                                </span>
-                              </div>
-                              {event.isCompleted && <i className="fa-solid fa-check-circle text-[8px] text-brand-green"></i>}
-                            </div>
-                            
-                            <div className={`flex items-center gap-2 ${event.isCompleted ? 'text-gray-400' : 'text-white/90'}`}>
-                              <p className="text-[8px] font-bold flex items-center gap-1 min-w-0">
-                                <i className="fa-solid fa-location-dot text-[7px] opacity-70"></i>
-                                <span className="truncate">{event.location || 'Campus'}</span>
-                              </p>
-                              <span className="text-[7px] font-mono opacity-70 ml-auto flex-shrink-0">
-                                {event.startTime.slice(0, 5)}-{event.endTime.slice(0, 5)}
+                          <div className="flex items-center justify-between mb-1">
+                            <div className="flex items-center gap-2 min-w-0">
+                              <span className={`text-[9px] font-black truncate uppercase tracking-tighter ${event.isCompleted ? 'text-brand-green line-through' : 'text-gray-900'}`}>
+                                {event.title}
+                              </span>
+                              <span className={`text-[6px] font-black uppercase tracking-tighter px-1 rounded flex-shrink-0 ${
+                                event.isCompleted
+                                  ? 'bg-brand-green/10 text-brand-green'
+                                  : 'bg-violet-200 text-violet-700'
+                              }`}>
+                                {event.type.slice(0, 3)}
                               </span>
                             </div>
+                            {event.isCompleted && <i className="fa-solid fa-check-circle text-[8px] text-brand-green"></i>}
                           </div>
-                        );
-                      })}
-                    </div>
+
+                          <p className="text-[8px] font-bold flex items-center gap-1 min-w-0 text-gray-600">
+                            <i className="fa-solid fa-location-dot text-[7px] opacity-70"></i>
+                            <span className="truncate">{event.location || 'Campus'}</span>
+                          </p>
+                        </div>
+                      ))}
                   </div>
                 </div>
               ) : selectedDayActivity.length > 0 ? (
-                <div className="space-y-2 overflow-y-auto pr-1">
+                <div className="space-y-2 overflow-y-auto pr-1 flex-grow">
                   {selectedDayActivity.map(course => (
                     <Link
                       key={course.id}
@@ -510,8 +460,8 @@ export default function StudyCalendar({ courses, plans, logs, dict }: StudyCalen
                         </p>
                       </div>
                       <span className={`text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded flex-shrink-0 ${
-                        course.status === 'completed' 
-                          ? 'bg-brand-green/10 text-brand-green' 
+                        course.status === 'completed'
+                          ? 'bg-brand-green/10 text-brand-green'
                           : 'bg-brand-blue/10 text-brand-blue'
                       }`}>
                         {course.progress}%
@@ -529,7 +479,7 @@ export default function StudyCalendar({ courses, plans, logs, dict }: StudyCalen
               )}
             </div>
           ) : (
-            <div className="h-full flex flex-col items-center justify-center text-center py-4">
+            <div className="flex-grow flex flex-col items-center justify-center text-center py-4">
               <i className="fa-regular fa-calendar-check text-gray-200 text-3xl mb-4"></i>
               <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">
                 {dict.calendar_events}
