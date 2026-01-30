@@ -377,7 +377,7 @@ export default function StudyCalendar({ courses, plans, logs, dict }: StudyCalen
                         >
                           <div className="flex items-start justify-between gap-2 mb-2">
                             <div className="flex items-center gap-2 min-w-0 flex-1">
-                              <span className={`text-[10px] font-black truncate uppercase tracking-tighter ${event.isCompleted ? 'text-brand-green line-through' : 'text-gray-900'}`}>
+                              <span className={`text-[10px] font-bold truncate ${event.isCompleted ? 'text-brand-green line-through' : 'text-gray-900'}`}>
                                 {event.title}
                               </span>
                               <span className={`text-[7px] font-black uppercase tracking-tighter px-1.5 rounded flex-shrink-0 ${
