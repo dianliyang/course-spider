@@ -62,7 +62,7 @@ interface StudyCalendarProps {
 export default function StudyCalendar({ courses, plans, logs, dict }: StudyCalendarProps) {
   const router = useRouter();
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [selectedDay, setSelectedDay] = useState<number | null>(null);
+  const [selectedDay, setSelectedDay] = useState<number | null>(() => new Date().getDate());
   const [isGenerating, setIsGenerating] = useState(false);
   
   // Get weekdays and months from dictionary (with fallbacks)
@@ -406,38 +406,56 @@ export default function StudyCalendar({ courses, plans, logs, dict }: StudyCalen
                     {selectedDayEvents
                       .slice()
                       .sort((a, b) => a.startTime.localeCompare(b.startTime))
-                      .map((event, idx) => (
-                        <div
-                          key={`${event.planId}-${idx}`}
-                          className={`rounded-lg border cursor-pointer transition-all flex flex-col p-3 group/item ${
-                            event.isCompleted
-                              ? 'bg-brand-green/5 border-brand-green/10 hover:bg-brand-green/8'
-                              : 'bg-violet-50 border-violet-200 hover:bg-violet-100'
-                          }`}
-                          onClick={() => toggleComplete(event.planId, event.date)}
-                        >
-                          <div className="flex items-center justify-between mb-1">
-                            <div className="flex items-center gap-2 min-w-0">
-                              <span className={`text-[9px] font-black truncate uppercase tracking-tighter ${event.isCompleted ? 'text-brand-green line-through' : 'text-gray-900'}`}>
-                                {event.title}
-                              </span>
-                              <span className={`text-[6px] font-black uppercase tracking-tighter px-1 rounded flex-shrink-0 ${
-                                event.isCompleted
-                                  ? 'bg-brand-green/10 text-brand-green'
-                                  : 'bg-violet-200 text-violet-700'
-                              }`}>
-                                {event.type.slice(0, 3)}
-                              </span>
-                            </div>
-                            {event.isCompleted && <i className="fa-solid fa-check-circle text-[8px] text-brand-green"></i>}
-                          </div>
+                      .map((event, idx) => {
+                        const courseColors = [
+                          'bg-red-50 border-red-200 hover:bg-red-100',
+                          'bg-blue-50 border-blue-200 hover:bg-blue-100',
+                          'bg-green-50 border-green-200 hover:bg-green-100',
+                          'bg-yellow-50 border-yellow-200 hover:bg-yellow-100',
+                          'bg-purple-50 border-purple-200 hover:bg-purple-100',
+                          'bg-pink-50 border-pink-200 hover:bg-pink-100',
+                          'bg-indigo-50 border-indigo-200 hover:bg-indigo-100',
+                          'bg-cyan-50 border-cyan-200 hover:bg-cyan-100',
+                          'bg-orange-50 border-orange-200 hover:bg-orange-100',
+                          'bg-lime-50 border-lime-200 hover:bg-lime-100'
+                        ];
+                        const courseColorIndex = event.courseId % courseColors.length;
+                        const courseBgColor = event.isCompleted ? 'bg-brand-green/5 border-brand-green/10 hover:bg-brand-green/8' : courseColors[courseColorIndex];
 
-                          <p className="text-[8px] font-bold flex items-center gap-1 min-w-0 text-gray-600">
-                            <i className="fa-solid fa-location-dot text-[7px] opacity-70"></i>
-                            <span className="truncate">{event.location || 'Campus'}</span>
-                          </p>
-                        </div>
-                      ))}
+                        return (
+                          <div
+                            key={`${event.planId}-${idx}`}
+                            className={`rounded-lg border cursor-pointer transition-all flex flex-col p-3 group/item ${courseBgColor}`}
+                            onClick={() => toggleComplete(event.planId, event.date)}
+                          >
+                            <div className="flex items-center justify-between mb-1">
+                              <div className="flex items-center gap-2 min-w-0">
+                                <span className={`text-[9px] font-black truncate uppercase tracking-tighter ${event.isCompleted ? 'text-brand-green line-through' : 'text-gray-900'}`}>
+                                  {event.title}
+                                </span>
+                                <span className={`text-[6px] font-black uppercase tracking-tighter px-1 rounded flex-shrink-0 ${
+                                  event.isCompleted
+                                    ? 'bg-brand-green/10 text-brand-green'
+                                    : 'bg-gray-200 text-gray-700'
+                                }`}>
+                                  {event.type.slice(0, 3)}
+                                </span>
+                              </div>
+                              {event.isCompleted && <i className="fa-solid fa-check-circle text-[8px] text-brand-green"></i>}
+                            </div>
+
+                            <p className="text-[8px] font-bold flex items-center gap-2 min-w-0 text-gray-600">
+                              <span className="flex items-center gap-1 min-w-0">
+                                <i className="fa-solid fa-location-dot text-[7px] opacity-70"></i>
+                                <span className="truncate">{event.location || 'Campus'}</span>
+                              </span>
+                              <span className="text-[7px] font-mono opacity-70 flex-shrink-0">
+                                {event.startTime.slice(0, 5)}-{event.endTime.slice(0, 5)}
+                              </span>
+                            </p>
+                          </div>
+                        );
+                      })}
                   </div>
                 </div>
               ) : selectedDayActivity.length > 0 ? (
