@@ -383,7 +383,9 @@ export default function StudyCalendar({ courses, plans, logs, dict }: StudyCalen
                               <span className={`text-[8px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md flex-shrink-0 border ${
                                 event.isCompleted
                                   ? 'bg-brand-green/10 text-brand-green border-brand-green/30'
-                                  : 'bg-violet-100 text-violet-700 border-violet-300'
+                                  : event.type === 'lecture'
+                                    ? 'bg-blue-100 text-blue-700 border-blue-300'
+                                    : 'bg-orange-100 text-orange-700 border-orange-300'
                               }`}>
                                 {event.type.slice(0, 3)}
                               </span>
