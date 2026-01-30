@@ -372,7 +372,13 @@ export default function StudyCalendar({ courses, plans, logs, dict }: StudyCalen
                       return (
                         <div
                           key={`${event.planId}-${idx}`}
-                          className={`rounded-lg border cursor-pointer transition-all flex flex-col p-3 group/item ${bgColor}`}
+                          className={`rounded-lg border cursor-pointer transition-all flex flex-col p-3 group/item border-r-4 ${bgColor} ${
+                            event.isCompleted
+                              ? 'border-r-brand-green'
+                              : event.type === 'lecture'
+                                ? 'border-r-blue-500'
+                                : 'border-r-orange-500'
+                          }`}
                           onClick={() => toggleComplete(event.planId, event.date)}
                         >
                           <div className="flex items-start justify-between gap-2 mb-2">
