@@ -195,10 +195,10 @@ export default function StudyCalendar({ courses, plans, logs, dict }: StudyCalen
   const needsScheduleGeneration = inProgressCourses.length > 0 && !hasPlans;
 
   return (
-    <div className="bg-white border border-gray-100 rounded-2xl p-4 hover:border-violet-500/30 transition-all hover:shadow-xl hover:shadow-violet-500/5">
-      <div className="flex gap-4">
+    <div className="bg-white border border-gray-100 rounded-2xl p-4 hover:border-violet-500/30 transition-all hover:shadow-xl hover:shadow-violet-500/5 h-full flex flex-col">
+      <div className="flex gap-6 flex-1 min-h-0">
         {/* Left: Calendar */}
-        <div className="flex-shrink-0 w-64">
+        <div className="flex-shrink-0 w-80 flex flex-col">
           {/* Header */}
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-sm font-black text-gray-900 tracking-tight">
@@ -278,7 +278,7 @@ export default function StudyCalendar({ courses, plans, logs, dict }: StudyCalen
           </div>
 
           {/* Calendar Grid */}
-          <div className="grid grid-cols-7 gap-0.5">
+          <div className="grid grid-cols-7 gap-1 flex-1">
             {calendarDays.map((day, index) => {
               if (day === null) {
                 return <div key={`empty-${index}`} className="w-8 h-8"></div>;
@@ -294,7 +294,7 @@ export default function StudyCalendar({ courses, plans, logs, dict }: StudyCalen
                 <button
                   key={day}
                   onClick={() => setSelectedDay(isSelected ? null : day)}
-                  className={`w-8 h-8 rounded-lg flex flex-col items-center justify-center relative transition-all ${
+                  className={`flex-1 aspect-square rounded-lg flex flex-col items-center justify-center relative transition-all ${
                     isSelected
                       ? 'bg-violet-500 text-white shadow-md shadow-violet-500/30'
                       : isToday
@@ -322,7 +322,7 @@ export default function StudyCalendar({ courses, plans, logs, dict }: StudyCalen
         </div>
 
         {/* Right: Selected Day Details */}
-        <div className="flex-grow border-l border-gray-100 pl-4 min-w-0 flex flex-col">
+        <div className="flex-1 border-l border-gray-100 pl-6 min-w-0 flex flex-col">
           {selectedDay ? (
             <div className="animate-in fade-in duration-200 h-full flex flex-col">
               <div className="flex items-center justify-between mb-4">
@@ -375,12 +375,12 @@ export default function StudyCalendar({ courses, plans, logs, dict }: StudyCalen
                           className={`rounded-lg border cursor-pointer transition-all flex flex-col p-3 group/item ${bgColor}`}
                           onClick={() => toggleComplete(event.planId, event.date)}
                         >
-                          <div className="flex items-center justify-between mb-1">
-                            <div className="flex items-center gap-2 min-w-0">
-                              <span className={`text-[9px] font-black truncate uppercase tracking-tighter ${event.isCompleted ? 'text-brand-green line-through' : 'text-gray-900'}`}>
+                          <div className="flex items-start justify-between gap-2 mb-2">
+                            <div className="flex items-center gap-2 min-w-0 flex-1">
+                              <span className={`text-[10px] font-black truncate uppercase tracking-tighter ${event.isCompleted ? 'text-brand-green line-through' : 'text-gray-900'}`}>
                                 {event.title}
                               </span>
-                              <span className={`text-[6px] font-black uppercase tracking-tighter px-1 rounded flex-shrink-0 ${
+                              <span className={`text-[7px] font-black uppercase tracking-tighter px-1.5 rounded flex-shrink-0 ${
                                 event.isCompleted
                                   ? 'bg-brand-green/10 text-brand-green'
                                   : 'bg-gray-200 text-gray-700'
@@ -388,18 +388,18 @@ export default function StudyCalendar({ courses, plans, logs, dict }: StudyCalen
                                 {event.type.slice(0, 3)}
                               </span>
                             </div>
-                            {event.isCompleted && <i className="fa-solid fa-check-circle text-[8px] text-brand-green"></i>}
+                            {event.isCompleted && <i className="fa-solid fa-check-circle text-[10px] text-brand-green"></i>}
                           </div>
 
-                          <p className="text-[8px] font-bold flex items-center gap-2 min-w-0 text-gray-600">
-                            <span className="flex items-center gap-1 min-w-0">
-                              <i className="fa-solid fa-location-dot text-[7px] opacity-70"></i>
-                              <span className="truncate">{event.location || 'Campus'}</span>
-                            </span>
-                            <span className="text-[7px] font-mono opacity-70 flex-shrink-0">
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="flex items-center gap-1 min-w-0">
+                              <i className="fa-solid fa-location-dot text-[9px] opacity-70"></i>
+                              <span className="text-[9px] font-bold text-gray-600 truncate">{event.location || 'Campus'}</span>
+                            </div>
+                            <span className="text-[9px] font-mono font-bold text-gray-600 flex-shrink-0 whitespace-nowrap">
                               {event.startTime.slice(0, 5)}-{event.endTime.slice(0, 5)}
                             </span>
-                          </p>
+                          </div>
                         </div>
                       );
                     })}
