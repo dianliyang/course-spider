@@ -86,10 +86,11 @@ export async function GET() {
 
         // Calculate duration for each course
         const emailCourses = userPlans
-          .filter((plan): plan is typeof plan & { courses: NonNullable<typeof plan.courses> } =>
-            plan.courses != null
-          )
+          .filter(plan => plan.courses != null)
           .map(plan => {
+            const course = Array.isArray(plan.courses) ? plan.courses[0] : plan.courses;
+            if (!course) return null;
+
             const startTime = plan.start_time || '09:00:00';
             const endTime = plan.end_time || '11:00:00';
 
@@ -99,14 +100,15 @@ export async function GET() {
             const durationMinutes = (endHour * 60 + endMin) - (startHour * 60 + startMin);
 
             return {
-              title: plan.courses.title,
-              courseCode: plan.courses.course_code,
-              university: plan.courses.university,
+              title: course.title,
+              courseCode: course.course_code,
+              university: course.university,
               durationMinutes: Math.max(durationMinutes, 30), // Minimum 30 minutes
               location: plan.location || undefined,
               startTime: startTime.slice(0, 5), // HH:MM format
             };
-          });
+          })
+          .filter((course): course is NonNullable<typeof course> => course != null);
 
         if (emailCourses.length === 0) {
           console.warn(`[Cron] User ${userId} has no valid courses`);
