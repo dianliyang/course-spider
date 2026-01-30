@@ -394,7 +394,7 @@ export default function StudyCalendar({ courses, plans, logs, dict }: StudyCalen
                               <span className="text-[9px] font-bold text-gray-600 truncate">{event.location || 'Campus'}</span>
                             </div>
                             <div className="flex items-center gap-2 flex-shrink-0">
-                              <span className={`text-[8px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md border ${
+                              <span className={`text-[8px] font-black uppercase tracking-wider px-2 py-1 rounded-md border h-fit ${
                                 event.isCompleted
                                   ? 'bg-brand-green/10 text-brand-green border-brand-green/30'
                                   : event.type === 'lecture'
