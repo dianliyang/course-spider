@@ -51,11 +51,11 @@ export default function AchievementCard({ course, masteredLabel }: AchievementCa
   };
 
   return (
-    <div className="bg-white border border-gray-100 p-6 flex flex-col gap-5 h-full relative group hover:border-brand-green/30 transition-all hover:shadow-xl hover:shadow-brand-green/5 rounded-2xl">
+    <div className="bg-white border border-gray-100 p-4 flex flex-col gap-3 h-full relative group hover:border-brand-green/30 transition-all hover:shadow-xl hover:shadow-brand-green/5 rounded-xl">
       {/* Edit Trigger */}
       <button 
         onClick={() => setShowEditModal(true)}
-        className="absolute top-4 right-4 p-2 rounded-lg bg-gray-50 text-gray-400 opacity-0 group-hover:opacity-100 transition-all hover:text-brand-blue hover:bg-blue-50 cursor-pointer z-10"
+        className="absolute top-3 right-3 p-1.5 rounded-lg bg-gray-50 text-gray-400 opacity-0 group-hover:opacity-100 transition-all hover:text-brand-blue hover:bg-blue-50 cursor-pointer z-10"
         title="Update Grade"
       >
         <i className="fa-solid fa-pen-to-square text-[10px]"></i>
@@ -128,12 +128,12 @@ export default function AchievementCard({ course, masteredLabel }: AchievementCa
       <div className="flex items-center gap-3">
         <UniversityIcon 
           name={course.university} 
-          size={40} 
-          className="bg-gray-50 rounded-lg border border-gray-100 p-1.5"
+          size={32} 
+          className="bg-gray-50 rounded-lg border border-gray-100 p-1"
         />
         <div className="flex flex-col">
           <div className="flex items-center gap-2">
-            <span className="text-[10px] font-black text-brand-green uppercase tracking-[0.2em] leading-none">
+            <span className="text-[9px] font-black text-brand-green uppercase tracking-[0.2em] leading-none">
               {course.university}
             </span>
             {course.semesters && course.semesters.length > 0 && (
@@ -148,14 +148,14 @@ export default function AchievementCard({ course, masteredLabel }: AchievementCa
         </div>
       </div>
 
-      <div className="flex-grow space-y-4 flex flex-col">
-        <h3 className="text-base font-bold text-gray-900 leading-tight tracking-tight line-clamp-2 group-hover:text-brand-green transition-colors min-h-[3rem]">
+      <div className="flex-grow space-y-2 flex flex-col">
+        <h3 className="text-sm font-bold text-gray-900 leading-tight tracking-tight line-clamp-2 group-hover:text-brand-green transition-colors min-h-[2.5rem]">
           {course.title}
         </h3>
 
         <div className="mt-auto">
           {(course.gpa || course.score) ? (
-            <div className="flex gap-4 items-center bg-gray-50/50 p-3 rounded-xl border border-gray-100/50">
+            <div className="flex gap-3 items-center bg-gray-50/50 p-2 rounded-lg border border-gray-100/50">
               {course.gpa && (
                 <div className="flex flex-col">
                   <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">GPA</span>
@@ -177,7 +177,7 @@ export default function AchievementCard({ course, masteredLabel }: AchievementCa
         </div>
       </div>
 
-      <div className="flex items-center justify-between pt-5 border-t border-gray-50">
+      <div className="flex items-center justify-between pt-3 border-t border-gray-50">
         <span className="text-[9px] font-bold text-gray-300 uppercase tracking-[0.2em] font-mono">
           CERT_ID: {completionId}
         </span>
