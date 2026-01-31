@@ -149,7 +149,7 @@ export default function AchievementCard({ course, masteredLabel }: AchievementCa
       </div>
 
       <div className="flex-grow space-y-4 flex flex-col">
-        <h3 className="text-base font-black text-gray-900 leading-tight tracking-tight line-clamp-2 group-hover:text-brand-green transition-colors min-h-[3rem]">
+        <h3 className="text-base font-bold text-gray-900 leading-tight tracking-tight line-clamp-2 group-hover:text-brand-green transition-colors min-h-[3rem]">
           {course.title}
         </h3>
 

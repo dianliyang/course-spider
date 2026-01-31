@@ -174,7 +174,7 @@ export default function ActiveCourseTrack({ course, initialProgress, onUpdate, d
               <span className="text-[10px] font-black text-brand-blue uppercase tracking-[0.2em] leading-none">{course.university}</span>
               <span className="text-[10px] font-bold text-gray-400 font-mono">{course.courseCode}</span>
             </div>
-            <h3 className="text-lg font-black text-gray-900 tracking-tight leading-tight group-hover:text-brand-blue transition-colors line-clamp-1">
+            <h3 className="text-lg font-bold text-gray-900 tracking-tight leading-tight group-hover:text-brand-blue transition-colors line-clamp-1">
               <Link href={detailHref}>{course.title}</Link>
             </h3>
           </div>
