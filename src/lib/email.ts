@@ -42,11 +42,13 @@ export async function sendStudyReminderEmail(data: StudyReminderEmailData) {
     
     /* Study Schedule Specific */
     .schedule-card { background-color: #ffffff; border: 1px solid #e5e7eb; border-radius: 16px; padding: 24px; margin-bottom: 24px; }
-    .course-item { padding: 16px 0; border-bottom: 1px solid #f3f4f6; }
+    .course-item { padding: 20px 0; border-bottom: 1px solid #f3f4f6; }
     .course-item:last-child { border-bottom: none; padding-bottom: 0; }
     .course-item:first-child { padding-top: 0; }
-    .course-title { font-weight: 800; color: #111827; font-size: 14px; margin-bottom: 4px; }
-    .course-meta { color: #6b7280; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; display: flex; gap: 8px; align-items: center; }
+    .course-title { font-weight: 800; color: #111827; font-size: 15px; margin-bottom: 12px; }
+    .course-meta { color: #6b7280; font-size: 12px; line-height: 1.8; }
+    .course-meta-item { display: block; margin-bottom: 4px; }
+    .meta-label { font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; font-size: 10px; color: #9ca3af; margin-right: 8px; }
     .date-banner { font-size: 11px; font-weight: 800; color: #3b82f6; text-transform: uppercase; letter-spacing: 0.2em; margin-bottom: 8px; }
   </style>
 </head>
@@ -63,11 +65,11 @@ export async function sendStudyReminderEmail(data: StudyReminderEmailData) {
         <div class="course-item">
           <div class="course-title">${c.title}</div>
           <div class="course-meta">
-            ${c.startTime ? `<span>${c.startTime}</span> // ` : ''}
-            <span>${c.courseCode}</span> // 
-            <span>${c.university}</span> // 
-            <span>${c.durationMinutes}m</span>
-            ${c.location ? ` // <span>${c.location}</span>` : ''}
+            <div class="course-meta-item"><span class="meta-label">Course Code:</span>${c.courseCode}</div>
+            <div class="course-meta-item"><span class="meta-label">School:</span>${c.university}</div>
+            ${c.startTime ? `<div class="course-meta-item"><span class="meta-label">Time:</span>${c.startTime}</div>` : ''}
+            ${c.location ? `<div class="course-meta-item"><span class="meta-label">Location:</span>${c.location}</div>` : ''}
+            <div class="course-meta-item"><span class="meta-label">Duration:</span>${c.durationMinutes} minutes</div>
           </div>
         </div>
         `).join('')}

@@ -362,7 +362,7 @@ export default function StudyCalendar({ courses, plans, logs, dict }: StudyCalen
                           onClick={() => toggleComplete(event.planId, event.date)}
                         >
                           <div className="flex items-start justify-between gap-2 mb-2">
-                            <span className={`text-[10px] font-bold truncate ${event.isCompleted ? 'text-gray-400 line-through' : 'text-gray-900'}`}>
+                            <span className={`text-sm font-bold truncate ${event.isCompleted ? 'text-gray-400 line-through' : 'text-gray-900'}`}>
                               {event.title}
                             </span>
                             {event.isCompleted && <i className="fa-solid fa-check text-[10px] text-gray-400"></i>}
@@ -381,7 +381,7 @@ export default function StudyCalendar({ courses, plans, logs, dict }: StudyCalen
                               }`}>
                                 {event.type}
                               </span>
-                              <span className="text-[9px] font-mono font-bold text-gray-600 whitespace-nowrap">
+                              <span className="text-xs font-mono font-bold text-gray-600 whitespace-nowrap">
                                 {event.startTime.slice(0, 5)}-{event.endTime.slice(0, 5)}
                               </span>
                             </div>
