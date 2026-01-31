@@ -198,7 +198,13 @@ async function StudyPlanContent({
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pl-0 md:pl-20">
             {inProgress.length > 0 ? (
               inProgress.map(course => (
-                <ActiveCourseTrack key={course.id} course={course} initialProgress={course.progress} dict={dict.dashboard.roadmap} />
+                <ActiveCourseTrack 
+                  key={course.id} 
+                  course={course} 
+                  initialProgress={course.progress} 
+                  hasPlan={plans?.some((p: any) => p.course_id === course.id)}
+                  dict={dict.dashboard.roadmap} 
+                />
               ))
             ) : (
               <p className="text-sm text-gray-400 font-mono italic">{dict.dashboard.roadmap.no_active}</p>

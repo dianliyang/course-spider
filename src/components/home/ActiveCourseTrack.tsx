@@ -11,11 +11,12 @@ import AddPlanModal from "./AddPlanModal";
 interface ActiveCourseTrackProps {
   course: Course;
   initialProgress: number;
+  hasPlan?: boolean;
   onUpdate?: () => void;
   dict: Dictionary['dashboard']['roadmap'];
 }
 
-export default function ActiveCourseTrack({ course, initialProgress, onUpdate, dict }: ActiveCourseTrackProps) {
+export default function ActiveCourseTrack({ course, initialProgress, hasPlan, onUpdate, dict }: ActiveCourseTrackProps) {
   const router = useRouter();
   const [progress, setProgress] = useState(initialProgress);
   const [isUpdating, setIsInUpdating] = useState(false);
@@ -245,13 +246,23 @@ export default function ActiveCourseTrack({ course, initialProgress, onUpdate, d
           ))}
         </div>
         <div className="w-px h-4 bg-gray-100 mx-2"></div>
-        <button
-          onClick={() => setShowAddPlanModal(true)}
-          className="px-3 py-1.5 rounded-lg border border-violet-100 text-violet-500 bg-violet-50 hover:bg-violet-100 hover:border-violet-200 transition-all flex items-center justify-center gap-2 mr-2"
-          title="Add Study Plan"
-        >
-          <i className="fa-solid fa-calendar-plus text-[10px]"></i>
-        </button>
+        {hasPlan ? (
+          <div 
+            className="px-3 py-1.5 rounded-lg border border-teal-100 text-teal-600 bg-teal-50 flex items-center justify-center gap-2 mr-2 cursor-default"
+            title="Study Plan Scheduled"
+          >
+            <i className="fa-solid fa-calendar-check text-[10px]"></i>
+            <span className="text-[9px] font-bold uppercase tracking-wider hidden sm:inline">Scheduled</span>
+          </div>
+        ) : (
+          <button
+            onClick={() => setShowAddPlanModal(true)}
+            className="px-3 py-1.5 rounded-lg border border-violet-100 text-violet-500 bg-violet-50 hover:bg-violet-100 hover:border-violet-200 transition-all flex items-center justify-center gap-2 mr-2"
+            title="Add Study Plan"
+          >
+            <i className="fa-solid fa-calendar-plus text-[10px]"></i>
+          </button>
+        )}
         <button
           onClick={() => handleProgressChange(100)}
           disabled={isUpdating || progress === 100}
