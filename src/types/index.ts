@@ -16,6 +16,11 @@ export interface Course {
   semesters: string[];
   level?: string;
   corequisites?: string;
+  details?: {
+    prerequisites?: string;
+    relatedUrls?: string[];
+    crossListedCourses?: string;
+  };
   enrolled?: boolean;
   status?: string;
   progress?: number;
