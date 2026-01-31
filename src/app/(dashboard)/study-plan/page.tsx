@@ -239,8 +239,6 @@ async function StudyPlanContent({
                   key={course.id}
                   course={course}
                   completionDate={course.updated_at}
-                  masteredLabel={dict.dashboard.roadmap.header_mastered}
-                  markIncompleteLabel={dict.dashboard.roadmap.mark_incomplete}
                 />
               ))
             ) : (

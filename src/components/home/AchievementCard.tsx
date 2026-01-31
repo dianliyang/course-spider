@@ -8,11 +8,9 @@ import UniversityIcon from "@/components/common/UniversityIcon";
 interface AchievementCardProps {
   course: Course & { gpa?: number; score?: number };
   completionDate?: string;
-  masteredLabel?: string;
-  markIncompleteLabel?: string;
 }
 
-export default function AchievementCard({ course, masteredLabel, markIncompleteLabel }: AchievementCardProps) {
+export default function AchievementCard({ course }: AchievementCardProps) {
   const router = useRouter();
   const [completionId, setCompletionId] = useState("");
   const [showEditModal, setShowEditModal] = useState(false);
@@ -205,19 +203,14 @@ export default function AchievementCard({ course, masteredLabel, markIncompleteL
         <span className="text-[9px] font-bold text-gray-300 uppercase tracking-[0.2em] font-mono">
           CERT_ID: {completionId}
         </span>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={handleMarkIncomplete}
-            disabled={isMarkingIncomplete}
-            className="text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg border border-red-200 text-red-600 bg-red-50 hover:bg-red-100 transition-all flex items-center gap-1.5 disabled:opacity-50"
-          >
-            <i className="fa-solid fa-undo text-[8px]"></i>
-            {isMarkingIncomplete ? "..." : (markIncompleteLabel || "Mark Incomplete")}
-          </button>
-          <span className="text-[10px] font-black text-brand-green uppercase tracking-widest bg-brand-green/5 px-2 py-1 rounded">
-            {masteredLabel || "Mastered"}
-          </span>
-        </div>
+        <button
+          onClick={handleMarkIncomplete}
+          disabled={isMarkingIncomplete}
+          className="w-7 h-7 shrink-0 rounded-lg border border-red-200 text-red-500 bg-red-50 hover:bg-red-500 hover:text-white hover:border-red-500 transition-all flex items-center justify-center disabled:opacity-50"
+          title="Mark Incomplete"
+        >
+          <i className="fa-solid fa-rotate-left text-[10px]"></i>
+        </button>
       </div>
     </div>
   );
